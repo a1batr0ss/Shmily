@@ -74,55 +74,6 @@ read_disk:
     loop .go_on_read
     ret
 
-; init:
-    ; xor eax, eax
-    ; xor ebx, ebx
-    ; xor ecx, ecx
-    ; xor edx, edx
-
-    ; mov dx, [INIT_BASE_ADDR + 42]
-    ; mov ebx, [INIT_BASE_ADDR + 28]
-
-    ; add ebx, INIT_BASE_ADDR
-    ; mov cx, [INIT_BASE_ADDR + 44]
-
-    ; xchg bx, bx
-
-; .each_segment:
-    ; cmp byte [bx], PT_NULL
-    ; je .PTNULL
-
-    ; ; 可能与dword与关，可能应该使用16位的资源，ebp->bp
-    ; ; 准备mem_cpy参数
-    ; push dword [ebx + 16]
-    ; mov eax, [ebx + 4]
-    ; add eax, INIT_BASE_ADDR
-    ; push eax
-    ; push dword [ebx + 8]
-
-    ; call mem_cpy
-    ; add esp, 12
-
-; .PTNULL:
-    ; add bx, dx
-    ; loop .each_segment
-    ; ret
-
-; mem_cpy:
-    ; cld
-    ; push ebp
-    ; mov ebp, esp
-    ; push ecx
-
-    ; mov edi, [ebp + 8 - 2]  ; elements of stack's length is 2B, not 4B
-    ; mov esi, [ebp + 12 - 2]
-    ; mov ecx, [ebp + 16 - 2]
-    ; rep movsb
-
-    ; pop ecx
-    ; pop ebp
-    ; ret
-
-    ; times 510 - ($-$$) db 0
-    ; dw 0xaa55
+    times 510 - ($-$$) db 0
+    dw 0xaa55
 
