@@ -17,6 +17,9 @@ GDT_BASE:
 .DATA_DESC:
     dd 0x0000ffff
     dd 0x00cf9200
+.VIDEO_DESC:
+    dd 0x80000007
+    dd 0x00c0920b 
 
 SELECTOR_CODE equ (0x0001<<3) + 0b + 00b
 SELECTOR_DATA equ (0x0002<<3) + 0b + 00b

@@ -1,4 +1,4 @@
 # An operating system
 
-run: ` make `
+run: ` make DEBUGGER=1`
 
