@@ -91,7 +91,7 @@ putchar:
     mov ecx, 960
     mov esi, 0xb80a0
     mov edi, 0xb8000
-    rep movsb
+    rep movsd
 
     mov ebx, 3840
     mov ecx, 80

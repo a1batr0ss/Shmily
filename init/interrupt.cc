@@ -27,7 +27,7 @@ namespace selector {
 struct idt_entry IDT[256];
 struct idt_ptr idt_ptr;
 
-extern "C" void intr_handler0();  /* Can't replace with void* */
+extern "C" void intr_handler0();
 extern "C" void intr_handler1();
 extern "C" void intr_handler2();
 extern "C" void intr_handler3();
@@ -80,11 +80,19 @@ void init_8259A();
 void init_idt();
 void set_idt_entry(unsigned char nr, unsigned int off_, unsigned short seg_selector_, unsigned char flags_);
 void load_idt(unsigned int p_idtptr);
+void register_intr_handler(unsigned int nr, intr_handler handler);
+
+void keyboard_handler()
+{
+    putstring("Keyboard.");
+    unsigned char scan_code = inb(0x60);  /* We should read the scancode, the keyboard can continue receive another interrupt. */ 
+}
 
 void init_intr()
 {
     init_8259A();
     init_idt();
+    register_intr_handler(0x21, keyboard_handler);
 }
 
 /* can be a variable arguments function to decide which irq should be enabled. */
@@ -109,58 +117,60 @@ void init_idt()
     idt_ptr.base = (unsigned int)(&IDT);
 
     /* set idt entries. */
-    set_idt_entry(0, (unsigned int)intr_handler0, selector::code, 0x8e); 
-    set_idt_entry(1, (unsigned int)intr_handler1, selector::code, 0x8e); 
-    set_idt_entry(2, (unsigned int)intr_handler2, selector::code, 0x8e); 
-    set_idt_entry(3, (unsigned int)intr_handler3, selector::code, 0x8e); 
-    set_idt_entry(4, (unsigned int)intr_handler4, selector::code, 0x8e); 
-    set_idt_entry(5, (unsigned int)intr_handler5, selector::code, 0x8e); 
-    set_idt_entry(6, (unsigned int)intr_handler6, selector::code, 0x8e); 
-    set_idt_entry(7, (unsigned int)intr_handler7, selector::code, 0x8e); 
-    set_idt_entry(8, (unsigned int)intr_handler8, selector::code, 0x8e); 
-    set_idt_entry(9, (unsigned int)intr_handler9, selector::code, 0x8e); 
-    set_idt_entry(10, (unsigned int)intr_handler10, selector::code, 0x8e); 
-    set_idt_entry(11, (unsigned int)intr_handler11, selector::code, 0x8e); 
-    set_idt_entry(12, (unsigned int)intr_handler12, selector::code, 0x8e); 
-    set_idt_entry(13, (unsigned int)intr_handler13, selector::code, 0x8e); 
-    set_idt_entry(14, (unsigned int)intr_handler14, selector::code, 0x8e); 
-    set_idt_entry(15, (unsigned int)intr_handler15, selector::code, 0x8e); 
-    set_idt_entry(16, (unsigned int)intr_handler16, selector::code, 0x8e); 
-    set_idt_entry(17, (unsigned int)intr_handler17, selector::code, 0x8e); 
-    set_idt_entry(18, (unsigned int)intr_handler18, selector::code, 0x8e); 
-    set_idt_entry(19, (unsigned int)intr_handler19, selector::code, 0x8e); 
-    set_idt_entry(20, (unsigned int)intr_handler20, selector::code, 0x8e); 
-    set_idt_entry(21, (unsigned int)intr_handler21, selector::code, 0x8e); 
-    set_idt_entry(22, (unsigned int)intr_handler22, selector::code, 0x8e); 
-    set_idt_entry(23, (unsigned int)intr_handler23, selector::code, 0x8e); 
-    set_idt_entry(24, (unsigned int)intr_handler24, selector::code, 0x8e); 
-    set_idt_entry(25, (unsigned int)intr_handler25, selector::code, 0x8e); 
-    set_idt_entry(26, (unsigned int)intr_handler26, selector::code, 0x8e); 
-    set_idt_entry(27, (unsigned int)intr_handler27, selector::code, 0x8e); 
-    set_idt_entry(28, (unsigned int)intr_handler28, selector::code, 0x8e); 
-    set_idt_entry(29, (unsigned int)intr_handler29, selector::code, 0x8e); 
-    set_idt_entry(30, (unsigned int)intr_handler30, selector::code, 0x8e); 
-    set_idt_entry(31, (unsigned int)intr_handler31, selector::code, 0x8e); 
+    // for (int i=0; i<interrupt::idt_entries_cnt; i++)
 
-    /* external interrupt */
-    set_idt_entry(32, (unsigned int)intr_handler32, selector::code, 0x8e); 
-    set_idt_entry(33, (unsigned int)intr_handler33, selector::code, 0x8e); 
-    set_idt_entry(34, (unsigned int)intr_handler34, selector::code, 0x8e); 
-    set_idt_entry(35, (unsigned int)intr_handler35, selector::code, 0x8e); 
-    set_idt_entry(36, (unsigned int)intr_handler36, selector::code, 0x8e); 
-    set_idt_entry(37, (unsigned int)intr_handler37, selector::code, 0x8e); 
-    set_idt_entry(38, (unsigned int)intr_handler38, selector::code, 0x8e); 
-    set_idt_entry(39, (unsigned int)intr_handler39, selector::code, 0x8e); 
-    set_idt_entry(40, (unsigned int)intr_handler40, selector::code, 0x8e); 
-    set_idt_entry(41, (unsigned int)intr_handler41, selector::code, 0x8e); 
-    set_idt_entry(42, (unsigned int)intr_handler42, selector::code, 0x8e); 
-    set_idt_entry(43, (unsigned int)intr_handler43, selector::code, 0x8e); 
-    set_idt_entry(44, (unsigned int)intr_handler44, selector::code, 0x8e); 
-    set_idt_entry(45, (unsigned int)intr_handler45, selector::code, 0x8e); 
-    set_idt_entry(46, (unsigned int)intr_handler46, selector::code, 0x8e); 
-    set_idt_entry(47, (unsigned int)intr_handler47, selector::code, 0x8e); 
+   set_idt_entry(0, (unsigned int)intr_handler0, selector::code, 0x8e); 
+   set_idt_entry(1, (unsigned int)intr_handler1, selector::code, 0x8e); 
+   set_idt_entry(2, (unsigned int)intr_handler2, selector::code, 0x8e); 
+   set_idt_entry(3, (unsigned int)intr_handler3, selector::code, 0x8e); 
+   set_idt_entry(4, (unsigned int)intr_handler4, selector::code, 0x8e); 
+   set_idt_entry(5, (unsigned int)intr_handler5, selector::code, 0x8e); 
+   set_idt_entry(6, (unsigned int)intr_handler6, selector::code, 0x8e); 
+   set_idt_entry(7, (unsigned int)intr_handler7, selector::code, 0x8e); 
+   set_idt_entry(8, (unsigned int)intr_handler8, selector::code, 0x8e); 
+   set_idt_entry(9, (unsigned int)intr_handler9, selector::code, 0x8e); 
+   set_idt_entry(10, (unsigned int)intr_handler10, selector::code, 0x8e); 
+   set_idt_entry(11, (unsigned int)intr_handler11, selector::code, 0x8e); 
+   set_idt_entry(12, (unsigned int)intr_handler12, selector::code, 0x8e); 
+   set_idt_entry(13, (unsigned int)intr_handler13, selector::code, 0x8e); 
+   set_idt_entry(14, (unsigned int)intr_handler14, selector::code, 0x8e); 
+   set_idt_entry(15, (unsigned int)intr_handler15, selector::code, 0x8e); 
+   set_idt_entry(16, (unsigned int)intr_handler16, selector::code, 0x8e); 
+   set_idt_entry(17, (unsigned int)intr_handler17, selector::code, 0x8e); 
+   set_idt_entry(18, (unsigned int)intr_handler18, selector::code, 0x8e); 
+   set_idt_entry(19, (unsigned int)intr_handler19, selector::code, 0x8e); 
+   set_idt_entry(20, (unsigned int)intr_handler20, selector::code, 0x8e); 
+   set_idt_entry(21, (unsigned int)intr_handler21, selector::code, 0x8e); 
+   set_idt_entry(22, (unsigned int)intr_handler22, selector::code, 0x8e); 
+   set_idt_entry(23, (unsigned int)intr_handler23, selector::code, 0x8e); 
+   set_idt_entry(24, (unsigned int)intr_handler24, selector::code, 0x8e); 
+   set_idt_entry(25, (unsigned int)intr_handler25, selector::code, 0x8e); 
+   set_idt_entry(26, (unsigned int)intr_handler26, selector::code, 0x8e); 
+   set_idt_entry(27, (unsigned int)intr_handler27, selector::code, 0x8e); 
+   set_idt_entry(28, (unsigned int)intr_handler28, selector::code, 0x8e); 
+   set_idt_entry(29, (unsigned int)intr_handler29, selector::code, 0x8e); 
+   set_idt_entry(30, (unsigned int)intr_handler30, selector::code, 0x8e); 
+   set_idt_entry(31, (unsigned int)intr_handler31, selector::code, 0x8e); 
 
-    load_idt((unsigned int)(&idt_ptr));
+   /* external interrupt */
+   set_idt_entry(32, (unsigned int)intr_handler32, selector::code, 0x8e); 
+   set_idt_entry(33, (unsigned int)intr_handler33, selector::code, 0x8e); 
+   set_idt_entry(34, (unsigned int)intr_handler34, selector::code, 0x8e); 
+   set_idt_entry(35, (unsigned int)intr_handler35, selector::code, 0x8e); 
+   set_idt_entry(36, (unsigned int)intr_handler36, selector::code, 0x8e); 
+   set_idt_entry(37, (unsigned int)intr_handler37, selector::code, 0x8e); 
+   set_idt_entry(38, (unsigned int)intr_handler38, selector::code, 0x8e); 
+   set_idt_entry(39, (unsigned int)intr_handler39, selector::code, 0x8e); 
+   set_idt_entry(40, (unsigned int)intr_handler40, selector::code, 0x8e); 
+   set_idt_entry(41, (unsigned int)intr_handler41, selector::code, 0x8e); 
+   set_idt_entry(42, (unsigned int)intr_handler42, selector::code, 0x8e); 
+   set_idt_entry(43, (unsigned int)intr_handler43, selector::code, 0x8e); 
+   set_idt_entry(44, (unsigned int)intr_handler44, selector::code, 0x8e); 
+   set_idt_entry(45, (unsigned int)intr_handler45, selector::code, 0x8e); 
+   set_idt_entry(46, (unsigned int)intr_handler46, selector::code, 0x8e); 
+   set_idt_entry(47, (unsigned int)intr_handler47, selector::code, 0x8e); 
+
+   load_idt((unsigned int)(&idt_ptr));
 }
 
 void set_idt_entry(unsigned char nr, unsigned int off_, \
@@ -182,7 +192,9 @@ void load_idt(unsigned int p_idtptr)
 
 extern "C" void general_intr_handler(unsigned int nr)
 {
-    putstring("intr_occured.");
+    puthex(nr);
+    putstring("intr_occured.\n");
+    real_handlers[nr]();
 } 
 
 void enable_intr()
@@ -193,5 +205,10 @@ void enable_intr()
 void disable_intr()
 {
     asm volatile ("cli":::"memory");
+} 
+
+void register_intr_handler(unsigned int nr, intr_handler handler)
+{
+    real_handlers[nr] = handler;
 } 
 
