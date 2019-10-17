@@ -1,12 +1,12 @@
 #include "page.h"
-#include "print.h"
+#include "interrupt.h"
 
 int main()
 {
     enable_paging();
+    init_intr();
 
-    set_cursor(0);
-    putstring("Halou World.");
+    enable_intr();
 
     while (1);
 
