@@ -1,6 +1,7 @@
 #include "interrupt.h"
 #include "io.h"
 #include "print.h"
+#include "timer.h"
 
 struct idt_entry {
     unsigned short off_low16;
@@ -88,11 +89,20 @@ void keyboard_handler()
     unsigned char scan_code = inb(0x60);  /* We should read the scancode, the keyboard can continue receive another interrupt. */ 
 }
 
+void timer_handler()
+{
+    putstring("Timer interrupt.\n");
+}
+
 void init_intr()
 {
     init_8259A();
     init_idt();
+
+    /* They could be put theis own source file or modules. Put them there just for test. */
     register_intr_handler(0x21, keyboard_handler);
+    register_intr_handler(0x20, timer_handler);
+    init_pit();
 }
 
 /* can be a variable arguments function to decide which irq should be enabled. */
@@ -106,7 +116,8 @@ void init_8259A()
     outb(0xa1, 0x02);
     outb(0x21, 0x01);
     outb(0xa1, 0x01);
-    outb(0x21, 0xfd);  /* Only enable the keyboard interrupt for test, only can test once as our keyboard interrupt handler doesn't fetch data(scancode) from keyboard buffer. */
+    // outb(0x21, 0xfd);  [> Only enable the keyboard interrupt for test, only can test once as our keyboard interrupt handler doesn't fetch data(scancode) from keyboard buffer. <]
+    outb(0x21, 0xfc);
     outb(0xa1, 0xff);
 }
 
