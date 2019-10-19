@@ -7,7 +7,7 @@ SECTION MBR vstart=0x7c00
 
     mov eax, INIT_START_SECTOR
     mov ebx, INIT_ENTRY
-    mov ecx, 20
+    mov ecx, 40
     call read_disk
 
     jmp INIT_ENTRY

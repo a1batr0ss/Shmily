@@ -2,6 +2,7 @@
 #include "io.h"
 #include "print.h"
 #include "timer.h"
+#include "process.h"
 
 struct idt_entry {
     unsigned short off_low16;
@@ -27,6 +28,7 @@ namespace selector {
 
 struct idt_entry IDT[256];
 struct idt_ptr idt_ptr;
+intr_handler real_handlers[256];
 
 extern "C" void intr_handler0();
 extern "C" void intr_handler1();
@@ -92,6 +94,8 @@ void keyboard_handler()
 void timer_handler()
 {
     putstring("Timer interrupt.\n");
+    schedule();
+    asm volatile ("xchg %%bx, %%bx"::);
 }
 
 void init_intr()

@@ -164,13 +164,14 @@ puthex:
     loop .16based_4bits
 .ready_to_print:
     inc edi
+.skip_prefix_0:
     cmp edi, 8
     je .full0
 .skip:
     mov cl, [number_buffer+edi]
     inc edi
     cmp cl, '0'
-    je .skip
+    je .skip_prefix_0
     dec edi
     jmp .put_each_number
 .full0:

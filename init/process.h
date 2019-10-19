@@ -1,0 +1,42 @@
+#ifndef __PM_PROCESS_H__
+#define __PM_PROCESS_H__
+
+#define NR_PROC 64
+
+typedef void proc_target(void*);
+
+enum process_status {
+    RUNNING, READY, BLOCKED, WAITING, HANGING, DIED
+};
+
+struct thread_stack {
+    void *args;
+    proc_target *func;
+    void *ret_addr;  /* unusued */
+    void (*eip)(proc_target func, void *args);
+    unsigned int esi;
+    unsigned int edi;
+    unsigned int ebx;
+    unsigned int ebp;
+};
+
+struct pcb {
+    unsigned int pid;
+    char name[16];
+    enum process_status status;
+    unsigned int priority;
+    unsigned int ticks;
+    unsigned int elapsed_ticks;
+    unsigned int *pagedir_pos;
+    struct thread_stack self_stack;
+} __attribute__((packed));
+
+extern struct pcb *processes[NR_PROC];
+extern struct pcb *cur_proc;
+extern unsigned char cur_proc_idx;
+
+void schedule();
+struct pcb* start_process(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc);
+
+#endif
+
