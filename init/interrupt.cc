@@ -93,9 +93,11 @@ void keyboard_handler()
 
 void timer_handler()
 {
-    putstring("Timer interrupt.\n");
-    schedule();
-    asm volatile ("xchg %%bx, %%bx"::);
+    cur_proc->elapsed_ticks++;
+    if (0 == cur_proc->ticks)
+        schedule();
+    else
+        cur_proc->ticks--;
 }
 
 void init_intr()

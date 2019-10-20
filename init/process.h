@@ -10,15 +10,15 @@ enum process_status {
 };
 
 struct thread_stack {
-    void *args;
-    proc_target *func;
-    void *ret_addr;  /* unusued */
-    void (*eip)(proc_target func, void *args);
-    unsigned int esi;
-    unsigned int edi;
-    unsigned int ebx;
     unsigned int ebp;
-};
+    unsigned int ebx;
+    unsigned int edi;
+    unsigned int esi;
+    void (*eip)(proc_target func, void *args);
+    void *ret_addr;
+    proc_target *func;
+    void *args;
+} __attribute__((packed));
 
 struct pcb {
     unsigned int pid;
@@ -28,15 +28,18 @@ struct pcb {
     unsigned int ticks;
     unsigned int elapsed_ticks;
     unsigned int *pagedir_pos;
+    unsigned int *esp;
+    char padding[512];
     struct thread_stack self_stack;
 } __attribute__((packed));
 
 extern struct pcb *processes[NR_PROC];
 extern struct pcb *cur_proc;
-extern unsigned char cur_proc_idx;
+extern char cur_proc_idx;
 
 void schedule();
 struct pcb* start_process(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc);
+void deal_init_process();
 
 #endif
 

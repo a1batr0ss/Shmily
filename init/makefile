@@ -4,7 +4,7 @@ GG = g++
 BUILD_DIR = ../build
 
 AS_FLAGS = -f elf
-GG_FLAGS = -c -m32 -I ../lib
+GG_FLAGS = -c -m32 -fno-stack-protector -I ../lib 
 LD_FLAGS = -Ttext 0x5000 -e main -m elf_i386
 
 all: $(BUILD_DIR)/init.bin $(BUILD_DIR)/init.out

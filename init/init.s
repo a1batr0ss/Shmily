@@ -46,7 +46,7 @@ prot_start:
     ; load the elf file
     call load_elf32_init
     ; set stack pointer
-    mov esp, 0x7000
+    mov esp, 0x81000
     jmp INIT_CC_ENTRY
 
     ; can't get here, since it's the jmp instruction above, not call, 
