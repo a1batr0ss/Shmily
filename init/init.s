@@ -4,7 +4,7 @@ jmp init_start
 
 INIT_CC_BASE_ADDR equ 0x2000
 INIT_START_SECTOR equ 0x5
-INIT_CC_ENTRY equ 0x5000
+INIT_CC_ENTRY equ 0x10000
 PT_NULL equ 0
 
 GDT_BASE:
@@ -28,11 +28,37 @@ GDT_LIMIT equ GDT_SIZE - 1
 gdt_ptr dw GDT_LIMIT
         dd GDT_BASE
 
+; global mem_capacity
+mem_capacity dd 0
+
 init_start:
+    ; xchg bx, bx
+    call get_mem_capacity
     call enable_A20
     lgdt [gdt_ptr]
     call enable_PE
     jmp dword SELECTOR_CODE:prot_start 
+
+; don't put the function below [bits 32], it will compile 32 bits(should be 16 bits)
+get_mem_capacity:
+    mov ax, 0xe801
+    int 0x15
+    mov cx, 0x400
+    mul cx
+    shl edx, 16  ; This is the carry bit of add operation.
+    and eax, 0xffff
+    or edx, eax
+    add edx, 0x100000
+    mov esi, edx
+    
+    xor eax, eax
+    mov ax, bx
+    mov ecx, 0x10000
+    mul ecx
+    add esi, eax
+    mov [mem_capacity], esi
+    ret
+
 
 [bits 32]
 prot_start:
@@ -40,7 +66,7 @@ prot_start:
     ; read main.cc
     mov eax, INIT_START_SECTOR
     mov ebx, INIT_CC_BASE_ADDR
-    mov ecx, 20  ; 10K
+    mov ecx, 40  ; 10K
     call read_disk
 
     ; load the elf file
