@@ -33,9 +33,6 @@ $(BUILD_DIR)/process.cc.o: process.cc
 $(BUILD_DIR)/memory.cc.o: memory.cc
 	$(GG) $(GG_FLAGS) $< -o $@	
 
-$(BUILD_DIR)/bitmap.cc.o: bitmap.cc
-	$(GG) $(GG_FLAGS) $< -o $@
-
 $(BUILD_DIR)/interrupt.o: interrupt.s
 	$(AS) $(AS_FLAGS) $< -o $@
 

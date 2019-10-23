@@ -1,4 +1,5 @@
 #include <global.h>
+#include <string.h>
 #include "memory.h"
 #include "page.h"
 #include "print.h"
@@ -7,6 +8,7 @@
 struct viraddr_manage initproc_vir;
 struct mem_pool phypool;
 
+void* malloc_page(unsigned int cnt);
 static unsigned int get_mem_capacity();
 static void* get_vir_page(unsigned int cnt);
 static void* get_phy_page();
@@ -37,8 +39,7 @@ void init_mempool()
     init_bitmap(&initproc_vir.vaddr_bmap);
 
     /* Just for test. */
-    unsigned int vaddr = (unsigned int)get_vir_page(1);
-    puthex(vaddr);
+    malloc_page(1);
 }
 
 static unsigned int get_mem_capacity()
@@ -75,3 +76,49 @@ static void* get_phy_page()
     return (void*)phyaddr;
 }
 
+unsigned int* vaddr2pde(unsigned int vaddr)
+{
+    unsigned int *pde = (unsigned int*)((0xfffff000) + \
+            4 * ((vaddr&0xffc00000) >> 22));
+    return pde;
+}
+
+unsigned int* vaddr2pte(unsigned int vaddr)
+{
+    unsigned int *pte = (unsigned int*)(0xffc00000 + \
+            ((vaddr&0xffc00000)>>10) + \
+            4 * ((vaddr&0x003ff000)>>12)); 
+}
+
+static void map_vir_phy(unsigned int viraddr, unsigned int phyaddr)
+{
+    unsigned int *pde_vaddr = vaddr2pde(viraddr);
+    unsigned int *pte_vaddr = vaddr2pte(viraddr); 
+    unsigned int is_present = 0x00000001;
+    
+    if (*pde_vaddr & is_present) {
+        if (*pte_vaddr & is_present) {
+            /* Should not exists. */
+        } else {
+            *pte_vaddr = phyaddr | paging::US_U | paging::RW_W | paging::P;
+        }
+    } else {
+        /* This pde is not exists, which means the page table is not exists. */
+        unsigned int pg_table = (unsigned int)get_phy_page();
+        *pde_vaddr = pg_table | paging::US_U | paging::RW_W | paging::P;
+        memset((char*)((unsigned int)pte_vaddr&0xfffff000), 0, paging::page_size);
+        *pte_vaddr = phyaddr | paging::US_U | paging::RW_W | paging::P;
+    }
+}
+
+void* malloc_page(unsigned int cnt)
+{
+    void *vaddr_start = get_vir_page(cnt);
+    while (cnt-- > 0) {
+        void *phyaddr_start = get_phy_page();
+
+        map_vir_phy((unsigned int)vaddr_start, (unsigned int)phyaddr_start);
+        vaddr_start += paging::page_size;
+    }
+    return vaddr_start;
+} 
