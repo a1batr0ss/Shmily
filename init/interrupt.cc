@@ -209,8 +209,8 @@ void load_idt(unsigned int p_idtptr)
 
 extern "C" void general_intr_handler(unsigned int nr)
 {
-    puthex(nr);
-    putstring("intr_occured.\n");
+    // puthex(nr);
+    // putstring("intr_occured.\n");
     real_handlers[nr]();
 } 
 

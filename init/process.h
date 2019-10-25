@@ -29,6 +29,7 @@ struct pcb {
     unsigned int elapsed_ticks;
     unsigned int *pagedir_pos;
     unsigned int *esp;
+    struct pcb *next_ready;
     char padding[512];
     struct thread_stack self_stack;
 } __attribute__((packed));
@@ -40,6 +41,9 @@ extern char cur_proc_idx;
 void schedule();
 struct pcb* start_process(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc);
 void deal_init_process();
+void self_block(enum process_status stat);
+void unblock_proc(struct pcb *proc);
+void traverse_ready_queue();
 
 #endif
 

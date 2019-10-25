@@ -4,9 +4,12 @@
 #include "process.h"
 #include "print.h"
 #include "memory.h"
+#include "sync.h"
 
 void f1(void *args);
 void f2(void *args);
+
+Lock *lock;  /* Couldn't define object here. Just a pointer. */
 
 int main()
 {
@@ -18,9 +21,11 @@ int main()
 
     start_process("proc1", 32, f1, NULL, (struct pcb*)0x90000);
     start_process("proc2", 39, f2, NULL, (struct pcb*)0x91000);
-    start_process("proc3", 39, f2, NULL, (struct pcb*)0x92000);
 
-    /* enable_intr(); */
+    enable_intr();
+
+    Lock l;
+    lock = &l;
 
     while (1);
 
@@ -30,13 +35,17 @@ int main()
 void f1(void *args)
 {
     while (1) {
-        putstring("In f1");
+        lock->acquire();
+        putstring("1");
+        lock->release();
     }
 }
 
 void f2(void *args)
 {
     while (1) {
-        putstring("In f2");
+    	lock->acquire();
+        putstring("2");
+        lock->release();
     }
 }

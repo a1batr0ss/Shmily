@@ -9,6 +9,8 @@ struct pcb *processes[NR_PROC];
 struct pcb *cur_proc;
 struct pcb *next_proc;
 struct pcb *prev_proc;
+struct pcb *first_ready_proc;
+struct pcb *last_ready_proc;
 char cur_proc_idx;
 
 unsigned int allocate_pid();
@@ -65,18 +67,28 @@ struct pcb* start_process(char *name, unsigned int priority, proc_target func, v
 {
     init_process_info(proc, name, priority);
     create_process(proc, func, args);
-    /* append to ready array */
+    /* Append to all queue. */
     append_ready_array(proc);
+
+    /* Append to ready queue. */
+    if (NULL == first_ready_proc)
+    first_ready_proc = proc;
+
+    if (NULL != last_ready_proc) {
+        last_ready_proc->next_ready = proc;
+        last_ready_proc = proc;
+    } else {
+        last_ready_proc = proc;
+    }
+
+    last_ready_proc->next_ready = first_ready_proc;
 }
 
 void switch_to(struct pcb *next)
 {
     unsigned int *retaddr = (unsigned int*)&next - 1;
-    unsigned int esp_next = (unsigned int)next->esp;
 
     asm volatile ("movl %%esp, %0" : "=m" (cur_proc->esp) : : "memory");
-
-    puthex((unsigned int)next->esp);  /* Without this statement, will cause fault(GP...) */
 
     prev_proc = cur_proc;
     cur_proc = next_proc;
@@ -92,26 +104,32 @@ void switch_to(struct pcb *next)
                     "popl %%ebx\n\t" \
                     "popl %%edi\n\t" \
                     "popl %%esi\n\t" \
-                    "ret" : "+m" (prev_proc->esp) : "m" (*retaddr), "m" (esp_next) : "memory");
+                    "ret" : "+m" (prev_proc->esp) : "m" (*retaddr), "m" (cur_proc->esp) : "memory");
 }
 
 void schedule()
 {
     /* 1. pick a ready process */
 
-    int old_pos = cur_proc_idx;  /* avoid the assignment below affect the compare in for. */
-    for (int i=cur_proc_idx+1; i!=old_pos; i++, i%=NR_PROC) {
-        /* roll-back */
-        if ((NULL != processes[i]) && (RUNNING == processes[i]->status)) {
-            cur_proc_idx = i;
-            next_proc = processes[i];
-
-            break;
-        }  
+    if (RUNNING == cur_proc->status) {
+        if (NULL == last_ready_proc) {
+            
+        }
+        last_ready_proc->next_ready = cur_proc;
+        last_ready_proc = cur_proc;
+        // cur_proc = first_ready_proc;
+        last_ready_proc->next_ready = first_ready_proc;
     }
 
-    /* 2. switch to the ready process which just picked. */
-    switch_to(next_proc);
+    if (NULL != first_ready_proc) { 
+        next_proc = first_ready_proc;
+        last_ready_proc->next_ready = first_ready_proc->next_ready; 
+        next_proc->status = RUNNING;
+        first_ready_proc = first_ready_proc->next_ready;
+
+        /* 2. switch to the ready process which just picked. */
+        switch_to(next_proc);
+    }
 }
 
 /* The init process's information. */
@@ -121,4 +139,50 @@ void deal_init_process()
     init_process_info(init_proc, "init", 2);
     cur_proc = init_proc;
     cur_proc_idx = -1;
+    init_proc->status = RUNNING;
+
+    first_ready_proc = NULL;
+    last_ready_proc = NULL;
+}
+
+void self_block(enum process_status stat)
+{
+    disable_intr();
+
+    cur_proc->status = stat;
+
+    schedule(); 
+
+    enable_intr();  /* Not always should enable interrupt, or disabled original. */
+}
+
+/* Haven't test it. */
+void unblock_proc(struct pcb *proc)
+{
+    disable_intr();
+
+    proc->status = READY;
+    last_ready_proc->next_ready = proc;
+    proc->next_ready = first_ready_proc;
+    last_ready_proc = proc;
+
+    enable_intr(); 
+} 
+
+/* Just for debug. */
+void traverse_ready_queue()
+{
+    putstring("In ready ");
+    putstring("ready queue is ");
+    struct pcb *first = first_ready_proc;
+    while (1) {
+        if (first == last_ready_proc) {
+        puthex((unsigned int)first);
+            break;
+        }
+        puthex((unsigned int)first);
+        putstring("-->");
+        first = first->next_ready;
+    }
+    putstring("\n"); 
 }
