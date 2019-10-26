@@ -5,6 +5,7 @@
 #include "print.h"
 #include "memory.h"
 #include "sync.h"
+#include "ipc.h"
 
 void f1(void *args);
 void f2(void *args);
@@ -34,18 +35,19 @@ int main()
 
 void f1(void *args)
 {
-    while (1) {
-        lock->acquire();
-        putstring("1");
-        lock->release();
-    }
+    Message msg(0x90000);
+    msg.receive(0x91000);
+
+    putstring("context is ");
+    puthex((unsigned int)msg.get_context());
+
+    while (1) ;
 }
 
 void f2(void *args)
 {
-    while (1) {
-    	lock->acquire();
-        putstring("2");
-        lock->release();
-    }
+	Message msg(0x91000, 1, 123);
+    msg.send(0x90000);
+    
+    while (1) ;
 }

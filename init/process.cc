@@ -41,7 +41,10 @@ void create_process(struct pcb *proc, proc_target func_, void *args_)
     self_stack->eip = execute_func;
     self_stack->func = func_;
     self_stack->args = args_;
-    proc->status = RUNNING;  /* default is 0(RUNNING) */
+    proc->status = READY;  /* default is 0(RUNNING) */
+
+    proc->sendings = NULL;
+    proc->message = NULL;
 }
 
 unsigned int allocate_pid()

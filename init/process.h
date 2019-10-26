@@ -1,6 +1,8 @@
 #ifndef __PM_PROCESS_H__
 #define __PM_PROCESS_H__
 
+#include "ipc.h"
+
 #define NR_PROC 64
 
 typedef void proc_target(void*);
@@ -30,6 +32,8 @@ struct pcb {
     unsigned int *pagedir_pos;
     unsigned int *esp;
     struct pcb *next_ready;
+    Message *message;
+    struct pcb *sendings;
     char padding[512];
     struct thread_stack self_stack;
 } __attribute__((packed));
