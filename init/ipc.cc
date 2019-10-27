@@ -42,16 +42,23 @@ void Message::set_context(int context_)
     context = context_;
 }
 
+void Message::set_dest(unsigned int dst)
+{
+    destination = dst;
+}
+
 void Message::send(unsigned int dest)
 {
     struct pcb *dst = (struct pcb*)dest;
     enum process_status dst_status = dst->status;
 
-    if (BLOCKED == dst_status) {
+    if (WAITING_MSG == dst_status) {
         /* Copy the message to dest, not only point to the message. */
         dst->message->set_source(source);
         dst->message->set_type(type);
         dst->message->set_context(context);
+        dst->message->set_dest(source);
+
         /* Unblock the dest process. */
         unblock_proc(dst);
     } else {
@@ -80,6 +87,7 @@ void Message::receive(unsigned int want_whose_msg)
 
             src->sendings = src->sendings->next_ready;
 
+			destination = (unsigned int)prev_sender;
             if (SENDING_MSG == prev_sender->status)
                 unblock_proc(prev_sender);
             return; 
@@ -95,6 +103,7 @@ void Message::receive(unsigned int want_whose_msg)
 
                 prev_sender->next_ready = sender->next_ready;    
 
+               	destination = (unsigned int)prev_sender;
                 if (SENDING_MSG == prev_sender->status)
                     unblock_proc(prev_sender);
                 return;
@@ -114,4 +123,15 @@ void Message::send_then_recv(unsigned int dest)
 {
     send(dest); 
     receive(dest);
+}
+
+void Message::reset_message(int type_, int context_)                               
+{
+    type = type_;
+    context = context_; 
+}
+  
+void Message::reply()
+{
+    send(destination);
 }

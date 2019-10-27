@@ -13,9 +13,11 @@ void memory_manager()
         putstring("memory manger.\n");
         msg.receive(0); 
         
-        msg.set_context(123);
+        putstring("mm received: ");
         puthex((unsigned int)msg.get_context());
-        msg.send(0x90000);
+
+        msg.reset_message(1, 1234);
+        msg.reply();
     }
 }
 

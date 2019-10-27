@@ -4,6 +4,7 @@
 class Message {
   private:
     unsigned int source;  /* Who send the message. (PCB's first address) */
+    unsigned int destination;
     int type;
     int context;  /* message content, just for test now. */
 
@@ -16,9 +17,12 @@ class Message {
     void set_source(unsigned int source_);
     void set_type(int type_);
     void set_context(int context_);
+    void set_dest(unsigned int dst);
     void send(unsigned int dest);
     void receive(unsigned int want_whose_msg);
     void send_then_recv(unsigned int dest);
+    void reset_message(int type_, int context_);
+    void reply();
 };
 
 #endif
