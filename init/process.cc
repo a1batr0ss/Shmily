@@ -159,6 +159,21 @@ void self_block(enum process_status stat)
     enable_intr();  /* Not always should enable interrupt, or disabled original. */
 }
 
+void proc_yield()
+{
+    disable_intr();
+
+    last_ready_proc->next_ready = cur_proc;
+    cur_proc->next_ready = first_ready_proc;
+    last_ready_proc = cur_proc;
+
+    cur_proc->status = READY;
+
+    schedule();
+
+    enable_intr();
+}
+
 /* Haven't test it. */
 void unblock_proc(struct pcb *proc)
 {

@@ -66,7 +66,7 @@ prot_start:
     ; read main.cc
     mov eax, INIT_START_SECTOR
     mov ebx, INIT_CC_BASE_ADDR
-    mov ecx, 40  ; 10K
+    mov ecx, 80  ; 10K
     call read_disk
 
     ; load the elf file

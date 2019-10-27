@@ -74,9 +74,9 @@ void Message::receive(unsigned int want_whose_msg)
     struct pcb *want_whose = (struct pcb*)want_whose_msg;
 
     if (NULL != prev_sender) {
-        if (want_whose == prev_sender) {
-            type = want_whose->message->get_type();
-            context = want_whose->message->get_context();
+        if ((want_whose == prev_sender) || (0 == want_whose)) {
+            type = prev_sender->message->get_type();
+            context = prev_sender->message->get_context();
 
             src->sendings = src->sendings->next_ready;
             return; 

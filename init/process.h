@@ -46,6 +46,7 @@ void schedule();
 struct pcb* start_process(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc);
 void deal_init_process();
 void self_block(enum process_status stat);
+void proc_yield();
 void unblock_proc(struct pcb *proc);
 void traverse_ready_queue();
 

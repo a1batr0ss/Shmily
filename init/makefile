@@ -12,7 +12,7 @@ all: $(BUILD_DIR)/init.bin $(BUILD_DIR)/init.out
 $(BUILD_DIR)/init.bin: init.s
 	$(AS) $< -o $@
 
-$(BUILD_DIR)/init.out: $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.cc.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/timer.cc.o $(BUILD_DIR)/process.cc.o $(BUILD_DIR)/memory.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/sync.cc.o $(BUILD_DIR)/ipc.cc.o
+$(BUILD_DIR)/init.out: $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.cc.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/timer.cc.o $(BUILD_DIR)/process.cc.o $(BUILD_DIR)/memory.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/sync.cc.o $(BUILD_DIR)/ipc.cc.o $(BUILD_DIR)/memory_manager.cc.o $(BUILD_DIR)/filesystem_manager.cc.o
 	$(LD) $(LD_FLAGS) $^ -o $@
 
 $(BUILD_DIR)/init.cc.o: main.cc
@@ -27,18 +27,15 @@ $(BUILD_DIR)/interrupt.cc.o: interrupt.cc
 $(BUILD_DIR)/timer.cc.o: timer.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
-$(BUILD_DIR)/process.cc.o: process.cc
+$(BUILD_DIR)/ipc.cc.o: ipc.cc
 	$(GG) $(GG_FLAGS) $< -o $@
-
-$(BUILD_DIR)/memory.cc.o: memory.cc
-	$(GG) $(GG_FLAGS) $< -o $@	
 
 $(BUILD_DIR)/sync.cc.o: sync.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
-$(BUILD_DIR)/ipc.cc.o: ipc.cc
+$(BUILD_DIR)/process.cc.o: process.cc
 	$(GG) $(GG_FLAGS) $< -o $@
-
+ 
 $(BUILD_DIR)/interrupt.o: interrupt.s
 	$(AS) $(AS_FLAGS) $< -o $@
 
