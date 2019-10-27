@@ -18,6 +18,7 @@ class Message {
     void set_context(int context_);
     void send(unsigned int dest);
     void receive(unsigned int want_whose_msg);
+    void send_then_recv(unsigned int dest);
 };
 
 #endif

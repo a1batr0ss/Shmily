@@ -62,7 +62,7 @@ void Message::send(unsigned int dest)
         dst->sendings = cur_proc;
 
         /* Block self, and append to dest's sending queue. */
-        self_block(BLOCKED);  /* Set the status to BLOCKED tentatively. */
+        self_block(SENDING_MSG);  /* Set the status to BLOCKED tentatively. */
     } 
 }
 
@@ -79,6 +79,9 @@ void Message::receive(unsigned int want_whose_msg)
             context = prev_sender->message->get_context();
 
             src->sendings = src->sendings->next_ready;
+
+            if (SENDING_MSG == prev_sender->status)
+                unblock_proc(prev_sender);
             return; 
         }
 
@@ -91,6 +94,9 @@ void Message::receive(unsigned int want_whose_msg)
                 context = want_whose->message->get_context();
 
                 prev_sender->next_ready = sender->next_ready;    
+
+                if (SENDING_MSG == prev_sender->status)
+                    unblock_proc(prev_sender);
                 return;
             }
             prev_sender = prev_sender->next_ready;
@@ -100,6 +106,12 @@ void Message::receive(unsigned int want_whose_msg)
     /* Store the message's pointer so that we can assign to the message when sender is sending. */
     src->message = this;
     /* Sendings queue is empty, Block self. */
-    self_block(BLOCKED);
+    self_block(WAITING_MSG);
 }
 
+/* The dest also as the want_whose_msg */
+void Message::send_then_recv(unsigned int dest)
+{
+    send(dest); 
+    receive(dest);
+}

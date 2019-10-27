@@ -12,8 +12,10 @@ void memory_manager()
     while (1) {
         putstring("memory manger.\n");
         msg.receive(0); 
-        putstring("received: ");
+        
+        msg.set_context(123);
         puthex((unsigned int)msg.get_context());
+        msg.send(0x90000);
     }
 }
 

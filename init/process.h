@@ -8,7 +8,7 @@
 typedef void proc_target(void*);
 
 enum process_status {
-    RUNNING, READY, BLOCKED, WAITING, HANGING, DIED
+    RUNNING, READY, BLOCKED, WAITING, HANGING, DIED, WAITING_MSG, SENDING_MSG
 };
 
 struct thread_stack {
