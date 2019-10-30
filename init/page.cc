@@ -1,3 +1,4 @@
+#include <global.h>
 #include "page.h"
 #include "string.h"
 

@@ -10,7 +10,7 @@ putstring:
     push ebx
     push ecx
     xor ecx, ecx
-    mov bx, [esp + 12]
+    mov ebx, [esp + 12]
 .put_char:
     mov cl, [ebx]
     cmp cl, 0

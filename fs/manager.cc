@@ -10,6 +10,12 @@ void filesystem_manager()
     msg.send_then_recv(0x91000);
     putstring("fs received.\n");
     puthex((unsigned int)msg.get_context());
+	
+	msg.reset_message(1, 1234);
+	// msg.send_then_recv(0x92000);
+	msg.send(0x92000);
+	putstring("fs ended.\n");
+
     while (1) ;
 }
 

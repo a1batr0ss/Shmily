@@ -13,5 +13,15 @@ static inline unsigned char inb(unsigned short port)
     return ret;
 }
 
+static inline void outsw(unsigned port, const char *addr, unsigned int cnt)
+{
+	asm volatile ("cld; rep outsw" : "+S" (addr), "+c" (cnt) : "d" (port));
+}
+
+static inline void insw(unsigned port, char *addr, unsigned cnt)
+{
+	asm volatile ("cld; rep insw" : "+D" (addr), "+c" (cnt) : "d" (port) : "memory");
+}
+
 #endif
 

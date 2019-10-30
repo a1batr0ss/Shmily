@@ -3,6 +3,7 @@
 
 void memory_manager();
 void filesystem_manager();
+void disk_driver();
 
 #endif
 

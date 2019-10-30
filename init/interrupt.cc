@@ -91,15 +91,6 @@ void keyboard_handler()
     unsigned char scan_code = inb(0x60);  /* We should read the scancode, the keyboard can continue receive another interrupt. */ 
 }
 
-void timer_handler()
-{
-    cur_proc->elapsed_ticks++;
-    if (0 == cur_proc->ticks)
-        schedule();
-    else
-        cur_proc->ticks--;
-}
-
 void init_intr()
 {
     init_8259A();
@@ -107,7 +98,6 @@ void init_intr()
 
     /* They could be put theis own source file or modules. Put them there just for test. */
     register_intr_handler(0x21, keyboard_handler);
-    register_intr_handler(0x20, timer_handler);
     init_pit();
 }
 

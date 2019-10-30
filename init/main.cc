@@ -15,6 +15,7 @@ int main()
     deal_init_process();  /* The init process. */
     start_process("fm", 32, (void (*)(void*))filesystem_manager, NULL, (struct pcb*)0x90000);
     start_process("mm", 32, (void (*)(void*))memory_manager, NULL, (struct pcb*)0x91000);
+    start_process("dr", 32, (void (*)(void*))disk_driver, NULL, (struct pcb*)0x92000);
 
     enable_intr();
 
