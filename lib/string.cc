@@ -10,3 +10,17 @@ void memset(char *dst, unsigned char val, unsigned int cnt)
         *dst++ = val;
 }
 
+void strcpy(char *dst, const char *src)
+{
+	while (*src)
+		*dst++ = *src++;
+}
+
+unsigned int strlen(const char *str)
+{
+	unsigned int l = 0;
+	while (*str++)
+		l++;
+	return l;
+}
+

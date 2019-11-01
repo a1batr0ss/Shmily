@@ -1,14 +1,14 @@
 #include <global.h>
+#include <stdio.h>
 #include "page.h"
 #include "interrupt.h"
 #include "process.h"
 #include "sync.h"
 #include "../include/other_module.h"
-#include "print.h"
 
 int main()
 {
-    putstring("In kernel.\n");
+    printf("In kernel.\n");
     enable_paging();
     init_intr();
 
