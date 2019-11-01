@@ -85,19 +85,10 @@ void set_idt_entry(unsigned char nr, unsigned int off_, unsigned short seg_selec
 void load_idt(unsigned int p_idtptr);
 void register_intr_handler(unsigned int nr, intr_handler handler);
 
-void keyboard_handler()
-{
-    putstring("Keyboard.");
-    unsigned char scan_code = inb(0x60);  /* We should read the scancode, the keyboard can continue receive another interrupt. */ 
-}
-
 void init_intr()
 {
     init_8259A();
     init_idt();
-
-    /* They could be put theis own source file or modules. Put them there just for test. */
-    register_intr_handler(0x21, keyboard_handler);
     init_pit();
 }
 

@@ -12,6 +12,8 @@ int main()
     enable_paging();
     init_intr();
 
+	init_keyboard();
+
     deal_init_process();  /* The init process. */
     start_process("fm", 32, (void (*)(void*))filesystem_manager, NULL, (struct pcb*)0x90000);
     start_process("mm", 32, (void (*)(void*))memory_manager, NULL, (struct pcb*)0x91000);
