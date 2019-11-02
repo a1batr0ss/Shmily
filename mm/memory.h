@@ -15,6 +15,8 @@ struct mem_pool {
 };
 
 void init_mempool();
+void* malloc_page(unsigned int cnt);
+void free_page(void *viraddr, unsigned int cnt);
 
 #endif
 

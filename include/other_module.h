@@ -2,15 +2,31 @@
 #define __INCLUDE_OTHER_MODULE_H__
 
 namespace {
-namespace all_processes {
-	struct pcb *FS_PCB = (struct pcb*)0x90000;
-	struct pcb *MM_PCB = (struct pcb*)0x91000;
-	struct pcb *DR_PCB = (struct pcb*)0x92000;
-	const unsigned int ANY = 0x0;
-	const unsigned int FS = 0x90000;
-	const unsigned int MM = 0x91000;
-	const unsigned int DR = 0x92000;
-};
+	namespace all_processes {
+		struct pcb *FS_PCB = (struct pcb*)0x90000;
+		struct pcb *MM_PCB = (struct pcb*)0x91000;
+		struct pcb *DR_PCB = (struct pcb*)0x92000;
+		const unsigned int ANY = 0x0;
+		const unsigned int FS = 0x90000;
+		const unsigned int MM = 0x91000;
+		const unsigned int DR = 0x92000;
+	};
+
+	namespace mm {
+		const unsigned int malloc = 1;
+		const unsigned int free = 2;
+	};
+
+	namespace pm {
+	};
+
+	/* disk driver */
+	namespace dd {
+		const unsigned int open = 1;
+	};
+
+	namespace pm {
+	};
 };
 
 void memory_manager();

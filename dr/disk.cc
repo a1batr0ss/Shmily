@@ -15,12 +15,12 @@ void disk_driver()
 {
 	init_disk();
 
-	Message msg(0x92000);
+	Message msg(all_processes::DR);
 	while (1) {
-		msg.receive(0);
+		msg.receive(all_processes::ANY);
 
 		switch (msg.get_type()) {
-		case 1:
+		case dd::open:
 			disk_identify();
 			break;
 		}
