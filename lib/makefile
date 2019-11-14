@@ -5,7 +5,7 @@ BUILD_DIR = ../build
 GG_FLAGS = -c -m32 -I . -fno-stack-protector
 AS_FLAGS = -f elf
 
-all: $(BUILD_DIR)/print.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/stdio.cc.o
+all: $(BUILD_DIR)/print.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/syscall.cc.o
 
 $(BUILD_DIR)/print.o: print.s
 	$(AS) $(AS_FLAGS) $< -o $@
@@ -19,6 +19,9 @@ $(BUILD_DIR)/bitmap.cc.o: bitmap.cc
 $(BUILD_DIR)/stdio.cc.o: stdio.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
+$(BUILD_DIR)/syscall.cc.o: syscall.cc
+	$(GG) $(GG_FLAGS) $< -o $@
+
 clean:
-	rm -rf $(BUILD_DIR)/print.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/stdio.cc.o
+	rm -rf $(BUILD_DIR)/print.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/stdio.cc.o syscall.cc.o
 
