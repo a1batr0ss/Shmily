@@ -2,7 +2,7 @@ section init vstart=0x500
 
 jmp init_start
 
-INIT_CC_BASE_ADDR equ 0x2000
+INIT_CC_BASE_ADDR equ 0x70000
 INIT_START_SECTOR equ 0x5
 INIT_CC_ENTRY equ 0x10000
 PT_NULL equ 0
@@ -72,14 +72,12 @@ prot_start:
     ; read main.cc
     mov eax, INIT_START_SECTOR
     mov ebx, INIT_CC_BASE_ADDR
-    mov ecx, 80  ; 10K
+    mov ecx, 150
     call read_disk
 
 	; xchg bx, bx
 
-	; mov edi, [INIT_CC_BASE_ADDR]
-	; add edi, INIT_CC_BASE_ADDR
-    ; ; load the elf file
+    ; load the elf file
     ; call load_elf32_init
 	mov ecx, 0
 .load_modules:
@@ -95,7 +93,6 @@ prot_start:
     ; set stack pointer
     mov esp, 0x81000
 
-	; xchg bx, bx
     jmp INIT_CC_ENTRY
 
     ; can't get here, since it's the jmp instruction above, not call, 

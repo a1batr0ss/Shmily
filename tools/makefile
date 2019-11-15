@@ -5,7 +5,7 @@ all:  build_image
 exec:
 	./build_image
 
-build_image: build_img.cc elf.cc
+build_image: build_img.cc
 	$(GG) $^ -o $@
 
 clean:

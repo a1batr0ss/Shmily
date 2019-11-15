@@ -5,7 +5,6 @@
 #include <unistd.h>
 #include <stdio.h>
 #include <cstring>
-// #include "elf.h"
 
 char m_table[64] = {0};
 unsigned int *p_mtable = (unsigned int*)m_table;
@@ -23,11 +22,13 @@ int main()
 	int n = 0;
 	const char *kernel_path = "../build/kernel";
 	const char *mm_path = "../build/mm";
+	const char *fs_path = "../build/fs";
 	const char *image_path = "../build/image";
 
 	int image = open(image_path, O_CREAT | O_WRONLY, S_IRWXU);
 	int kernel = open(kernel_path, O_RDONLY);
 	int mm = open(mm_path, O_RDONLY);
+	int fs = open(fs_path, O_RDONLY);
 
 	struct stat kernel_info;
 	struct stat mm_info;
@@ -35,7 +36,8 @@ int main()
 	stat(mm_path, &mm_info);
 
 	install_module_table(image, 0);
-	install_module_table(image, kernel_info.st_size);
+	install_module_table(image, 0 + kernel_info.st_size);
+	install_module_table(image, 0 + kernel_info.st_size + mm_info.st_size);
 	write(image, m_table, 64);
 
 	while (n = read(kernel, buf, 256))
@@ -45,9 +47,14 @@ int main()
 	while (n = read(mm, buf, 256))
 		write(image, buf, n);
 
+	memset(buf, 0, 256);
+	while (n = read(fs, buf, 256))
+		write(image, buf, n);
+
 	close(image);
 	close(kernel);
 	close(mm);
+	close(fs);
 
 	return 0;
 }
