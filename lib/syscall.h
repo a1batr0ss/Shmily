@@ -11,8 +11,11 @@ class UserMessage {
  public:
 	UserMessage(unsigned int source_);
 	UserMessage(unsigned int source_, int type_, int context_);
+	unsigned int get_source();
+	unsigned int get_context();
+	void set_context(unsigned int context_);
 	void send(unsigned int dest);
-	void receive(unsigned int want_whose_msg);	
+	void recv(unsigned int want_whose_msg);	
 };
 
 namespace user_ipc {

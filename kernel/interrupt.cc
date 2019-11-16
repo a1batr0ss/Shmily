@@ -79,6 +79,8 @@ extern "C" void intr_handler45();
 extern "C" void intr_handler46();
 extern "C" void intr_handler47();
 
+extern "C" void syscall_pre_handler();
+
 void init_8259A();
 void init_idt();
 void set_idt_entry(unsigned char nr, unsigned int off_, unsigned short seg_selector_, unsigned char flags_);
@@ -167,6 +169,8 @@ void init_idt()
    set_idt_entry(45, (unsigned int)intr_handler45, selector::code, 0x8e); 
    set_idt_entry(46, (unsigned int)intr_handler46, selector::code, 0x8e); 
    set_idt_entry(47, (unsigned int)intr_handler47, selector::code, 0x8e); 
+
+   set_idt_entry(0x99, (unsigned int)syscall_pre_handler, selector::code, 0x8e); 
 
    load_idt((unsigned int)(&idt_ptr));
 }

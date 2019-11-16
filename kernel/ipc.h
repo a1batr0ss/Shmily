@@ -25,5 +25,11 @@ class Message {
     void reply();
 };
 
+namespace ipc {
+	const unsigned int SEND = 0x1;
+	const unsigned int RECV = 0x2;
+	const unsigned int SEND_RECV = 0x03;
+};
+
 #endif
 

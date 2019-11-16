@@ -1,6 +1,6 @@
 #include <string.h>
+#include <stdio.h>
 #include "bitmap.h"
-#include "print.h"
 
 void init_bitmap(struct bitmap *bmap)
 {

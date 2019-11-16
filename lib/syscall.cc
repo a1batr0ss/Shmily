@@ -1,3 +1,4 @@
+#include <stdio.h>
 #include "syscall.h"
 
 UserMessage::UserMessage(unsigned int source_) : source(source_) {}
@@ -9,13 +10,28 @@ UserMessage::UserMessage(unsigned int source_, int type_, int context_)
 	context = context_;
 }
 
-void UserMessage::send(unsigned int dest)
+unsigned int UserMessage::get_source()
 {
-	asm volatile ("int $0x99" : : "a" (user_ipc::SEND), "b" (this), "c" (dest));
+	return source;
 }
 
-void UserMessage::receive(unsigned int want_whose_msg)
+unsigned int UserMessage::get_context()
 {
-	asm volatile ("int $0x99" : : "a" (user_ipc::RECV), "b" (this), "c" (want_whose_msg));
+	return context;
+}
+
+void UserMessage::set_context(unsigned int context_)
+{
+	context = context_;
+}
+
+void UserMessage::send(unsigned int dest)
+{
+	asm volatile ("int $0x99" : : "a" (user_ipc::SEND), "b" (source), "c" (dest), "d" (&context));
+}
+
+void UserMessage::recv(unsigned int want_whose_msg)
+{
+	asm volatile ("int $0x99" : : "a" (user_ipc::RECV), "b" (source), "c" (want_whose_msg), "d" (&context));
 }
 

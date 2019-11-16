@@ -40,16 +40,16 @@ void init_mempool()
     init_bitmap(&initproc_vir.vaddr_bmap);
 
     /* Just for test. */
-    void *addr = malloc_page(1);
+    // void *addr = malloc_page(1);
 	// printf("malloc is %x", (unsigned int)addr);
-	free_page(addr, 1);
-    addr = malloc_page(1);
+	// free_page(addr, 1);
+    // addr = malloc_page(1);
 	// printf("malloc is %x", (unsigned int)addr);
 }
 
 static unsigned int get_mem_capacity()
 {
-   return *(unsigned int*)0x528; 
+   return *(unsigned int*)0x538; 
 }
 
 static void* get_vir_page(unsigned int cnt)

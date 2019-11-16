@@ -11,13 +11,13 @@ int main()
     init_intr();
 
     deal_init_process();  /* The init process. */
-    start_process("mm", 32, (void (*)(void*))0x20000, NULL, (struct pcb*)0x91000);
+	start_process("mm", 32, (void (*)(void*))0x20000, NULL, (struct pcb*)0x91000);
 	start_process("fs", 32, (void (*)(void*))0x30000, NULL, (struct pcb*)0x92000);
 
     enable_intr();
 
-    while (1)
-		printf("In kernel.\n");;
+    while (1);
+		// printf("In kernel.\n");;
 
     return 0;
 }
