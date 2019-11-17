@@ -13,12 +13,11 @@ syscall_pre_handler:
 	pushad
 	push 0x99
 
-	push edx
 	push ecx
 	push ebx
 	push eax
 	call syscall_handler
 	
-	add esp, 16
+	add esp, 12
 	jmp intr_exit
 
