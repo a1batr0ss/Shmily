@@ -5,10 +5,9 @@
 
 int main()
 {
-	Message msg(0x92000, 1, 2);
-	msg.send(0x91000);
+	Message msg(0x92000);
 	msg.receive(0);
-	printf("fs received message: %x.\n", msg.get_context());
+	printf("fs received message: %x.\n", msg.get_context().con_1);
     while (1);
 
 	return 0;

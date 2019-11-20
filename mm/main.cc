@@ -14,12 +14,12 @@ int main()
 		switch (msg.get_type()) {
 		case 1:
 		{
-			unsigned int cnt = msg.get_context();
+			struct _context con;
+			unsigned int cnt = con.con_1;
 			unsigned int addr = (unsigned int)malloc_page(cnt);
-			msg.reset_message(1, addr);
-			// printf("mm will reply.\n");
+			con.con_1 = addr;
+			msg.reset_message(1, con);
 			msg.reply();
-			// printf("mm finish replying.\n");
 			break;		
 		}
 		default:

@@ -1,27 +1,34 @@
 #ifndef __INIT_IPC_H__
 #define __INIT_IPC_H__
 
+struct _context {
+	unsigned int con_1;
+	unsigned int con_2;
+};
+
 class Message {
   private:
     unsigned int source;  /* Who send the message. (PCB's first address) */
     unsigned int destination;
     int type;
-    int context;  /* message content, just for test now. */
+    // int context;  [> message content, just for test now. <]
+	struct _context context;
 
   public:
     Message(unsigned int source_);  /* For receiving. */
-    Message(unsigned int source_, int type_, int context_);  /* For sending. */
+    Message(unsigned int source_, int type_, struct _context context_);  /* For sending. */
     unsigned int get_source();
     int get_type();
-    int get_context();
+    struct _context get_context();
+	unsigned int get_destination();
     void set_source(unsigned int source_);
     void set_type(int type_);
-    void set_context(int context_);
+    void set_context(struct _context context_);
     void set_dest(unsigned int dst);
     void send(unsigned int dest);
     void receive(unsigned int want_whose_msg);
     void send_then_recv(unsigned int dest);
-    void reset_message(int type_, int context_);
+    void reset_message(int type_, struct _context context_);
     void reply();
 };
 

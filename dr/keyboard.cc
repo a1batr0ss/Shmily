@@ -83,7 +83,7 @@ namespace keyboard {
 
 static bool ctrl_status, shift_status, alt_status, caps_lock_status, ext_scancode;
 
-static void keyboard_handler()
+void keyboard_handler()
 {
 	unsigned short scancode = inb(keyboard::port);
 
@@ -154,7 +154,3 @@ static void keyboard_handler()
 	}
 }
 
-void init_keyboard()
-{
-	register_intr_handler(keyboard::intr_nr, (intr_handler)keyboard_handler);
-}
