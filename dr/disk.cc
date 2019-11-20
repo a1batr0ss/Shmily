@@ -1,41 +1,31 @@
+#include "global.h"
 #include <io.h>
 #include <string.h>
-#include "../include/ipc.h"
-#include "../include/intr.h"
-#include "../include/timer.h"
+#include <syscall.h>
+#include <stdio.h>
 #include "../include/other_module.h"
 #include "disk.h"
-#include "print.h"
 
 void disk_handler();
 static void disk_identify();
-void init_disk();
-
-void disk_driver()
-{
-	init_disk();
-
-	Message msg(all_processes::DR);
-	while (1) {
-		msg.receive(all_processes::ANY);
-
-		switch (msg.get_type()) {
-		case dd::open:
-			disk_identify();
-			break;
-		}
-	}
-}
-
-void init_disk()
-{
-    unsigned char nr_disk =  *(unsigned char*)0x475;
-    register_intr_handler(disk::disk_intr_nr, (intr_handler)disk_handler);
-}
 
 void disk_handler()
 {
+    /* TODO: Read a byte from register and inform the target. */
+    printf("disk interrupt occurred.\n");
+
 	inb(disk::status_reg);  /* Pretend this interrupt is handled. */
+
+	printf("disk interrupt ended.\n");
+}
+
+/* Just sleep for a moment. */
+static void sleep_seconds_demo(unsigned int sec)
+{
+	int i, j, k;
+	for (i=0; i<sec; i++)
+		for (j=0; j<1000; j++)
+			for (k=0; k<1000; k++) ;
 }
 
 static bool wait_disk()
@@ -45,7 +35,7 @@ static bool wait_disk()
 		if (inb(disk::status_reg & disk::busy))
 			return inb(disk::status_reg) & disk::ready;
 		else
-			sleep_seconds(1);
+			sleep_seconds_demo(1);
 	}
 
 	return false;
@@ -72,15 +62,15 @@ static void read_disk(char *buf, unsigned char cnt)
 
 static void disk_identify()
 {
-    putstring("disk identify.\n");
+    printf("disk identify.\n");
 	outb(disk::cmd_reg, disk::identify);
 
 	/* TODO: transmit information with interrupt. Don't have a appropriate method. */
 	
 	if (!wait_disk())
-		putstring("Not ready.\n");
+		printf("Not ready.\n");
 	else
-		putstring("Ready.\n");
+		printf("Ready.\n");
 
 	char info_buf[512];
 	read_disk(info_buf, 1);
@@ -88,7 +78,6 @@ static void disk_identify()
 	char buf[64];
 	memset(buf, 0, 64);
 	swap_pairs_bytes(&info_buf[20], buf, 20);	
-	putstring("SN is ");
-	putstring(buf);
+	printf("SN is %s\n", buf);
 }
 
