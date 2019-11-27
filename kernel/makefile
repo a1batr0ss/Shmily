@@ -46,5 +46,5 @@ $(BUILD_DIR)/syscall.o: syscall.s
 	$(AS) $(AS_FLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)/init.bin $(BUILD_DIR)/init.out $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o
+	rm -rf $(BUILD_DIR)/init.bin $(BUILD_DIR)/init.out $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/ipc.cc.o $(BUILD_DIR)syscall_init.cc.o $(BUILD_DIR)/syscall.o $(BUILD_DIR)/process.cc.o
 

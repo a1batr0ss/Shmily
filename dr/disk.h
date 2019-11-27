@@ -23,8 +23,8 @@ namespace disk {
     const unsigned char ready = 0x08;
 };
 
-// void init_disk();
 void disk_handler();
+void disk_identify();
 
 #endif
 

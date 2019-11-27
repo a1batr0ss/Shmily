@@ -34,7 +34,7 @@ struct pcb {
     struct pcb *next_ready;
     Message *message;
     struct pcb *sendings;
-    char padding[512];
+    char padding[3000];  /* tentatively. */
     struct thread_stack self_stack;
 } __attribute__((packed));
 

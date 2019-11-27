@@ -7,7 +7,7 @@
 #include "disk.h"
 
 void disk_handler();
-static void disk_identify();
+void disk_identify();
 
 void disk_handler()
 {
@@ -60,7 +60,7 @@ static void read_disk(char *buf, unsigned char cnt)
 	insw(disk::data_reg, buf, bytes_cnt/2);
 }
 
-static void disk_identify()
+void disk_identify()
 {
     printf("disk identify.\n");
 	outb(disk::cmd_reg, disk::identify);

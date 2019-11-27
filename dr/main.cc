@@ -14,17 +14,29 @@ int main()
 	msg.reset_message(0, con);
 	msg.send(0x93000);
 
-	printf("Registed keyboard handler.\n");
-
 	/* Register the disk handler. */
 	con.con_1 = 0x2e;
 	con.con_2 = (unsigned int)disk_handler;
 	msg.reset_message(0, con);
 	msg.send(0x93000);
 
-	printf("Registed disk handler.\n");
-	
-	while (1) ;
+	/* Although the message is printed, the kernel could not register the interrupt. */
+
+	while (1) {
+		msg.receive(0);
+		
+		switch (msg.get_type()) {
+		case 1:
+		{
+			disk_identify();
+			break;
+		}
+		default:
+		{
+			printf("dr received default.\n");
+		}
+		}
+	}
 
 	return 0;
 }
