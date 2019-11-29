@@ -60,5 +60,6 @@ void Message::reply()
 
 void Message::send_then_recv(unsigned int dest)
 {
+	asm volatile ("int $0x99" : : "a" (user_ipc::SEND_RECV), "b" (this), "c" (dest));
 }
 

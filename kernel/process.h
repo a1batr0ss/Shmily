@@ -49,6 +49,7 @@ void self_block(enum process_status stat);
 void proc_yield();
 void unblock_proc(struct pcb *proc);
 void traverse_ready_queue();
+void idle_process(void *args);
 
 #endif
 

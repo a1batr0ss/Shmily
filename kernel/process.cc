@@ -1,5 +1,6 @@
 #include <global.h>
 #include <string.h>
+#include <stdio.h>
 #include "page.h"
 #include "process.h"
 #include "interrupt.h"
@@ -113,14 +114,12 @@ void switch_to(struct pcb *next)
 void schedule()
 {
     /* 1. pick a ready process */
-
     if (RUNNING == cur_proc->status) {
         if (NULL == last_ready_proc) {
             
         }
         last_ready_proc->next_ready = cur_proc;
         last_ready_proc = cur_proc;
-        // cur_proc = first_ready_proc;
         last_ready_proc->next_ready = first_ready_proc;
     }
 
@@ -132,6 +131,9 @@ void schedule()
 
         /* 2. switch to the ready process which just picked. */
         switch_to(next_proc);
+    } else {
+        /* BUG: The init process is running without block and first_ready_proc is not null, we can print the variable first_ready_proc to display the problem. */
+        unblock_proc((struct pcb*)0x99000);
     }
 }
 
@@ -203,4 +205,13 @@ void traverse_ready_queue()
         first = first->next_ready;
     }
     putstring("\n"); 
+}
+
+void idle_process(void *args)
+{
+    while (1) {
+        self_block(BLOCKED);
+        printf("idle wake up.\n");
+        asm volatile ("sti; hlt" : :);
+    }
 }
