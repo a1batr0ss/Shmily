@@ -1,3 +1,4 @@
+#include <ipc_glo.h>
 #include <global.h>
 #include <stdio.h>
 #include <syscall.h>
@@ -5,21 +6,21 @@
 
 int main()
 {
-	Message msg(0x92000);
+	Message msg(all_processes::FS);
 	struct _context con;
-	msg.reset_message(1, con);
+	msg.reset_message(dr::IDEN, con);
 	// printf("fs will send.\n");
-	msg.send(0x94000);
+	msg.send(all_processes::DR);
 	// printf("fs end sending.\n");
 
 	con.con_1 = 3;
-	msg.reset_message(1, con);
-	msg.send_then_recv(0x93000);
+	msg.reset_message(kr::SLEEP, con);
+	msg.send_then_recv(all_processes::KR);
 	printf("fs wake up.\n");
 
 	msg.receive(0);
 	printf("fs received message: %x.\n", msg.get_context().con_1);
-    while (1);
+	while (1);
 
 	return 0;
 }

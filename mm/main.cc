@@ -1,3 +1,4 @@
+#include <ipc_glo.h>
 #include <stdio.h>
 #include <syscall.h>
 #include "memory.h"
@@ -6,13 +7,13 @@ int main()
 {
 	init_mempool();
 
-	Message msg(0x91000);
+	Message msg(all_processes::MM);
 	while (1) {
-		msg.receive(0);
+		msg.receive(all_processes::ANY);
 		printf("mm received message is %d\n", msg.get_context());
 		
 		switch (msg.get_type()) {
-		case 1:
+		case mm::MALLOC:
 		{
 			struct _context con;
 			unsigned int cnt = con.con_1;
