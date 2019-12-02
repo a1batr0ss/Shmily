@@ -1,4 +1,5 @@
 #include <global.h>
+#include <ipc_glo.h>
 #include "ipc.h"
 #include "process.h"
 #include "print.h"
@@ -52,6 +53,9 @@ void Message::send(unsigned int dest)
     struct pcb *dst = (struct pcb*)dest;
     enum process_status dst_status = dst->status;
 
+    if (all_processes::INTERRUPT == dest)
+        return;
+
     if (WAITING_MSG == dst_status) {
         /* Copy the message to dest, not only point to the message. */
         dst->message->set_source(source);
@@ -79,6 +83,9 @@ void Message::receive(unsigned int want_whose_msg)
     struct pcb *prev_sender = src->sendings;
     struct pcb *sender = NULL;
     struct pcb *want_whose = (struct pcb*)want_whose_msg;
+
+    if (all_processes::INTERRUPT == want_whose_msg)
+        return;
 
     if (NULL != prev_sender) {
         if ((want_whose == prev_sender) || (0 == want_whose)) {

@@ -9,17 +9,17 @@ int main()
 	Message msg(all_processes::DR);	
 	struct _context con;
 
-	/* Register the keyboard handler. */
-	con.con_1 = 0x21;
-	con.con_2 = (unsigned int)keyboard_handler;
-	msg.reset_message(kr::REGR_INTR, con);
-	msg.send(all_processes::KR);
-
 	/* Register the disk handler. */
 	con.con_1 = 0x2e;
 	con.con_2 = (unsigned int)disk_handler;
 	msg.reset_message(kr::REGR_INTR, con);
-	msg.send(all_processes::KR);
+	msg.send_then_recv(all_processes::KR);
+
+	/* Register the keyboard handler. */
+	con.con_1 = 0x21;
+	con.con_2 = (unsigned int)keyboard_handler;
+	msg.reset_message(kr::REGR_INTR, con);
+	msg.send_then_recv(all_processes::KR);
 
 	/* Although the message is printed, the kernel could not register the interrupt. */
 

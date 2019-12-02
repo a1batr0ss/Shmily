@@ -1,9 +1,10 @@
-#include "global.h"
+#include <global.h>
+#include <ipc_glo.h>
 #include <io.h>
 #include <string.h>
 #include <syscall.h>
 #include <stdio.h>
-#include "../include/other_module.h"
+// #include "../include/other_module.h"
 #include "disk.h"
 
 void disk_handler();
@@ -15,6 +16,9 @@ void disk_handler()
     printf("disk interrupt occurred.\n");
 
 	inb(disk::status_reg);  /* Pretend this interrupt is handled. */
+
+	Message msg(all_processes::INTERRUPT);
+	msg.send(all_processes::INTERRUPT);
 
 	printf("disk interrupt ended.\n");
 }
@@ -30,12 +34,15 @@ static void sleep_seconds_demo(unsigned int sec)
 
 static bool wait_disk()
 {
+	Message msg(all_processes::DR);
+	struct _context con;
+	con.con_1 = 3;
 	unsigned max_wait_seconds = 30;
 	while (max_wait_seconds-=1 > 0) {
 		if (inb(disk::status_reg & disk::busy))
 			return inb(disk::status_reg) & disk::ready;
 		else
-			sleep_seconds_demo(1);
+			msg.send_then_recv(all_processes::KR);
 	}
 
 	return false;
@@ -66,6 +73,8 @@ void disk_identify()
 	outb(disk::cmd_reg, disk::identify);
 
 	/* TODO: transmit information with interrupt. Don't have a appropriate method. */
+	Message msg(all_processes::INTERRUPT);
+	msg.send(all_processes::INTERRUPT);
 	
 	if (!wait_disk())
 		printf("Not ready.\n");

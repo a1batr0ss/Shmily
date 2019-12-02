@@ -41,7 +41,8 @@ void kernel_work()
 			unsigned int handler_addr = msg.get_context().con_2;
 			printf("will register a interrupt handler. %d %d\n", intr_nr, handler_addr);
 			register_intr_handler(intr_nr, (void (*)(void))handler_addr);
-
+			msg.reply();
+			
 			break;
 		}
 		case kr::SLEEP:
