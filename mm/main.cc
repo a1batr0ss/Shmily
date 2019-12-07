@@ -5,7 +5,7 @@
 
 int main()
 {
-	init_mempool();
+	init_mem();
 
 	Message msg(all_processes::MM);
 	while (1) {
@@ -17,7 +17,7 @@ int main()
 		{
 			struct _context con;
 			unsigned int cnt = con.con_1;
-			unsigned int addr = (unsigned int)malloc_page(cnt);
+			unsigned int addr = (unsigned int)malloc(cnt);
 			con.con_1 = addr;
 			msg.reset_message(1, con);
 			msg.reply();

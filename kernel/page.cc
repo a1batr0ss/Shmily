@@ -27,7 +27,7 @@ void install_page()
     
     /* set the first page table */
     unsigned int entry = 0;
-    for (int idx=0; idx<256; idx++) {
+    for (int idx=0; idx<528; idx++) {
         first_pagetable[idx] = entry | default_pageattr;
         entry += 4096;
     }

@@ -4,7 +4,6 @@
 #include <string.h>
 #include <syscall.h>
 #include <stdio.h>
-// #include "../include/other_module.h"
 #include "disk.h"
 
 void disk_handler();
@@ -12,15 +11,10 @@ void disk_identify();
 
 void disk_handler()
 {
-    /* TODO: Read a byte from register and inform the target. */
-    printf("disk interrupt occurred.\n");
-
 	inb(disk::status_reg);  /* Pretend this interrupt is handled. */
 
 	Message msg(all_processes::INTERRUPT);
 	msg.send(all_processes::INTERRUPT);
-
-	printf("disk interrupt ended.\n");
 }
 
 /* Just sleep for a moment. */
@@ -69,17 +63,13 @@ static void read_disk(char *buf, unsigned char cnt)
 
 void disk_identify()
 {
-    printf("disk identify.\n");
 	outb(disk::cmd_reg, disk::identify);
 
-	/* TODO: transmit information with interrupt. Don't have a appropriate method. */
 	Message msg(all_processes::INTERRUPT);
 	msg.send(all_processes::INTERRUPT);
 	
 	if (!wait_disk())
 		printf("Not ready.\n");
-	else
-		printf("Ready.\n");
 
 	char info_buf[512];
 	read_disk(info_buf, 1);

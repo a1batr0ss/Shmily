@@ -8,22 +8,50 @@
 struct viraddr_manage initproc_vir;
 struct mem_pool phypool;
 
+/* 16B, 32B, 64B, 128B, 256B, 512B, 1024B */
+struct mem_global_desc glo_desc[memory::glo_desc_nr];
+
+#define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
+
+#define _16B_desc glo_desc[0]
+#define _32B_desc glo_desc[1]
+#define _64B_desc glo_desc[2]
+#define _128B_desc glo_desc[3]
+#define _256B_desc glo_desc[4]
+#define _512B_desc glo_desc[5]
+#define _1KB_desc glo_desc[6]
+
 void* malloc_page(unsigned int cnt);
 static unsigned int get_mem_capacity();
 static void* get_vir_page(unsigned int cnt);
 static void* get_phy_page();
 void free_page(void *viraddr, unsigned int cnt);
+void init_mempool();
+void init_glo_desc();
+
+void init_mem()
+{
+	init_mempool();
+	init_glo_desc();
+
+	void *ret = malloc(1111);
+	printf("ret is %x.\n", ret);
+	free(ret);
+
+	ret = malloc(1111);
+	printf("ret is %x.\n", ret);
+}
 
 void init_mempool()
 {
     unsigned int mem_capacity = get_mem_capacity();
 
-    unsigned int stationary_mem = 0x200000;  /* 2M can't be accessed by other processes */
+    unsigned int stationary_mem = 0x210000;  /* more than 2M can't be accessed by other processes */
     unsigned int free_mem = mem_capacity - stationary_mem;
     unsigned int free_pages = free_mem / paging::page_size;
 
     unsigned int bmap_length = free_pages / 8;
-    unsigned int phy_start = 0x200000;
+    unsigned int phy_start = 0x210000;
     
     phypool.phyaddr_start = phy_start;
     phypool.pool_size = free_mem;
@@ -33,18 +61,31 @@ void init_mempool()
     init_bitmap(&phypool.phyaddr_bmap);
 
     /* Initialise the virtaul address bitmap. */
-    initproc_vir.vaddr_start = 0x200000;
+    initproc_vir.vaddr_start = 0x210000;
     initproc_vir.vaddr_bmap.bytes_len = bmap_length;
     initproc_vir.vaddr_bmap.base = (unsigned char*)(0x9000 + bmap_length);
 
     init_bitmap(&initproc_vir.vaddr_bmap);
+}
 
-    /* Just for test. */
-    // void *addr = malloc_page(1);
-	// printf("malloc is %x", (unsigned int)addr);
-	// free_page(addr, 1);
-    // addr = malloc_page(1);
-	// printf("malloc is %x", (unsigned int)addr);
+void init_glo_desc()
+{
+	unsigned int desc_start = 0x200000;
+	unsigned int desc_bmap_start = 0x207000;
+	unsigned int size = 16;  /* 16B-->32B-->64B .... */
+	for (int i=0; i<memory::glo_desc_nr; i++, size*=2) {
+		glo_desc[i].start = desc_start;
+		glo_desc[i].size_bytes = paging::page_size;
+		glo_desc[i].desc_nr = paging::page_size / size;
+
+		glo_desc[i].bmap.base = (unsigned char*)desc_bmap_start;
+		glo_desc[i].bmap.bytes_len = DIV_ROUND_UP(glo_desc[i].desc_nr, 8);
+		init_bitmap(&glo_desc[i].bmap);  /* Modify the paging table before doing this. */
+		// printf("desc %d base on %x, len is %d\n", i, glo_desc[i].bmap.base, glo_desc[i].bmap.bytes_len);
+
+		desc_bmap_start += glo_desc[i].bmap.bytes_len;
+		desc_start += paging::page_size;
+	}
 }
 
 static unsigned int get_mem_capacity()
@@ -173,3 +214,39 @@ void free_page(void *viraddr, unsigned int cnt)
 	free_vir_page((unsigned int)viraddr, cnt);
 }
 
+void* malloc(unsigned int cnt_bytes)
+{
+	if (cnt_bytes > 1024) {
+		unsigned int page_cnt = DIV_ROUND_UP(cnt_bytes, paging::page_size);
+		void *ret = malloc_page(page_cnt);
+		*(unsigned int*)ret = page_cnt;
+		return ret+sizeof(void*);  /* ret + 1 is really ret + 1 ?? */
+	} else {
+		unsigned int desc_idx = 0;
+		for (unsigned int cnt_start=16; cnt_start<cnt_bytes; cnt_start*=2, desc_idx++) ;
+		
+		struct mem_global_desc *desc = &glo_desc[desc_idx];
+
+		int bit_idx = bitmap_scan(&(desc->bmap), 1);
+		bitmap_set_bit(&(desc->bmap), bit_idx, 1);
+		
+		void *ret = (void*)(desc->start + bit_idx*(desc->size_bytes / desc->desc_nr));
+		return ret;
+	}
+}
+
+void free(void *buf)
+{
+	unsigned int buf_uint = (unsigned int)buf;
+	if (buf_uint > 0x210000) {
+		unsigned int cnt = *(unsigned int*)(buf_uint - sizeof(void*));
+		free_page(buf, cnt);	
+	} else if ((buf_uint >= 0x200000) && (buf_uint < 0x207000)) {
+		unsigned int desc_idx = (buf_uint - 0x200000) / 0x1000;
+		struct mem_global_desc *desc = &glo_desc[desc_idx];
+		unsigned int bmap_idx = (buf_uint - desc->start) / (desc->size_bytes / desc->desc_nr);
+		bitmap_set_bit(&(desc->bmap), bmap_idx, 0);	
+	} else {
+		printf("Error.\n");
+	}
+}
