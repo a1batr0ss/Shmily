@@ -10,19 +10,28 @@ int main()
 	Message msg(all_processes::MM);
 	while (1) {
 		msg.receive(all_processes::ANY);
-		printf("mm received message is %d\n", msg.get_context());
+		struct _context con = msg.get_context();
 		
 		switch (msg.get_type()) {
 		case mm::MALLOC:
 		{
-			struct _context con;
+			struct _context con_ret;
 			unsigned int cnt = con.con_1;
 			unsigned int addr = (unsigned int)malloc(cnt);
-			con.con_1 = addr;
-			msg.reset_message(1, con);
+
+			con_ret.con_1 = addr;
+			msg.reset_message(1, con_ret);
 			msg.reply();
 			break;		
 		}
+		case mm::FREE:
+		{
+			unsigned int addr = con.con_1;
+			free((void*)addr);
+			msg.reply();
+
+			break;
+		}			
 		default:
 		{
 			printf("Unknown message's type.\n");

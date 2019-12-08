@@ -33,13 +33,6 @@ void init_mem()
 {
 	init_mempool();
 	init_glo_desc();
-
-	void *ret = malloc(1111);
-	printf("ret is %x.\n", ret);
-	free(ret);
-
-	ret = malloc(1111);
-	printf("ret is %x.\n", ret);
 }
 
 void init_mempool()
