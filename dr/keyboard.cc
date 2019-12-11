@@ -1,4 +1,6 @@
 #include <io.h>
+#include <syscall.h>
+#include <ipc_glo.h>
 #include <print.h>
 #include "keyboard.h"
 #include "../include/intr.h"
@@ -152,5 +154,17 @@ void keyboard_handler()
 	} else {
 		putstring("unknown key.\n");
 	}
+}
+
+void init_keyboard()
+{
+    Message msg(all_processes::DR); 
+    struct _context con;
+    
+  	/* Register the keyboard handler. */
+    con.con_1 = 0x21;
+    con.con_2 = (unsigned int)keyboard_handler;
+    msg.reset_message(kr::REGR_INTR, con);
+    msg.send_then_recv(all_processes::KR);
 }
 

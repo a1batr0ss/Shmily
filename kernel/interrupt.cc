@@ -106,8 +106,8 @@ void init_8259A()
     outb(0x21, 0x01);
     outb(0xa1, 0x01);
     // outb(0x21, 0xfd);  [> Only enable the keyboard interrupt for test, only can test once as our keyboard interrupt handler doesn't fetch data(scancode) from keyboard buffer. <]
-    outb(0x21, 0xfc);
-    outb(0xa1, 0xff);
+    outb(0x21, 0xf8);
+    outb(0xa1, 0xbf);
 }
 
 void init_idt()
@@ -194,8 +194,6 @@ void load_idt(unsigned int p_idtptr)
 
 extern "C" void general_intr_handler(unsigned int nr)
 {
-    // puthex(nr);
-    // putstring("intr_occured.\n");
     real_handlers[nr]();
 } 
 
