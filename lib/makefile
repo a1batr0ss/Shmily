@@ -23,5 +23,5 @@ $(BUILD_DIR)/syscall.cc.o: syscall.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)/print.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/stdio.cc.o syscall.cc.o
+	rm -rf $(BUILD_DIR)/print.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/syscall.cc.o
 

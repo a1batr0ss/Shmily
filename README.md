@@ -1,4 +1,7 @@
 # A readable micro kernel operating system.
+![](https://img.shields.io/badge/Albatross-Shmily-lightgrey)
+![](https://img.shields.io/badge/license-GPL%203.0-blue)
+![](https://img.shields.io/badge/continue-updating-green) 
 
 ## Introduction
 
@@ -10,7 +13,7 @@
 ## Environment 
 
 `sudo apt-get install bochs`
-
+	
 -------
 
 ## Run  

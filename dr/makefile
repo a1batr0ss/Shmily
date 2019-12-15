@@ -20,5 +20,5 @@ $(BUILD_DIR)/disk.cc.o: disk.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)/dr $(BUILD_DIR)/disk.cc.o $(BUILD_DIR)/keyboard.cc.o
+	rm -rf $(BUILD_DIR)/dr $(BUILD_DIR)/disk.cc.o $(BUILD_DIR)/keyboard.cc.o $(BUILD_DIR)/dr.cc.o
 

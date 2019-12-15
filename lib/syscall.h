@@ -1,9 +1,12 @@
 #ifndef __INIT_IPC_H__
 #define __INIT_IPC_H__
 
+/* The member can replace as an array. */
 struct _context {
 	unsigned int con_1;
 	unsigned int con_2;
+	unsigned int con_3;
+	unsigned int con_4;
 };
 
 class Message {

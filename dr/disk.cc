@@ -13,7 +13,6 @@ void disk_handler();
 void init_disk()
 {
 	unsigned char disk_nr = *(unsigned char*)0x475;
-	printf("disk_nr is %d.\n", disk_nr);
 
 	/* TODO: Initializing the disks. Now we just have two disks. */
 	disks[0].is_slave = false;
@@ -143,14 +142,14 @@ void disk_identify(unsigned char disk_nr)
 	char buf[64];
 	memset(buf, 0, 64);
 	swap_pairs_bytes(&info_buf[20], buf, 20);	
-	printf("SN is %s\n", buf);
+	// printf("SN is %s\n", buf);
 
 	// write_disk("Halou World", 1);  // Couldn't write to disk directly.	
-	write_sector(&disks[1], 0, "Halou World", 1);
+	// write_sector(&disks[1], 0, "Halou World", 1);
 }
 
 /* TODO: Taking measures to guarantee concurrect security. */
-void read_sector(struct disk *disk, unsigned int lba, char *buf, unsigned int cnt)
+static void _read_sector(struct disk *disk, unsigned int lba, char *buf, unsigned int cnt)
 {
 	choose_disk(disk);
 	choose_sector(disk, lba, cnt);
@@ -165,7 +164,7 @@ void read_sector(struct disk *disk, unsigned int lba, char *buf, unsigned int cn
 }
 
 /* TODO: Taking measures to guarantee concurrect security. */
-void write_sector(struct disk *disk, unsigned int lba, char *buf, unsigned int cnt)
+static void _write_sector(struct disk *disk, unsigned int lba, char *buf, unsigned int cnt)
 {
 	choose_disk(disk);
 	choose_sector(disk, lba, cnt);
@@ -177,5 +176,15 @@ void write_sector(struct disk *disk, unsigned int lba, char *buf, unsigned int c
 	};
 
 	write_disk(buf, cnt);
-}	
+}
+
+void read_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt)
+{
+	_read_sector(&disks[disk_nr], lba, buf, cnt);
+}
+
+void write_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt)
+{
+	_write_sector(&disks[disk_nr], lba, buf, cnt);
+}
 

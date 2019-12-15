@@ -51,6 +51,8 @@ struct channel {
 
 void disk_identify(unsigned char disk_nr);
 void init_disk();
+void read_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt);
+void write_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt);
 
 #endif
 
