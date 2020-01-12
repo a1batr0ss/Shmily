@@ -215,3 +215,12 @@ void idle_process(void *args)
         asm volatile ("sti; hlt" : :);
     }
 }
+
+struct pcb* get_current_proc()
+{
+	unsigned int esp = 0;
+	asm volatile ("mov %%esp, %0" : "=g"(esp));
+	
+	return (struct pcb*)(esp & 0xffffff000);
+}	
+

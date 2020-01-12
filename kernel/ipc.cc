@@ -1,4 +1,5 @@
 #include <global.h>
+#include <stdio.h>
 #include <ipc_glo.h>
 #include "ipc.h"
 #include "process.h"
@@ -83,6 +84,9 @@ void Message::receive(unsigned int want_whose_msg)
     struct pcb *prev_sender = src->sendings;
     struct pcb *sender = NULL;
     struct pcb *want_whose = (struct pcb*)want_whose_msg;
+
+	// printf("source is %x.\n", source);
+	// printf("current is %x.\n", (unsigned int)get_current_proc());	
 
     if (all_processes::INTERRUPT == want_whose_msg)
         return;
