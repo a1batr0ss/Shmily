@@ -12,7 +12,7 @@ all: $(BUILD_DIR)/init.bin $(BUILD_DIR)/kernel
 $(BUILD_DIR)/init.bin: init.s
 	$(AS) $< -o $@
 
-$(BUILD_DIR)/kernel: $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.cc.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/timer.cc.o $(BUILD_DIR)/process.cc.o $(BUILD_DIR)/memory.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/sync.cc.o $(BUILD_DIR)/ipc.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/syscall.o $(BUILD_DIR)/syscall_init.cc.o
+$(BUILD_DIR)/kernel: $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.cc.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/timer.cc.o $(BUILD_DIR)/process.cc.o $(BUILD_DIR)/memory.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/sync.cc.o $(BUILD_DIR)/ipc.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/syscall.o $(BUILD_DIR)/syscall_init.cc.o $(BUILD_DIR)/cmos.cc.o
 	$(LD) $(LD_FLAGS) $^ -o $@
 
 $(BUILD_DIR)/init.cc.o: main.cc
@@ -38,6 +38,9 @@ $(BUILD_DIR)/process.cc.o: process.cc
 
 $(BUILD_DIR)/syscall_init.cc.o: syscall_init.cc
 	$(GG) $(GG_FLAGS) $< -o $@
+
+$(BUILD_DIR)/cmos.cc.o: cmos.cc
+	$(GG) $(GG_FLAGS) $< -o $@
  
 $(BUILD_DIR)/interrupt.o: interrupt.s
 	$(AS) $(AS_FLAGS) $< -o $@
@@ -46,5 +49,5 @@ $(BUILD_DIR)/syscall.o: syscall.s
 	$(AS) $(AS_FLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)/init.bin $(BUILD_DIR)/init.out $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/ipc.cc.o $(BUILD_DIR)syscall_init.cc.o $(BUILD_DIR)/syscall.o $(BUILD_DIR)/process.cc.o
+	rm -rf $(BUILD_DIR)/init.bin $(BUILD_DIR)/init.out $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/ipc.cc.o $(BUILD_DIR)syscall_init.cc.o $(BUILD_DIR)/syscall.o $(BUILD_DIR)/process.cc.o $(BUILD_DIR)/cmos.cc.o
 

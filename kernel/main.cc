@@ -6,6 +6,7 @@
 #include "process.h"
 #include "sync.h"
 #include "timer.h"
+#include "cmos.h"
 
 void kernel_work();
 
@@ -13,6 +14,7 @@ int main()
 {
     enable_paging();
     init_intr();
+	init_systime();
 
     deal_init_process();  /* The init process. */
     start_process("idle", 12, (void (*)(void*))idle_process, NULL, (struct pcb*)0x99000);
