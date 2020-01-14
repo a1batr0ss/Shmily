@@ -2,11 +2,17 @@
 #include <global.h>
 #include <stdio.h>
 #include <syscall.h>
+#include <all_syscall.h>
 #include "fs.h"
 
 int main()
 {
-	Message msg(all_processes::FS);
+	unsigned int ret = malloc(10);
+	printf("malloc memory space is %x.\n", ret);
+	ret = malloc(10);
+	printf("malloc memory space is %x.\n", ret);
+	// Message msg(all_processes::FS);
+	Message msg;
 	struct _context con;
 	con.con_1 = 1;
 	const char *str = "See how much I love you.";
