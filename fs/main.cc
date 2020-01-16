@@ -7,8 +7,9 @@
 
 int main()
 {
-	unsigned int ret = malloc(10);
+	void* ret = malloc(10);
 	printf("malloc memory space is %x.\n", ret);
+	free(ret);
 	ret = malloc(10);
 	printf("malloc memory space is %x.\n", ret);
 	// Message msg(all_processes::FS);
