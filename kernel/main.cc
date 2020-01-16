@@ -21,6 +21,7 @@ int main()
 	start_process("mm", 32, (void (*)(void*))0x20000, NULL, all_processes::MM_PCB);
 	start_process("fs", 32, (void (*)(void*))0x30000, NULL, all_processes::FS_PCB);
 	start_process("dr", 32, (void (*)(void*))0x40000, NULL, all_processes::DR_PCB);
+	start_process("net", 32, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB);
 	start_process("kernel", 32, (void (*)(void*))kernel_work, NULL, all_processes::KR_PCB);
 
     enable_intr();
