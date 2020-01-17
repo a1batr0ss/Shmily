@@ -8,20 +8,17 @@
 int main()
 {
 	void* ret = malloc(10);
-	printf("malloc memory space is %x.\n", ret);
+	printf("In fs malloc memory space is %x.\n", ret);
 	free(ret);
+	printf("end free.\n");
 	ret = malloc(10);
-	printf("malloc memory space is %x.\n", ret);
+	printf("In fs malloc memory space is %x.\n", ret);
 	// Message msg(all_processes::FS);
 	Message msg;
 	struct _context con;
 	con.con_1 = 1;
-	const char *str = "See how much I love you.";
-	con.con_2 = 0;
-	con.con_3 = (unsigned int)str;
-	con.con_4 = 1;
 
-	msg.reset_message(dr::WRITE, con);
+	msg.reset_message(dr::IDEN, con);
 	msg.send(all_processes::DR);
 
 	msg.receive(0);

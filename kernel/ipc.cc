@@ -54,8 +54,7 @@ void Message::send(unsigned int dest)
     struct pcb *dst = (struct pcb*)dest;
     enum process_status dst_status = dst->status;
 
-    if (all_processes::INTERRUPT == dest)
-        return;
+	// printf("In sending: %x->%x %x.\n", source, dest, dst_status);
 
     if (WAITING_MSG == dst_status) {
         /* Copy the message to dest, not only point to the message. */
@@ -67,14 +66,19 @@ void Message::send(unsigned int dest)
         /* Unblock the dest process. */
         unblock_proc(dst);
     } else {
-        struct pcb *src = (struct pcb*)source;
-        src->message = this;
+    	if (all_processes::INTERRUPT == source) {
+			(all_processes::INTERRUPT_PCB)->next_ready = dst->sendings;
+			dst->sendings = all_processes::INTERRUPT_PCB;
+		} else {
+   			struct pcb *src = (struct pcb*)source;
+        	src->message = this;
 
-        cur_proc->next_ready = dst->sendings;
-        dst->sendings = cur_proc;
+    	    cur_proc->next_ready = dst->sendings;
+	        dst->sendings = cur_proc;
 
-        /* Block self, and append to dest's sending queue. */
-        self_block(SENDING_MSG);  /* Set the status to BLOCKED tentatively. */
+       		/* Block self, and append to dest's sending queue. */
+        	self_block(SENDING_MSG);  /* Set the status to BLOCKED tentatively. */
+		}
     } 
 }
 
@@ -87,9 +91,6 @@ void Message::receive(unsigned int want_whose_msg)
 
 	// printf("source is %x.\n", source);
 	// printf("current is %x.\n", (unsigned int)get_current_proc());	
-
-    if (all_processes::INTERRUPT == want_whose_msg)
-        return;
 
     if (NULL != prev_sender) {
         if ((want_whose == prev_sender) || (0 == want_whose)) {

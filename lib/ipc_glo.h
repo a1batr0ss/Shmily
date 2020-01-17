@@ -10,8 +10,9 @@ namespace all_processes {
 	struct pcb *KR_PCB = (struct pcb*)0x93000;
 	struct pcb *DR_PCB = (struct pcb*)0x94000;
 	struct pcb *NET_PCB = (struct pcb*)0x95000;
+	struct pcb *INTERRUPT_PCB = (struct pcb*)0x98000;
 	const unsigned int ANY = 0x0;
-	const unsigned int INTERRUPT = 0x1;
+	const unsigned int INTERRUPT = 0x98000;
 	const unsigned int MM = 0x91000;
 	const unsigned int FS = 0x92000;
 	const unsigned int KR = 0x93000;

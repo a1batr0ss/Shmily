@@ -60,7 +60,7 @@ unsigned vsprintf(char *dst, const char *src, char *first_arg)
 	return strlen(dst);
 }
 
-void printf(char *str, ...)
+void printf(const char *str, ...)
 {
 	char *first_arg = (char*)&str;  /* Point to the first argument in stack. next is the first variable argument. */
 	char buf[1024] = {0};

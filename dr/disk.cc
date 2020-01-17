@@ -46,7 +46,7 @@ void disk_handler()
 	inb(hd::status_reg);  /* Pretend this interrupt is handled. */
 
 	Message msg(all_processes::INTERRUPT);
-	msg.send(all_processes::INTERRUPT);
+	msg.send(all_processes::DR);
 }
 
 static void choose_disk(struct disk *disk)
@@ -130,7 +130,7 @@ void disk_identify(unsigned char disk_nr)
 	/* TODO: transmit information with interrupt. Don't have a appropriate method. */
 	Message msg(all_processes::DR);
 	msg.receive(all_processes::INTERRUPT);
-	
+
 	if (!wait_disk()) {
 		printf("Not ready.\n");
 		return;
@@ -142,7 +142,7 @@ void disk_identify(unsigned char disk_nr)
 	char buf[64];
 	memset(buf, 0, 64);
 	swap_pairs_bytes(&info_buf[20], buf, 20);	
-	// printf("SN is %s\n", buf);
+	printf("SN is %s\n", buf);
 
 	// write_disk("Halou World", 1);  // Couldn't write to disk directly.	
 	// write_sector(&disks[1], 0, "Halou World", 1);
