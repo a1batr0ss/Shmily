@@ -155,6 +155,9 @@ static void _read_sector(struct disk *disk, unsigned int lba, char *buf, unsigne
 	choose_sector(disk, lba, cnt);
 	outb(hd::cmd_reg, hd::read);
 
+	Message msg(all_processes::DR);
+	msg.receive(all_processes::INTERRUPT);
+
 	if (!wait_disk()) {
 		printf("Read from sector failed.\n");
 		return;
@@ -169,6 +172,9 @@ static void _write_sector(struct disk *disk, unsigned int lba, char *buf, unsign
 	choose_disk(disk);
 	choose_sector(disk, lba, cnt);
 	outb(hd::cmd_reg, hd::write);
+
+	Message msg(all_processes::DR);
+	msg.receive(all_processes::INTERRUPT);
 
 	if (!wait_disk()) {
 		printf("Write to sector failed.\n");

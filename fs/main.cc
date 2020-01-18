@@ -7,19 +7,9 @@
 
 int main()
 {
-	void* ret = malloc(10);
-	printf("In fs malloc memory space is %x.\n", ret);
-	free(ret);
-	printf("end free.\n");
-	ret = malloc(10);
-	printf("In fs malloc memory space is %x.\n", ret);
-	// Message msg(all_processes::FS);
-	Message msg;
-	struct _context con;
-	con.con_1 = 1;
+	init_fs(); 
 
-	msg.reset_message(dr::IDEN, con);
-	msg.send(all_processes::DR);
+	Message msg;
 
 	msg.receive(0);
 	printf("fs received message: %x.\n", msg.get_context().con_1);

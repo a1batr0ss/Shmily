@@ -24,3 +24,31 @@ void free(void *addr)
 	return;	
 }
 
+/********************************************************/
+
+void read_disk(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = disk_nr;
+    con.con_2 = lba;
+    con.con_3 = (unsigned int)buf;
+    con.con_4 = cnt;    
+    msg.reset_message(dr::READ, con);
+    msg.send(all_processes::DR);
+    return; 
+}
+
+void write_disk(unsigned int disk_nr, unsigned int lba, char *str, unsigned int cnt)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = disk_nr;                                                                                 
+    con.con_2 = lba;
+    con.con_3 = (unsigned int)str;  
+    con.con_4 = cnt;
+    msg.reset_message(dr::WRITE, con);
+    msg.send(all_processes::DR);
+    return;
+}
+
