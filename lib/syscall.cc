@@ -1,6 +1,9 @@
 #include <stdio.h>
 #include "syscall.h"
 
+/* Could use the default construtor, as it doesn't initialize the data member, especialy for local variable . */
+Message::Message() : source(0) {}
+
 Message::Message(unsigned int source_) : source(source_) {}
 
 Message::Message(unsigned int source_, int type_, struct _context context_)
