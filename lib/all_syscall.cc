@@ -52,3 +52,16 @@ void write_disk(unsigned int disk_nr, unsigned int lba, char *str, unsigned int 
     return;
 }
 
+/**********************************************/
+
+void register_intr_handler(unsigned int intr_num, void *handler)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = intr_num;
+    con.con_2 = (unsigned int)handler;
+    msg.reset_message(kr::REGR_INTR, con);
+    msg.send_then_recv(all_processes::KR);
+    return;
+}
+

@@ -4,6 +4,7 @@
 #include <string.h>
 #include <syscall.h>
 #include <stdio.h>
+#include <all_syscall.h>
 #include "disk.h"
 
 struct disk disks[2];
@@ -18,18 +19,8 @@ void init_disk()
 	disks[0].is_slave = false;
 	disks[1].is_slave = true;
 
-    Message msg(all_processes::DR); 
-    struct _context con;
-
-    /* Register the disk handler(two disks(the best way is put it to a loop. As we not sure the number of disks.)). */
-    con.con_1 = 0x2e;
-    con.con_2 = (unsigned int)disk_handler;
-    msg.reset_message(kr::REGR_INTR, con);
-    msg.send_then_recv(all_processes::KR);
-    con.con_1 = 0x2f;
-    con.con_2 = (unsigned int)disk_handler;
-    msg.reset_message(kr::REGR_INTR, con);
-    msg.send_then_recv(all_processes::KR);
+	register_intr_handler(0x2e, (void*)disk_handler);	
+	register_intr_handler(0x2f, (void*)disk_handler);	
 }
 
 /* Just sleep for a moment. */
