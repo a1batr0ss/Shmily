@@ -49,6 +49,23 @@ struct channel {
 	struct disk disks[2];
 };
 
+struct partition_table_entry_mbr {
+	char boot_signature;
+	char start_head;
+	char start_sector;
+	char start_cyliner;
+	char sys_signature;
+	char end_head;
+	char end_sector;
+	char end_cyliner;
+	unsigned int sector_nr_before;  /* lba */
+	unsigned int sector_nr_in;	
+} __attribute__((packed));
+
+struct partition_table_mbr {
+	struct partition_table_entry_mbr entries[4];
+};
+
 void disk_identify(unsigned char disk_nr);
 void init_disk();
 void read_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt);

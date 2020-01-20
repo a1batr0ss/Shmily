@@ -67,5 +67,16 @@ void printf(const char *str, ...)
 	vsprintf(buf, str, first_arg);
 	first_arg = NULL;
 	putstring(buf);
+
+	return;
 }
+
+void sprintf(char *buf, const char *str, ...)
+{
+	char *first_arg = (char*)&str;
+	vsprintf(buf, str, first_arg);
+	first_arg = NULL;	
+
+	return;	
+}	
 
