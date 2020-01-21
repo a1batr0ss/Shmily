@@ -8,9 +8,8 @@ int main()
 {
 	init_keyboard();
 	init_disk();
-	Message msg(all_processes::DR);	
 
-	/* Although the message is printed, the kernel could not register the interrupt. */
+	Message msg(all_processes::DR);	
 
 	while (1) {
 		msg.receive(all_processes::ANY);
@@ -41,14 +40,23 @@ int main()
 			unsigned int str_uint = con.con_3;
 			unsigned int cnt = con.con_4;
 			char *str = (char*)str_uint;
-			printf("%d %s %x %x %x", disk_nr, str, lba, str, cnt);
+			// printf("%d %s %x %x %x", disk_nr, str, lba, str, cnt);
 			write_sector(disk_nr, lba, str, cnt);
+
+			break;
+		}
+		case dr::PRINT_PART:
+		{
+			unsigned int disk_nr = con.con_1;
+			print_disk_partition_info(disk_nr);
+
+			msg.reply();
 
 			break;
 		}
 		default:
 		{
-			printf("dr received default.\n");
+			printf("dr received default. %d\n", msg.get_type());
 		}
 		}
 	}

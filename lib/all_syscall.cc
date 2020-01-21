@@ -52,6 +52,16 @@ void write_disk(unsigned int disk_nr, unsigned int lba, char *str, unsigned int 
     return;
 }
 
+void print_partition_info(unsigned int disk_nr)
+{
+	Message msg;
+	struct _context con;
+	con.con_1 = disk_nr;
+	msg.reset_message(dr::PRINT_PART, con);
+	msg.send_then_recv(all_processes::DR);
+	return;
+}
+
 /**********************************************/
 
 void register_intr_handler(unsigned int intr_num, void *handler)

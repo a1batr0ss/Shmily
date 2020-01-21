@@ -39,7 +39,7 @@ struct disk {
 	struct channel *channel;
 	bool is_slave;
 	struct partition primary[4];
-	struct partition logic[8];
+	struct partition logic[4];
 };
 
 struct channel {
@@ -70,6 +70,7 @@ void disk_identify(unsigned char disk_nr);
 void init_disk();
 void read_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt);
 void write_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt);
+void print_disk_partition_info(unsigned int disk_nr);
 
 #endif
 

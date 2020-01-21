@@ -58,7 +58,7 @@ void Message::send(unsigned int dest)
 
     if (WAITING_MSG == dst_status) {
         /* Copy the message to dest, not only point to the message. */
-        dst->message->set_source(source);
+        // dst->message->set_source(source); // There would occured a bug.
         dst->message->set_type(type);
         dst->message->set_context(context);
         dst->message->set_dest(source);

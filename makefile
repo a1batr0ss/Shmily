@@ -1,5 +1,5 @@
 BUILD_DIR = ./build
-DEBUGGER=1
+DEBUGGER=0
 
 all: install_boot install_kernel
 	if [ $(DEBUGGER) == 0 ]; then echo "c" | sudo bochs -f ./bochs/config.bcs; else sudo bochs -f ./bochs/config.bcs; fi

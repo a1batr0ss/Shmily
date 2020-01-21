@@ -30,6 +30,7 @@ namespace dr {
 	const unsigned int OPEN = 2;
 	const unsigned int READ = 3;
 	const unsigned int WRITE = 4;
+	const unsigned int PRINT_PART = 5;
 };
 
 namespace fs {

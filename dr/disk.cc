@@ -25,8 +25,8 @@ void init_disk()
 	register_intr_handler(0x2e, (void*)disk_handler);	
 	register_intr_handler(0x2f, (void*)disk_handler);	
 
+	/* We just handle the slave disk.(fs_test.img) */
 	traverse_disk_partition(1);
-	print_disk_partition_info(1);	
 }
 
 /* Just sleep for a moment. */
@@ -240,8 +240,6 @@ void traverse_disk_partition(unsigned int disk_nr)
 			sprintf(disk->primary[i].name, "sda%d", i);
 			disk->primary[i].start_lba = mbr_tbl.entries[i].sector_nr_before;
 			disk->primary[i].sector_cnt = mbr_tbl.entries[i].sector_nr_in;
-
-			printf("%x.\n", disk->primary[i].start_lba);
 
 			/* Process extend partition. */
 			if (0x5 == mbr_tbl.entries[i].sys_signature)

@@ -13,10 +13,6 @@ void init_fs()
 	if (NULL == buf)
 		return;
 
-	// write_disk(1, 0, "Halou World.\n", 1);	
-	read_disk(1, 0, (char*)buf, 1);
-	printf("buf is %s\n", buf);
-	
 	free(buf);
 	printf("end init fs.\n");
 }
