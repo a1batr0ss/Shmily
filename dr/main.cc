@@ -30,6 +30,7 @@ int main()
 			unsigned int cnt = con.con_4;
 			char *str = (char*)str_uint;
 			read_sector(disk_nr, lba, str, cnt);
+			msg.reply();
 
 			break;
 		}
@@ -42,6 +43,18 @@ int main()
 			char *str = (char*)str_uint;
 			// printf("%d %s %x %x %x", disk_nr, str, lba, str, cnt);
 			write_sector(disk_nr, lba, str, cnt);
+
+			break;
+		}
+		case dr::ASK_DISK:
+		{
+			unsigned int disk_nr = con.con_1;
+			struct disk *disk = &disks[disk_nr];
+
+			struct _context con_ret;
+			con_ret.con_1 = (unsigned int)disk;
+			msg.reset_message(1, con_ret);
+			msg.reply();
 
 			break;
 		}

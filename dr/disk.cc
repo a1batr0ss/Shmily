@@ -140,9 +140,6 @@ void disk_identify(unsigned char disk_nr)
 	memset(buf, 0, 64);
 	swap_pairs_bytes(&info_buf[20], buf, 20);	
 	printf("SN is %s\n", buf);
-
-	// write_disk("Halou World", 1);  // Couldn't write to disk directly.	
-	// write_sector(&disks[1], 0, "Halou World", 1);
 }
 
 /* TODO: Taking measures to guarantee concurrect security. */
@@ -152,15 +149,15 @@ static void _read_sector(struct disk *disk, unsigned int lba, char *buf, unsigne
 	choose_sector(disk, lba, cnt);
 	outb(hd::cmd_reg, hd::read);
 
-	Message msg(all_processes::DR);
-	msg.receive(all_processes::INTERRUPT);
-
 	if (!wait_disk()) {
 		printf("Read from sector failed.\n");
 		return;
 	}
 
 	read_disk(buf, cnt);
+
+	Message msg(all_processes::DR);
+	msg.receive(all_processes::INTERRUPT);
 }
 
 /* TODO: Taking measures to guarantee concurrect security. */
@@ -170,15 +167,15 @@ static void _write_sector(struct disk *disk, unsigned int lba, char *buf, unsign
 	choose_sector(disk, lba, cnt);
 	outb(hd::cmd_reg, hd::write);
 
-	Message msg(all_processes::DR);
-	msg.receive(all_processes::INTERRUPT);
-
 	if (!wait_disk()) {
 		printf("Write to sector failed.\n");
 		return;
 	};
 
 	write_disk(buf, cnt);
+
+	Message msg(all_processes::DR);
+	msg.receive(all_processes::INTERRUPT);
 }
 
 void read_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt)
@@ -242,8 +239,12 @@ void traverse_disk_partition(unsigned int disk_nr)
 			disk->primary[i].sector_cnt = mbr_tbl.entries[i].sector_nr_in;
 
 			/* Process extend partition. */
-			if (0x5 == mbr_tbl.entries[i].sys_signature)
+			if (0x5 == mbr_tbl.entries[i].sys_signature) {
 				process_disk_ebr(disk_nr, &(mbr_tbl.entries[i]));
+				disk->primary[i].type = EXTEND;
+			} else {
+				disk->primary[i].type = PRIMARY;
+			}
 		}
 	}
 }
@@ -263,6 +264,7 @@ void process_disk_ebr(unsigned int disk_nr, struct partition_table_entry_mbr *en
 		sprintf(disk->logic[logic_idx].name, "sda%d", logic_idx+5);
 		disk->logic[logic_idx].start_lba = ebr_tbl.entries[0].sector_nr_before + extend_offset;
 		disk->logic[logic_idx].sector_cnt = ebr_tbl.entries[0].sector_nr_in;
+		disk->logic[logic_idx].type = LOGIC;
 
 		logic_idx++;
 

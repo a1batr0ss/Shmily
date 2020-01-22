@@ -35,7 +35,7 @@ void read_disk(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int c
     con.con_3 = (unsigned int)buf;
     con.con_4 = cnt;    
     msg.reset_message(dr::READ, con);
-    msg.send(all_processes::DR);
+    msg.send_then_recv(all_processes::DR);
     return; 
 }
 
@@ -60,6 +60,17 @@ void print_partition_info(unsigned int disk_nr)
 	msg.reset_message(dr::PRINT_PART, con);
 	msg.send_then_recv(all_processes::DR);
 	return;
+}
+
+unsigned int get_disk(unsigned int disk_nr)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = disk_nr;
+    msg.reset_message(dr::ASK_DISK, con);
+    msg.send_then_recv(all_processes::DR);
+
+    return msg.get_context().con_1;
 }
 
 /**********************************************/

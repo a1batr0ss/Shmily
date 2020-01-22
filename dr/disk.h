@@ -26,10 +26,15 @@ namespace hd {
 	const unsigned char dev_dev = 0x10;
 };
 
+enum partition_type {
+	PRIMARY, EXTEND, LOGIC
+};
+
 struct partition {
 	char name[16];
 	unsigned int sector_cnt;
 	unsigned int start_lba;
+	enum partition_type type;
 	struct disk *disk;
 	struct super_block *sb;
 };
@@ -65,6 +70,8 @@ struct partition_table_entry_mbr {
 struct partition_table_mbr {
 	struct partition_table_entry_mbr entries[4];
 };
+
+extern struct disk disks[2];
 
 void disk_identify(unsigned char disk_nr);
 void init_disk();

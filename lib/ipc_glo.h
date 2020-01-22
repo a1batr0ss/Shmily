@@ -31,6 +31,7 @@ namespace dr {
 	const unsigned int READ = 3;
 	const unsigned int WRITE = 4;
 	const unsigned int PRINT_PART = 5;
+	const unsigned int ASK_DISK = 6;
 };
 
 namespace fs {
