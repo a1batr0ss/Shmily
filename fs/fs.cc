@@ -38,8 +38,6 @@ void partition_install_fs(struct partition *part, unsigned int disk_nr);
 /* Just for the slave disk. */
 void init_fs()
 {
-	printf("init fs.\n");
-
 	unsigned int disk_nr = 1;
 	struct super_block *buf = (struct super_block*)malloc(_fs::sector_size);
 	struct disk *disk = (struct disk*)get_disk(disk_nr);
@@ -82,7 +80,6 @@ void init_fs()
 	}
 	
 	free(buf);
-	printf("end init fs.\n");
 }
 
 void partition_install_fs(struct partition *part, unsigned int disk_nr)
