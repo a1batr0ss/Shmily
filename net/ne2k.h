@@ -45,6 +45,11 @@ namespace {
 		const unsigned char READ = 0x8;
 		const unsigned char WRITE = 0x10;
 		const unsigned char NODMA = 0x20;
+
+		const unsigned char PKT_RECV = 0x01;
+		const unsigned char OVERFLOW = 0x20;
+		const unsigned char PKT_TRANS = 0x40;
+		const unsigned char DMA_FIN = 0x02;
 	};
 }
 

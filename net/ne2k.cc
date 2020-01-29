@@ -5,6 +5,7 @@
 #include "ne2k.h"
 
 char mac_addr[6];
+unsigned char next;
 
 void out_mac_addr();
 void ne2k_handler();
@@ -12,6 +13,8 @@ void ne2k_handler();
 void init_ne2k()
 {
 	printf("Init ne2k.\n");
+
+	next = ne2k::PAGE_START_DATA + 1;
 
 	outb(ne2k::IOBASE + ne2k::NE_RESET, inb(ne2k::IOBASE + ne2k::NE_RESET));
 	while ((inb(ne2k::IOBASE + ne2k::INTR_STAT) & 0x80 ) == 0);
@@ -65,13 +68,15 @@ void init_ne2k()
 	outb(ne2k::IOBASE + ne2k::TRANS_CONF, 0x0);
 	outb(ne2k::IOBASE + ne2k::RECV_CONF, 0xc);
 
+	outb(ne2k::IOBASE + ne2k::INTR_STAT, 0xff);
+	outb(ne2k::IOBASE + ne2k::INTR_MASK, 0x0b);
+
 	register_intr_handler(ne2k::NE2K_IRQ, (void*)ne2k_handler);
 	printf("End ne2k.\n");
 }
 
 void out_mac_addr()
 {
-
 	for (int i=0; i<6; i++) {
 		printf("%x", mac_addr[i] & 0xff);  // Output fffffxxx, There might be problem in print(asm).
 		if (5 != i)
@@ -79,8 +84,79 @@ void out_mac_addr()
 	}
 }
 
-void ne2k_handler()
+void receive_packet()
 {
-	printf("ne2k's handler occured.\n");
+	unsigned char recv_stat = 0;
+	unsigned short len = 0;
+	unsigned char cur = 0;
+	unsigned char next_ = 0;
+
+	outb(ne2k::IOBASE + ne2k::CMD, ne2k::NODMA | ne2k::START | 0x40);
+	cur = inb(ne2k::IOBASE + ne2k::CURRENT);
+	outb(ne2k::IOBASE + ne2k::CMD, ne2k::START | ne2k::NODMA);
+
+	while (next != cur) {
+		outb(ne2k::IOBASE + ne2k::REMOTE_ADDR_HIGH, next);
+		outb(ne2k::IOBASE + ne2k::REMOTE_ADDR_LOW, 0x00);
+		outb(ne2k::IOBASE + ne2k::REMOTE_CNT_LOW, 0x04);
+		outb(ne2k::IOBASE + ne2k::REMOTE_CNT_HIGH, 0x00);
+
+		outb(ne2k::IOBASE + ne2k::CMD, ne2k::READ | ne2k::START);
+		
+		recv_stat = inb(ne2k::IOBASE + ne2k::NE_DATA);
+		next_ = inb(ne2k::IOBASE + ne2k::NE_DATA);
+		len = inb(ne2k::IOBASE + ne2k::NE_DATA);
+		len += (inb(ne2k::IOBASE + ne2k::NE_DATA) << 8);
+
+		outb(ne2k::IOBASE + ne2k::INTR_STAT, 0x40);
+
+		if ((1==(recv_stat&31)) && (next >= ne2k::PAGE_START_DATA) && (next <= ne2k::PAGE_STOP_DATA) && (len <= 1532)) {
+			outb(ne2k::IOBASE + ne2k::REMOTE_ADDR_HIGH, next);
+			outb(ne2k::IOBASE + ne2k::REMOTE_ADDR_LOW, 0x04);
+			outb(ne2k::IOBASE + ne2k::REMOTE_CNT_LOW, len & 0xff);
+			outb(ne2k::IOBASE + ne2k::REMOTE_CNT_HIGH, len>>8);
+			outb(ne2k::IOBASE + ne2k::CMD, ne2k::READ | ne2k::START);
+
+			if (len > 100) {
+				printf("len is more than 100 bytes.\n");
+				return;
+			}
+
+			char data[100] = {0};
+			for (int i=0; i<len; i++)
+				data[i] = inb(ne2k::IOBASE + ne2k::NE_DATA);
+
+			outb(ne2k::IOBASE + ne2k::INTR_STAT, 0x40);
+			if (next_ == ne2k::PAGE_START_DATA)
+				next = ne2k::PAGE_START_DATA;
+			else
+				next = next_;
+		}
+
+		if (next == ne2k::PAGE_START_DATA)
+			outb(ne2k::IOBASE + ne2k::BOUNDARY, ne2k::PAGE_STOP_DATA-1);
+		else
+			outb(ne2k::IOBASE + ne2k::BOUNDARY, next-1);
+
+		outb(ne2k::IOBASE + ne2k::CMD, ne2k::START | ne2k::NODMA | 0x40);
+		cur = inb(ne2k::IOBASE + ne2k::CURRENT);
+		outb(ne2k::IOBASE + ne2k::CMD, ne2k::START | ne2k::NODMA);
+	}
 }
 
+void ne2k_handler()
+{
+	unsigned char val = 0;
+	
+	outb(ne2k::IOBASE + ne2k::INTR_STAT, ne2k::NODMA | ne2k::START);
+
+	while (0 != (val=inb(ne2k::IOBASE + ne2k::INTR_STAT))) {
+		outb(ne2k::IOBASE + ne2k::INTR_STAT, val);
+
+		printf("ne2k's handler occurred. %x\n", val);
+
+		if (val & ne2k::PKT_RECV) {
+			receive_packet();
+		}
+	}
+}

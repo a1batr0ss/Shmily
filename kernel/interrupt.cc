@@ -107,7 +107,7 @@ void init_8259A()
     outb(0xa1, 0x01);
     // outb(0x21, 0xfd);  [> Only enable the keyboard interrupt for test, only can test once as our keyboard interrupt handler doesn't fetch data(scancode) from keyboard buffer. <]
     outb(0x21, 0xf8);
-    outb(0xa1, 0xbf);
+    outb(0xa1, 0xbb);
 }
 
 void init_idt()
