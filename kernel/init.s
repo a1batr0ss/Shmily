@@ -72,7 +72,7 @@ prot_start:
     ; read main.cc
     mov eax, INIT_START_SECTOR
     mov ebx, INIT_CC_BASE_ADDR
-    mov ecx, 200
+    mov ecx, 240
     call read_disk
 
 	; xchg bx, bx

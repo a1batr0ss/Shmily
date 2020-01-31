@@ -54,6 +54,7 @@ namespace {
 }
 
 void init_ne2k();
+void send_packet(struct packet &p);
 
 #endif
 

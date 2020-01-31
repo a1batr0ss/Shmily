@@ -3,6 +3,7 @@
 #include <string.h>
 #include <all_syscall.h>
 #include "ne2k.h"
+#include "ethernet.h"
 
 char mac_addr[6];
 unsigned char next;
@@ -12,8 +13,6 @@ void ne2k_handler();
 
 void init_ne2k()
 {
-	printf("Init ne2k.\n");
-
 	next = ne2k::PAGE_START_DATA + 1;
 
 	outb(ne2k::IOBASE + ne2k::NE_RESET, inb(ne2k::IOBASE + ne2k::NE_RESET));
@@ -72,7 +71,6 @@ void init_ne2k()
 	outb(ne2k::IOBASE + ne2k::INTR_MASK, 0x0b);
 
 	register_intr_handler(ne2k::NE2K_IRQ, (void*)ne2k_handler);
-	printf("End ne2k.\n");
 }
 
 void out_mac_addr()
@@ -82,6 +80,28 @@ void out_mac_addr()
 		if (5 != i)
 			printf(":");
 	}
+}
+
+void send_packet(struct packet &p)
+{
+	unsigned int size = p.size;
+	unsigned char *data = p.data;
+	
+	outb(ne2k::IOBASE + ne2k::REMOTE_CNT_LOW, size & 0xff);
+	outb(ne2k::IOBASE + ne2k::REMOTE_CNT_HIGH, size >> 8);
+	outb(ne2k::IOBASE + ne2k::REMOTE_ADDR_LOW, 0);
+	outb(ne2k::IOBASE + ne2k::REMOTE_ADDR_HIGH, ne2k::TRANS_BUF);
+	outb(ne2k::IOBASE + ne2k::CMD, ne2k::START | ne2k::WRITE);
+
+	for (int i=0; i<size; i++)
+		outb(ne2k::IOBASE + ne2k::NE_DATA, data[i]);
+
+	while (0x40 != (inb(ne2k::IOBASE + ne2k::INTR_STAT)));
+
+	outb(ne2k::IOBASE + ne2k::TRANS_PAGE, ne2k::TRANS_BUF);
+	outb(ne2k::IOBASE + ne2k::TRANS_CNT_LOW, size & 0xff);
+	outb(ne2k::IOBASE + ne2k::TRANS_CNT_HIGH, size >> 8);
+	outb(ne2k::IOBASE + ne2k::CMD, ne2k::NODMA | ne2k::TRANS | ne2k::START);
 }
 
 void receive_packet()
