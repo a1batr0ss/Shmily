@@ -98,21 +98,15 @@ static void swap_pairs_bytes(const char *dst, char *buf, unsigned int len)
 	buf[idx] = '\0';
 }
 
-static void read_disk(char *buf, unsigned char cnt)
+static void read_disk(char *buf)
 {
-	unsigned int bytes_cnt = cnt * 512;
-	if (0 == cnt)
-		bytes_cnt = 256 * 512;
-
+	unsigned int bytes_cnt = 512;
 	insw(hd::data_reg, buf, bytes_cnt/2);
 }
 
-static void write_disk(char *buf, unsigned char cnt)
+static void write_disk(char *buf)
 {
-	unsigned int bytes_cnt = cnt * 512;
-	if (0 == cnt)
-		bytes_cnt = 256 * 512;
-
+	unsigned int bytes_cnt = 512;
 	outsw(hd::data_reg, buf, bytes_cnt/2);
 }
 
@@ -134,7 +128,7 @@ void disk_identify(unsigned char disk_nr)
 	}
 
 	char info_buf[512];
-	read_disk(info_buf, 1);
+	read_disk(info_buf);
 
 	char buf[64];
 	memset(buf, 0, 64);
@@ -154,10 +148,12 @@ static void _read_sector(struct disk *disk, unsigned int lba, char *buf, unsigne
 		return;
 	}
 
-	read_disk(buf, cnt);
+	Message msg;
+	for (int i=0; i<cnt; i++) {
+		read_disk(buf + (i*512));
 
-	Message msg(all_processes::DR);
-	msg.receive(all_processes::INTERRUPT);
+		msg.receive(all_processes::INTERRUPT);
+	}
 }
 
 /* TODO: Taking measures to guarantee concurrect security. */
@@ -170,12 +166,14 @@ static void _write_sector(struct disk *disk, unsigned int lba, char *buf, unsign
 	if (!wait_disk()) {
 		printf("Write to sector failed.\n");
 		return;
-	};
+	}
 
-	write_disk(buf, cnt);
+	Message msg;
+	for (int i=0; i<cnt; i++) {
+		write_disk(buf + (i*512));
 
-	Message msg(all_processes::DR);
-	msg.receive(all_processes::INTERRUPT);
+		msg.receive(all_processes::INTERRUPT);
+	}
 }
 
 void read_sector(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt)

@@ -210,7 +210,7 @@ void free_page(void *viraddr, unsigned int cnt)
 void* malloc(unsigned int cnt_bytes)
 {
 	if (cnt_bytes > 1024) {
-		unsigned int page_cnt = DIV_ROUND_UP(cnt_bytes, paging::page_size);
+		unsigned int page_cnt = DIV_ROUND_UP(cnt_bytes+4, paging::page_size);
 		void *ret = malloc_page(page_cnt);
 		*(unsigned int*)ret = page_cnt;
 		return ret+sizeof(void*);  /* ret + 1 is really ret + 1 ?? */

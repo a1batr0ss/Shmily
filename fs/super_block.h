@@ -3,6 +3,7 @@
 
 struct super_block {
 	char magic[7];  /* 'S' 'h' 'm' 'i' 'l' 'y' */
+	bool is_sufficient;
 	unsigned int sectors_nr;
 	unsigned int inodes_nr;
 	unsigned int start_lba;
@@ -20,7 +21,7 @@ struct super_block {
 	unsigned int root_inode_no;
 	unsigned int dir_entry_size;
 	
-	char padding[457];	
+	char padding[456];	
 } __attribute__((packed));
 
 #endif

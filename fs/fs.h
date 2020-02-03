@@ -4,6 +4,8 @@
 namespace {
 	namespace _fs {
 		unsigned int sector_size = 512;
+		unsigned int max_file_nr = 1024;
+		unsigned int min_file_nr = 64;
 	};
 }
 
