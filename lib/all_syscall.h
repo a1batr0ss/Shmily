@@ -8,6 +8,8 @@ void write_disk(unsigned int disk_nr, unsigned int lba, char *str, unsigned int 
 void read_disk(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt);
 void print_partition_info(unsigned int disk_nr);
 unsigned int get_disk(unsigned int disk_nr);
+void send_packet(unsigned int pkt);
+void get_mac_addr(char *mac_addr);
 
 void register_intr_handler(unsigned int intr_num, void *handler);
 

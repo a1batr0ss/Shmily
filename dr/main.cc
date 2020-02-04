@@ -3,11 +3,14 @@
 #include <stdio.h>
 #include "keyboard.h"
 #include "disk.h"
+#include "ne2k.h"
+#include "ethernet.h"
 
 int main()
 {
 	init_keyboard();
 	init_disk();
+	init_ne2k();
 
 	Message msg(all_processes::DR);	
 
@@ -63,6 +66,24 @@ int main()
 			unsigned int disk_nr = con.con_1;
 			print_disk_partition_info(disk_nr);
 
+			msg.reply();
+
+			break;
+		}
+		case dr::SEND_PKT:
+		{
+			unsigned int pkt_ = con.con_1;
+			struct packet pkt = *(struct packet*)pkt_;
+
+			send_packet(pkt);
+
+			break;
+		}
+		case dr::GET_MAC:
+		{
+			struct _context con_ret;
+			con_ret.con_1 = (unsigned int)mac_addr;
+			msg.reset_message(1, con_ret);
 			msg.reply();
 
 			break;

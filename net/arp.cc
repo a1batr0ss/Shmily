@@ -3,7 +3,6 @@
 #include "arp.h"
 #include "ethernet.h"
 #include "byte_order.h"
-#include "ne2k.h"
 
 extern char mac_addr[6];
 unsigned char ip_addr[4] = {192, 168, 22, 44};
@@ -41,7 +40,7 @@ void arp_request(unsigned char *target_ip)
 	p.size = sizeof(struct eth_packet) + sizeof(struct arp_packet);
 	p.data = data;
 
-	send_packet(p);
+	send_packet((unsigned int)&p);
 
 	free(data);
 }

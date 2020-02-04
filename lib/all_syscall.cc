@@ -73,6 +73,29 @@ unsigned int get_disk(unsigned int disk_nr)
     return msg.get_context().con_1;
 }
 
+void send_packet(unsigned int pkt)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = pkt;
+    msg.reset_message(dr::SEND_PKT, con);
+    msg.send_then_recv(all_processes::DR);
+    return;
+}
+
+void get_mac_addr(char *mac_addr)
+{
+    Message msg;
+    struct _context con;
+    msg.reset_message(dr::GET_MAC, con);
+    msg.send_then_recv(all_processes::DR);
+
+    for (int i=0; i<6; i++)
+        mac_addr[i] = ((char*)(msg.get_context().con_1))[i];
+
+    return;
+}
+
 /**********************************************/
 
 void register_intr_handler(unsigned int intr_num, void *handler)
