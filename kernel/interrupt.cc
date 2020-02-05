@@ -1,3 +1,4 @@
+#include <global.h>
 #include "interrupt.h"
 #include "io.h"
 #include "print.h"
@@ -194,7 +195,8 @@ void load_idt(unsigned int p_idtptr)
 
 extern "C" void general_intr_handler(unsigned int nr)
 {
-    real_handlers[nr]();
+	if (NULL != real_handlers[nr])
+	    real_handlers[nr]();
 } 
 
 void enable_intr()
