@@ -152,18 +152,18 @@ void deal_init_process()
 
 void self_block(enum process_status stat)
 {
-    disable_intr();
+    bool old_status = disable_intr();
 
     cur_proc->status = stat;
 
     schedule(); 
 
-    enable_intr();  /* Not always should enable interrupt, or disabled original. */
+    set_intr(old_status);
 }
 
 void proc_yield()
 {
-    disable_intr();
+    bool old_status = disable_intr();
 
     last_ready_proc->next_ready = cur_proc;
     cur_proc->next_ready = first_ready_proc;
@@ -173,20 +173,20 @@ void proc_yield()
 
     schedule();
 
-    enable_intr();
+    set_intr(old_status);
 }
 
 /* Haven't test it. */
 void unblock_proc(struct pcb *proc)
 {
-    disable_intr();
+    bool old_status = disable_intr();
 
     proc->status = READY;
     last_ready_proc->next_ready = proc;
     proc->next_ready = first_ready_proc;
     last_ready_proc = proc;
 
-    enable_intr(); 
+    set_intr(old_status);
 } 
 
 /* Just for debug. */

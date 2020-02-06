@@ -199,14 +199,26 @@ extern "C" void general_intr_handler(unsigned int nr)
 	    real_handlers[nr]();
 } 
 
-void enable_intr()
+bool enable_intr()
 {
-    asm volatile ("sti":::"memory");
+  unsigned int eflags = 0;
+    asm volatile ("pushfl; popl %0; sti": "=g"(eflags) ::"memory");
+  return (eflags & 0x00000200);
 }
 
-void disable_intr()
+void set_intr(bool old_status)
 {
-    asm volatile ("cli":::"memory");
+  if (old_status)
+    enable_intr();
+  else
+    disable_intr();
+}
+
+bool disable_intr()
+{
+  unsigned int eflags = 0;
+    asm volatile ("pushfl; popl %0; cli": "=g"(eflags) ::"memory");
+  return (eflags & 0x00000200);
 } 
 
 void register_intr_handler(unsigned int nr, intr_handler handler)

@@ -7,6 +7,7 @@
 
 char mac_addr[6];
 unsigned char next;
+unsigned char data_recv[1600];
 
 void out_mac_addr();
 void ne2k_handler();
@@ -137,14 +138,9 @@ void receive_packet()
 			outb(ne2k::IOBASE + ne2k::REMOTE_CNT_HIGH, len>>8);
 			outb(ne2k::IOBASE + ne2k::CMD, ne2k::READ | ne2k::START);
 
-			if (len > 100) {
-				printf("len is more than 100 bytes.\n");
-				return;
-			}
-
-			char data[100] = {0};
+			memset((char*)data_recv, 0, 1600);
 			for (int i=0; i<len; i++)
-				data[i] = inb(ne2k::IOBASE + ne2k::NE_DATA);
+				data_recv[i] = inb(ne2k::IOBASE + ne2k::NE_DATA);
 
 			outb(ne2k::IOBASE + ne2k::INTR_STAT, 0x40);
 			if (next_ == ne2k::PAGE_START_DATA)
@@ -164,6 +160,17 @@ void receive_packet()
 	}
 }
 
+void deal_packet()
+{
+	struct eth_packet *eth_p = (struct eth_packet*)data_recv;
+
+	printf("src mac is ");
+	for (int i=0; i<6; i++)
+		printf("%x ", eth_p->src_mac_addr[i]);
+
+	printf("next protocol is %x.\n", eth_p->next_protocol);
+}
+
 void ne2k_handler()
 {
 	unsigned char val = 0;
@@ -174,9 +181,23 @@ void ne2k_handler()
 		outb(ne2k::IOBASE + ne2k::INTR_STAT, val);
 
 		printf("ne2k's handler occurred. %x\n", val);
-
+		
 		if (val & ne2k::PKT_RECV) {
+			/* TODO: read packet. */
 			receive_packet();
+			deal_packet();
 		}
+
+		if (val & ne2k::PKT_TRANS) {
+			outb(ne2k::IOBASE + ne2k::CMD, 0);
+		}
+
+		if (val & ne2k::DMA_FIN) {
+			// printf("DMA_FIN.\n");
+			outb(ne2k::IOBASE + ne2k::CMD + 0x07, 0x40);
+			outb(ne2k::IOBASE + ne2k::CMD, 0);
+		}
+
+		outb(ne2k::IOBASE + ne2k::INTR_STAT, ne2k::NODMA | ne2k::START);
 	}
 }
