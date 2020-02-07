@@ -113,27 +113,41 @@ void switch_to(struct pcb *next)
 
 void schedule()
 {
-    /* 1. pick a ready process */
     if (RUNNING == cur_proc->status) {
         if (NULL == last_ready_proc) {
-            
         }
-        last_ready_proc->next_ready = cur_proc;
-        last_ready_proc = cur_proc;
-        last_ready_proc->next_ready = first_ready_proc;
+
+        if ((NULL == first_ready_proc) && (NULL == last_ready_proc)) {
+            first_ready_proc = cur_proc;
+            last_ready_proc = cur_proc;
+            last_ready_proc->next_ready = first_ready_proc;
+        } else {    
+             /* Append to ready queue. */
+            last_ready_proc->next_ready = cur_proc;
+            last_ready_proc = cur_proc;
+            last_ready_proc->next_ready = first_ready_proc;
+        }
+    } else { 
     }
 
     if (NULL != first_ready_proc) { 
         next_proc = first_ready_proc;
-        last_ready_proc->next_ready = first_ready_proc->next_ready; 
         next_proc->status = RUNNING;
-        first_ready_proc = first_ready_proc->next_ready;
+
+        if (first_ready_proc == last_ready_proc) {
+            /* The last process. */
+            first_ready_proc->next_ready = NULL;
+            first_ready_proc = NULL;
+            last_ready_proc = NULL;
+        } else {
+            last_ready_proc->next_ready = first_ready_proc->next_ready; 
+            first_ready_proc = first_ready_proc->next_ready;
+        }
 
         /* 2. switch to the ready process which just picked. */
         switch_to(next_proc);
     } else {
-        /* BUG: The init process is running without block and first_ready_proc is not null, we can print the variable first_ready_proc to display the problem. */
-        unblock_proc((struct pcb*)0x99000);
+        /* TODO: Revoke the idle. */
     }
 }
 
@@ -182,9 +196,16 @@ void unblock_proc(struct pcb *proc)
     bool old_status = disable_intr();
 
     proc->status = READY;
-    last_ready_proc->next_ready = proc;
-    proc->next_ready = first_ready_proc;
-    last_ready_proc = proc;
+    
+    if ((NULL == last_ready_proc) && (NULL == first_ready_proc)) {
+        first_ready_proc = proc;
+        last_ready_proc = proc;
+        last_ready_proc->next_ready = proc;
+    } else {
+        last_ready_proc->next_ready = proc;
+        proc->next_ready = first_ready_proc;
+        last_ready_proc = proc;
+    }
 
     set_intr(old_status);
 } 

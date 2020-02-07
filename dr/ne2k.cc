@@ -2,6 +2,8 @@
 #include <io.h>
 #include <string.h>
 #include <all_syscall.h>
+#include <syscall.h>
+#include <ipc_glo.h>
 #include "ne2k.h"
 #include "ethernet.h"
 
@@ -169,6 +171,13 @@ void deal_packet()
 		printf("%x ", eth_p->src_mac_addr[i]);
 
 	printf("next protocol is %x.\n", eth_p->next_protocol);
+	
+	/* Notify the NET. */
+	Message msg(all_processes::INTERRUPT);
+	struct _context con;
+	con.con_1 = 1234;
+	msg.reset_message(1, con);
+	msg.send(all_processes::NET);
 }
 
 void ne2k_handler()

@@ -1,16 +1,21 @@
 #include <all_syscall.h>
+#include <ipc_glo.h>
+#include <stdio.h>
+#include <syscall.h>
 #include "arp.h"
 #include "net.h"
 
 int main()
 {
-	init_net();
+	Message msg(all_processes::NET);
 
-	unsigned char t_ip[4] = {192, 168, 11, 33};
-	arp_request(t_ip);
+	while (1) {
+		msg.receive(all_processes::ANY);
+		struct _context con = msg.get_context();
 
-	while (1);
-
+		printf("net received %d.\n", con.con_1);
+	}
+	
 	return 0;
 }
 
