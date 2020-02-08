@@ -164,19 +164,11 @@ void receive_packet()
 
 void deal_packet()
 {
-	struct eth_packet *eth_p = (struct eth_packet*)data_recv;
-
-	printf("src mac is ");
-	for (int i=0; i<6; i++)
-		printf("%x ", eth_p->src_mac_addr[i]);
-
-	printf("next protocol is %x.\n", eth_p->next_protocol);
-	
 	/* Notify the NET. */
 	Message msg(all_processes::INTERRUPT);
 	struct _context con;
-	con.con_1 = 1234;
-	msg.reset_message(1, con);
+	con.con_1 = (unsigned int)data_recv;
+	msg.reset_message(net::PKT_ARRIVED, con);
 	msg.send(all_processes::NET);
 }
 
@@ -189,7 +181,7 @@ void ne2k_handler()
 	while (0 != (val=inb(ne2k::IOBASE + ne2k::INTR_STAT))) {
 		outb(ne2k::IOBASE + ne2k::INTR_STAT, val);
 
-		printf("ne2k's handler occurred. %x\n", val);
+		// printf("ne2k's handler occurred. %x\n", val);
 		
 		if (val & ne2k::PKT_RECV) {
 			/* TODO: read packet. */

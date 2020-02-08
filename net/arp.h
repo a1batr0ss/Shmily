@@ -13,6 +13,29 @@ struct arp_packet {
 	unsigned char target_ip[4];
 };
 
+/* The item which is in arp cache table. */
+struct mac_map_ip {
+	unsigned char mac_addr[6];
+	unsigned char ip_addr[4];
+};
+
+class ArpCacheTable {
+  private:
+	struct mac_map_ip items[5];
+	unsigned int max_capacity;
+
+	int get_free_slot();
+	bool is_free_slot(unsigned int slot);
+	int locate_mac_addr(unsigned char *mac_addr);
+
+  public:
+	ArpCacheTable();
+	void set_item(unsigned int slot, unsigned char *mac_addr, unsigned char *ip_addr);
+	const unsigned char* get_ip_addr(unsigned char *mac_addr);
+	bool delete_item(unsigned char *mac_addr);
+	void print_all();
+};
+
 namespace {
 	namespace arp {
 		unsigned char mac_broadcast[6] = {0xff, 0xff, 0xff, 0xff, 0xff, 0xff};
@@ -26,7 +49,10 @@ namespace {
 	};
 }
 
+extern unsigned char ip_addr[4];
+
 void arp_request(unsigned char *target_ip);
+void arp_response(unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsigned char *req_ip);
 
 #endif
 

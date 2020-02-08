@@ -43,6 +43,10 @@ namespace kr {
 	const unsigned int REGR_INTR = 1;  /* register a interrupt handler. */
 	const unsigned int SLEEP = 2;
 };
+
+namespace net {
+	const unsigned int PKT_ARRIVED = 1;
+};
 };
 
 #endif
