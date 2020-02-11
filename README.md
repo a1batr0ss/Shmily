@@ -19,3 +19,7 @@
 ## Run  
 ` make DEBUGGER=1` or `make`
 
+## Recent Plans
+1. Build filesystem and network module.(For fs, we can read/write file. For net, receive and send the ip, tcp, icmp, arp packet)
+2. When we complete the work above, we have a more complete operating system kernel. Then we can add some algorithm for mm,fs..., and improve the code's robustness.
+
