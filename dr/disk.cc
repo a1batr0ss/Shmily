@@ -150,9 +150,9 @@ static void _read_sector(struct disk *disk, unsigned int lba, char *buf, unsigne
 
 	Message msg;
 	for (int i=0; i<cnt; i++) {
-		read_disk(buf + (i*512));
-
 		msg.receive(all_processes::INTERRUPT);
+
+		read_disk(buf + (i*512));
 	}
 }
 

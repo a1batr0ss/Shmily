@@ -2,6 +2,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <all_syscall.h>
+#include <bitmap.h>
 #include "fs.h"
 #include "super_block.h"
 #include "inode.h"
@@ -20,6 +21,9 @@ struct partition {
 	enum partition_type type;
 	struct disk *disk;
 	struct super_block *sb;
+
+	struct bitmap block_bmap;
+	struct bitmap inode_bmap;
 };
 
 struct disk {
@@ -37,7 +41,10 @@ struct channel {
 	struct disk disks[2];
 };
 
+struct partition *cur_part;
+
 void partition_install_fs(struct partition *part, unsigned int disk_nr);
+void mount_partition(char *part_name);
 
 /* Just for the slave disk. */
 void init_fs()
@@ -84,6 +91,8 @@ void init_fs()
 	}
 	
 	free(buf);
+
+	mount_partition("sda0");
 }
 
 void partition_install_fs(struct partition *part, unsigned int disk_nr)
@@ -158,4 +167,42 @@ void partition_install_fs(struct partition *part, unsigned int disk_nr)
 
 	free(sb);
 	free(buf);
+}
+
+void mount_partition(char *part_name)
+{
+	unsigned int disk_nr = 1;
+	struct disk *disk = (struct disk*)get_disk(disk_nr);
+	unsigned int i = 0;
+
+	while (i < 8) {
+		struct partition *part = &disk->primary[i];
+		if (i > 3)
+			part = &disk->logic[i-4];
+		
+		if (strcmp(part_name, part->name))
+			cur_part = part;  /* Cross process. */
+
+		i++;
+	}
+
+	printf("cur_part %s.\n", cur_part);
+	/* Load this partition's infomation from disk. */
+	struct super_block *sb = (struct super_block*)malloc(_fs::sector_size);
+	read_disk(disk_nr, cur_part->start_lba+1, (char*)sb, 1);
+	
+	cur_part->sb = sb;
+
+	unsigned char *block_bmap = (unsigned char*)malloc(sb->block_bitmap_sectors * _fs::sector_size);
+	read_disk(disk_nr, sb->block_bitmap_lba, (char*)block_bmap, sb->block_bitmap_sectors);
+
+	cur_part->block_bmap.base = block_bmap;
+	cur_part->block_bmap.bytes_len = sb->block_bitmap_sectors * _fs::sector_size;
+
+	unsigned char *inode_bmap = (unsigned char*)malloc(sb->inode_bitmap_sectors * _fs::sector_size);
+	read_disk(disk_nr, sb->inode_bitmap_lba, (char*)inode_bmap, sb->inode_bitmap_sectors);
+	cur_part->inode_bmap.base = inode_bmap;
+	cur_part->inode_bmap.bytes_len = sb->inode_bitmap_sectors * _fs::sector_size;
+
+	return;
 }
