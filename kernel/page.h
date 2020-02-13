@@ -1,5 +1,5 @@
-#ifndef __INIT_PAGE_H__
-#define __INIT_PAGE_H__
+#ifndef __KERNEL_PAGE_H__
+#define __KERNEL_PAGE_H__
 
 struct pte {
     unsigned int present    :1;

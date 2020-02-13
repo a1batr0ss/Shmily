@@ -1,5 +1,5 @@
-#ifndef __INIT_INTERRUPT_H__
-#define __INIT_INTERRUPT_H__
+#ifndef __KERNEL_INTERRUPT_H__
+#define __KERNEL_INTERRUPT_H__
 
 // #define JOIN(front, back) front##back
 typedef void (*intr_handler)();

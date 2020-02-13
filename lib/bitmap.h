@@ -1,5 +1,5 @@
-#ifndef __MM_BITMAP_HH
-#define __MM_BITMAP_HH
+#ifndef __LIB_BITMAP_HH__
+#define __LIB_BITMAP_HH__
 
 struct bitmap {
     unsigned int bytes_len;

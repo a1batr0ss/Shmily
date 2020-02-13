@@ -1,5 +1,5 @@
-#ifndef __INIT_SYNC_H__
-#define __INIT_SYNC_H__
+#ifndef __KERNEL_SYNC_H__
+#define __KERNEL_SYNC_H__
 
 #include "process.h"
 

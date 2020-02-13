@@ -1,5 +1,5 @@
-#ifndef __INIT_DISK_H__
-#define __INIT_DISK_H__
+#ifndef __DR_DISK_H__
+#define __DR_DISK_H__
 
 namespace hd {
     const unsigned int disk_intr_nr = 0x2e;

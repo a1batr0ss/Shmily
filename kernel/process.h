@@ -1,5 +1,5 @@
-#ifndef __PM_PROCESS_H__
-#define __PM_PROCESS_H__
+#ifndef __KERNEL_PROCESS_H__
+#define __KERNEL_PROCESS_H__
 
 #include "ipc.h"
 

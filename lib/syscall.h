@@ -1,5 +1,5 @@
-#ifndef __INIT_IPC_H__
-#define __INIT_IPC_H__
+#ifndef __LIB_IPC_H__
+#define __LIB_IPC_H__
 
 /* The member can replace as an array. */
 struct _context {

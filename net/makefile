@@ -23,5 +23,5 @@ $(BUILD_DIR)/net.cc.o: net.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)/net $(BUILD_DIR)/net.cc.o
+	rm -rf $(BUILD_DIR)/net $(BUILD_DIR)/net.cc.o $(BUILD_DIR)/net_main.cc.o $(BUILD_DIR)/arp.cc.o $(BUILD_DIR)/byte_order.cc.o
 

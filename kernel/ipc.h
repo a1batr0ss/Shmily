@@ -1,5 +1,5 @@
-#ifndef __INIT_IPC_H__
-#define __INIT_IPC_H__
+#ifndef __KERNEL_IPC_H__
+#define __KERNEL_IPC_H__
 
 struct _context {
 	unsigned int con_1;

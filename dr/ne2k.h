@@ -1,5 +1,5 @@
-#ifndef __NET_NE2K_H__
-#define __NET_NE2K_H__
+#ifndef __DR_NE2K_H__
+#define __DR_NE2K_H__
 
 namespace {
 	namespace ne2k {

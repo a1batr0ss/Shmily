@@ -4,7 +4,6 @@
 #include <all_syscall.h>
 #include <print.h>
 #include "keyboard.h"
-#include "../include/intr.h"
 
 namespace keyboard {
 	unsigned int intr_nr = 0x21;

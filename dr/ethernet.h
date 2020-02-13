@@ -1,5 +1,5 @@
-#ifndef __NET_ETHERNET_H__
-#define __NET_ETHERNET_H__
+#ifndef __DR_ETHERNET_H__
+#define __DR_ETHERNET_H__
 
 struct ethernet {
 	unsigned char status;

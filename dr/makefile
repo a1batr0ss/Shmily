@@ -2,7 +2,7 @@ GG = g++
 LD = ld
 BUILD_DIR = ../build
 
-GG_FLAGS = -c -m32 -fno-stack-protector -I ../lib 
+GG_FLAGS = -c -m32 -fno-stack-protector -I ../lib -I ../include 
 LD_FLAGS = -e main -m elf_i386 -Ttext 0x40000
 
 all: $(BUILD_DIR)/dr
@@ -23,4 +23,5 @@ $(BUILD_DIR)/ne2k.cc.o: ne2k.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)/dr $(BUILD_DIR)/disk.cc.o $(BUILD_DIR)/keyboard.cc.o $(BUILD_DIR)/dr.cc.o
+	rm -rf $(BUILD_DIR)/dr $(BUILD_DIR)/disk.cc.o $(BUILD_DIR)/keyboard.cc.o $(BUILD_DIR)/dr.cc.o $(BUILD_DIR)/ne2k.cc.o
+

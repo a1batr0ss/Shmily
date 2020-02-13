@@ -2,7 +2,7 @@ AS = nasm
 GG = g++
 BUILD_DIR = ../build
 
-GG_FLAGS = -c -m32 -I . -fno-stack-protector
+GG_FLAGS = -c -m32 -I . -I ../include -fno-stack-protector
 AS_FLAGS = -f elf
 
 all: $(BUILD_DIR)/print.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o
