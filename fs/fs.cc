@@ -10,22 +10,6 @@
 
 #define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
 
-enum partition_type {
-	PRIMARY, EXTEND, LOGIC
-};
-
-struct partition {
-	char name[16];
-	unsigned int sector_cnt;
-	unsigned int start_lba;
-	enum partition_type type;
-	struct disk *disk;
-	struct super_block *sb;
-
-	struct bitmap block_bmap;
-	struct bitmap inode_bmap;
-};
-
 struct disk {
 	char name[16];
 	struct channel *channel;

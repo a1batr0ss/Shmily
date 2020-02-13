@@ -15,5 +15,8 @@ struct inode {
 	unsigned int sectors[9];
 } __attribute__((packed));
 
+void create_inode(struct inode *inode);
+void sync_inode(struct inode *inode);
+
 #endif
 
