@@ -42,6 +42,7 @@ namespace fs {
 namespace kr {
 	const unsigned int REGR_INTR = 1;  /* register a interrupt handler. */
 	const unsigned int SLEEP = 2;
+	const unsigned int GET_TIME = 2;
 };
 
 namespace net {

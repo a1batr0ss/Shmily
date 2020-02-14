@@ -52,3 +52,21 @@ void sync_inode(struct inode *inode)
 	return;
 }
 
+struct inode ino2inode(unsigned int ino)
+{
+	unsigned int inodes_per_sector = _fs::sector_size / sizeof(struct inode);
+	unsigned int sector_offset = ino / inodes_per_sector;
+	unsigned int in_sector_offset = ino % inodes_per_sector;
+	unsigned int inode_tbl_lba = cur_part->sb->inode_table_lba;
+
+	char *buf = (char*)malloc(_fs::sector_size);
+	unsigned int disk_nr = 1;
+	
+	read_disk(disk_nr, inode_tbl_lba + sector_offset, buf, 1);
+
+	struct inode inode = *((struct inode*)buf + in_sector_offset);
+
+	free(buf);
+
+	return inode;
+}

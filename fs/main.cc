@@ -5,18 +5,16 @@
 #include <all_syscall.h>
 #include "fs.h"
 #include "inode.h"
+#include "dir.h"
 
 int main()
 {
 	init_fs(); 
 
-
+	printf("/.. is %d\n", dir_is_exists("/.."));
+	printf("/a is %d\n", dir_is_exists("/a"));
 
 	Message msg;
-
-	struct inode *inode = (struct inode*)malloc(sizeof(struct inode));
-	create_inode(inode);
-	sync_inode(inode);
 
 	msg.receive(0);
 	printf("fs received message: %x.\n", msg.get_context().con_1);

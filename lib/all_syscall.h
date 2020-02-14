@@ -12,6 +12,7 @@ void send_packet(unsigned int pkt);
 void get_mac_addr(char *mac_addr);
 
 void register_intr_handler(unsigned int intr_num, void *handler);
+unsigned long long get_current_time();
 
 #endif
 

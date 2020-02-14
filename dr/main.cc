@@ -44,8 +44,9 @@ int main()
 			unsigned int str_uint = con.con_3;
 			unsigned int cnt = con.con_4;
 			char *str = (char*)str_uint;
-			// printf("%d %s %x %x %x", disk_nr, str, lba, str, cnt);
+
 			write_sector(disk_nr, lba, str, cnt);
+			msg.reply();
 
 			break;
 		}

@@ -170,7 +170,6 @@ void mount_partition(char *part_name)
 		i++;
 	}
 
-	printf("cur_part %s.\n", cur_part);
 	/* Load this partition's infomation from disk. */
 	struct super_block *sb = (struct super_block*)malloc(_fs::sector_size);
 	read_disk(disk_nr, cur_part->start_lba+1, (char*)sb, 1);

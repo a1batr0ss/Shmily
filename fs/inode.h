@@ -17,6 +17,7 @@ struct inode {
 
 void create_inode(struct inode *inode);
 void sync_inode(struct inode *inode);
+struct inode ino2inode(unsigned int ino);
 
 #endif
 

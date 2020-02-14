@@ -48,7 +48,7 @@ void write_disk(unsigned int disk_nr, unsigned int lba, char *str, unsigned int 
     con.con_3 = (unsigned int)str;  
     con.con_4 = cnt;
     msg.reset_message(dr::WRITE, con);
-    msg.send(all_processes::DR);
+    msg.send_then_recv(all_processes::DR);  /* Write must be sychronized. */
     return;
 }
 
@@ -109,3 +109,22 @@ void register_intr_handler(unsigned int intr_num, void *handler)
     return;
 }
 
+unsigned long long get_current_time()
+{
+    Message msg;
+    struct _context con;
+    msg.reset_message(kr::GET_TIME, con);
+    msg.send_then_recv(all_processes::KR);
+
+    struct _context con_ret = msg.get_context();
+   
+    unsigned char second = con_ret.con_1 & 0xff;
+    unsigned char minute = (con_ret.con_1 >> 8 ) & 0xff;
+    unsigned char hour = (con_ret.con_1 >> 16) & 0xff;
+    unsigned char day = (con_ret.con_1 >> 24) & 0xff;
+    unsigned char month = con_ret.con_2 & 0xff;
+    unsigned long long year = con_ret.con_3;
+
+    return (year << 32) | ((month&0xf) << 28) | ((day&0x3f) << 22) |
+        ((hour&0x3f) << 16) | (minute << 8) | second;
+}
