@@ -11,8 +11,7 @@ int main()
 {
 	init_fs(); 
 
-	printf("/.. is %d\n", dir_is_exists("/.."));
-	printf("/a is %d\n", dir_is_exists("/a"));
+	mkdir("/abc");
 
 	Message msg;
 

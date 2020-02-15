@@ -9,7 +9,7 @@ struct dir_entry {
 	unsigned char type;
 };
 
-bool dir_is_exists(char *path);
+void mkdir(char *path);
 
 #endif
 

@@ -17,7 +17,12 @@ struct inode {
 
 void create_inode(struct inode *inode);
 void sync_inode(struct inode *inode);
+void sync_block(unsigned int block_no, char *buf);
+void sync_inode_bitmap();
+void sync_block_bitmap();
 struct inode ino2inode(unsigned int ino);
+unsigned int allocate_block();
+void read_block(unsigned int block_no, char *buf);
 
 #endif
 
