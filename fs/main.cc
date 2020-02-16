@@ -12,6 +12,7 @@ int main()
 	init_fs(); 
 
 	mkdir("/abc");
+	mkdir("/abc/def");
 
 	Message msg;
 

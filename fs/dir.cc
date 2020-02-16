@@ -26,20 +26,33 @@ void mkdir(char *path)
 	struct inode inode = ino2inode(parent_ino);
 
 	struct inode child_inode;
+	memset((char*)&child_inode, 0, sizeof(struct inode));
 	create_inode(&child_inode);
 	sync_inode(&child_inode);
 	sync_inode_bitmap();
 
 	struct dir_entry child;
-	memset(child.name, 0, 64);
+	memset((char*)&child, 0, sizeof(struct dir_entry));
 	strcpy(child.name, child_name);
 	child.inode_no = child_inode.inode_no;
 
 	create_dir_entry(inode, child);
 }
 
+void skip_last_slash(char *str)
+{
+	int l = strlen(str);
+	if ('/' == str[l-1])
+		str[l-1] = 0;
+	return;
+}
+
 char* split_path_2parts(char *path, char *parent)
 {
+	if ('/' != path[0])
+		return NULL;
+
+	char *parent_ = parent;
 	int l = 1;
 	for (char *p=path; 0!=(*p); p++) {
 		if ('/' == *p)
@@ -52,9 +65,12 @@ char* split_path_2parts(char *path, char *parent)
 			i++;
 	}
 
-	if (0 != parent[1])
+	if (0 != parent_[1]) {
 		*(parent-1) = 0;  /* Replace the last '/' with 0 */
 	/* else parent = "/" */
+	
+		skip_last_slash(parent_);
+	}
 
 	return path;
 }
@@ -63,6 +79,8 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 {
 	unsigned int disk_nr = 1;
 	char *buf = (char*)malloc(_fs::sector_size);
+	unsigned int free_sector = 0;
+	unsigned int free_offset = 0;
 
 	/* Get a free slot. */
 	for (int i=0; i<9; i++) {
@@ -77,13 +95,30 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 		for (int j=0; j<(_fs::sector_size / sizeof(struct dir_entry)); j++, p++) {
 			if (0 == p->name[0]) {
 				/* Found the free slot */
-				*p = child;
-
-				/* sync the block */
-				write_disk(disk_nr, inode.sectors[i], buf, 1);
-				return;
+				free_sector = inode.sectors[i];
+				free_offset = i;
+			} else {
+				if (strcmp(p->name, child.name)) {
+					printf("Already exists.\n");
+					free(buf);
+					return;
+				}
 			}
 		}
+	}
+
+	/* Sync block */
+	if (0 != free_sector) {
+		memset(buf, 0, _fs::sector_size);
+		read_disk(disk_nr, free_sector, buf, 1);
+
+		struct dir_entry *p = (struct dir_entry*)buf;
+		p[free_offset] = child;
+		write_disk(disk_nr, free_sector, buf, 1);
+		
+		free(buf);
+
+		return;
 	}
 
 	for (int i =0; i<9; i++) {
