@@ -2,8 +2,6 @@
 #include <string.h>
 #include "print.h"
 
-
-
 void itoa(unsigned int val, char **buf, unsigned base)
 {
 	unsigned int remainder = val % base;

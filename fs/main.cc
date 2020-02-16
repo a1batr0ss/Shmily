@@ -13,6 +13,8 @@ int main()
 
 	mkdir("/abc");
 	mkdir("/abc/def");
+	rmdir("/abc/def");
+	// rmdir("/abc");
 
 	Message msg;
 

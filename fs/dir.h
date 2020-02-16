@@ -10,6 +10,7 @@ struct dir_entry {
 };
 
 void mkdir(char *path);
+void rmdir(char *path);
 
 #endif
 

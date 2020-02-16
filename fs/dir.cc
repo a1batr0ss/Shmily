@@ -11,6 +11,8 @@ int dir_is_exists(char *path);
 char* split_path_2parts(char *path, char *parent);
 void create_dir_entry(struct inode inode, struct dir_entry child);
 char* split_path(char *path, char *cur_path);
+void remove_dir_entry(struct inode inode, char *path_del);
+bool dir_is_empty(char *path);
 
 
 /* Couldn't create directory recursively. */
@@ -37,6 +39,45 @@ void mkdir(char *path)
 	child.inode_no = child_inode.inode_no;
 
 	create_dir_entry(inode, child);
+}
+
+/* Delete the last directory. */
+void rmdir(char *path)
+{
+	if (!dir_is_empty(path)) {
+		printf("dir is not empty.\n");
+		return;
+	}
+
+	char parent[64] = {0};
+	char *path_del = split_path_2parts(path, parent);
+	unsigned int parent_ino = dir_is_exists(parent);
+	unsigned int child_ino = dir_is_exists(path);
+
+
+	if (-1 == parent_ino)
+		return;
+	
+	struct inode inode_parent = ino2inode(parent_ino);
+	remove_dir_entry(inode_parent, path_del);
+	
+	free_inode(child_ino);
+	sync_inode_bitmap();
+
+	return;
+}
+
+bool dir_is_empty(char *path)
+{
+	unsigned int ino = dir_is_exists(path);
+	struct inode inode = ino2inode(ino);
+
+	/* Check all sectors. */
+	for (int i=0; i<9; i++) {
+		if (0 != inode.sectors[i])
+			return false;
+	}
+	return true;
 }
 
 void skip_last_slash(char *str)
@@ -93,10 +134,10 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 		struct dir_entry *p = (struct dir_entry*)buf;
 		/* Check the sector. */
 		for (int j=0; j<(_fs::sector_size / sizeof(struct dir_entry)); j++, p++) {
-			if (0 == p->name[0]) {
+			if ((0 == p->name[0]) && (0 == free_offset) && (0 == free_sector)) {
 				/* Found the free slot */
 				free_sector = inode.sectors[i];
-				free_offset = i;
+				free_offset = j;
 			} else {
 				if (strcmp(p->name, child.name)) {
 					printf("Already exists.\n");
@@ -141,6 +182,59 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 	}
 }
 
+/* The directory which will be deleted must be empty. */
+void remove_dir_entry(struct inode inode, char *path_del)
+{
+	unsigned int disk_nr = 1;
+	char *buf = (char*)malloc(_fs::sector_size);
+	bool is_found = false;
+
+	for (int i=0; i<9; i++) {
+		if (0 == inode.sectors[i])
+			continue;
+
+		memset(buf, 0, _fs::sector_size);
+		read_disk(disk_nr, inode.sectors[i], buf, 1);
+		
+		unsigned int empty_cnts = 0;
+		struct dir_entry *p = (struct dir_entry*)buf;
+		/* Check the sector. */
+		for (int j=0; j<(_fs::sector_size / sizeof(struct dir_entry)); j++, p++) {
+			if (strcmp(p->name, path_del)) {
+				is_found = true;
+				p->name[0] = 0;
+				empty_cnts++;
+
+				/* Remove the entry. */
+				write_disk(disk_nr, inode.sectors[i], buf, 1);
+
+				free(buf);
+			} else if (0 == p->name[0]) {
+				empty_cnts++;
+			} /* else nothing to to. */
+		}
+
+		/* Recycle the parent's block. The sector is empty.*/
+		if (is_found && (empty_cnts == (_fs::sector_size / sizeof(struct dir_entry)))) {
+			unsigned int block_no = inode.sectors[i] - cur_part->sb->data_start;
+			free_block(block_no);
+			sync_block_bitmap();
+
+			/* Handle the parent's inode. */
+			inode.sectors[i] = 0;
+			sync_inode(&inode);
+
+			return;
+		}
+	}
+
+	free(buf);
+	if (!is_found)
+		printf("Not found the directory.\n");
+
+	return;
+}
+
 char* split_path(char *path, char *cur_path)
 {
 	if ('/' == path[0]) {
@@ -174,7 +268,7 @@ int dir_is_exists(char *path)
 	char *next_path = path;
 	unsigned int parent_inode_no = cur_part->sb->root_inode_no;
 	struct inode inode = ino2inode(parent_inode_no);
-		
+
 	while (NULL != next_path) {
 		memset(cur_path, 0, 64);
 		next_path = split_path(next_path, cur_path);
@@ -211,11 +305,15 @@ int find_dir_entry(struct inode &inode, char *child)
 			if (0 == p_de->name[0])
 				continue;
 
-			if (strcmp(p_de->name, child))
-				return p_de->inode_no;
+			if (strcmp(p_de->name, child)) {
+				unsigned int ino = p_de->inode_no;
+				free(buf);
+				return ino;
+			}
 		}
 	}
 
+	free(buf);
 	return -1;
 }
 

@@ -33,6 +33,14 @@ static unsigned int allocate_inode_no()
 		return slot;
 }
 
+/* Set the inode bitmap. */
+void free_inode(unsigned int ino)
+{
+	struct bitmap *inode_bmap = &(cur_part->inode_bmap);
+	bitmap_set_bit(inode_bmap, ino, 0);
+	return;
+}
+
 /* Write the inode to disk. */
 void sync_inode(struct inode *inode)
 {
@@ -80,6 +88,13 @@ unsigned int allocate_block()
 	
 	if (-1 != slot)
 		return slot;
+}
+
+void free_block(unsigned int block_no)
+{
+	struct bitmap *bmap = &(cur_part->block_bmap);
+	bitmap_set_bit(bmap, block_no, 0);
+	return;
 }
 
 void sync_block(unsigned int block_no, char *buf)
