@@ -36,6 +36,7 @@ void mkdir(char *path)
 	struct dir_entry child;
 	memset((char*)&child, 0, sizeof(struct dir_entry));
 	strcpy(child.name, child_name);
+	child.type = DIR;
 	child.inode_no = child_inode.inode_no;
 
 	create_dir_entry(inode, child);
@@ -316,4 +317,3 @@ int find_dir_entry(struct inode &inode, char *child)
 	free(buf);
 	return -1;
 }
-

@@ -7,6 +7,7 @@
 #include "super_block.h"
 #include "inode.h"
 #include "dir.h"
+#include "file.h"
 
 #define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
 
@@ -77,6 +78,10 @@ void init_fs()
 	free(buf);
 
 	mount_partition("sda0");
+
+	/* Initialize the file descriptor table. */
+	for (int i=0; i<64; i++)
+		file_desc_tbl[i] = NULL;
 }
 
 void partition_install_fs(struct partition *part, unsigned int disk_nr)

@@ -6,6 +6,7 @@
 #include "fs.h"
 #include "inode.h"
 #include "dir.h"
+#include "file.h"
 
 int main()
 {
@@ -14,7 +15,13 @@ int main()
 	mkdir("/abc");
 	mkdir("/abc/def");
 	rmdir("/abc/def");
-	// rmdir("/abc");
+	mkfile("/abc/a.txt");
+	int desc = open_file("/abc/a.txt");
+	printf("desc is %d.\n", desc);
+	close_file(desc);
+	desc = open_file("/abc/a.txt");
+	printf("desc is %d.\n", desc);
+	rmfile("/abc/a.txt");
 
 	Message msg;
 
