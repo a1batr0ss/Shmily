@@ -9,6 +9,15 @@ int main()
 {
 	init_net();
 
+	mkdir("/abc");
+	mkfile("/abc/a.txt");
+	int fd = open("/abc/a.txt");
+	write(fd, "abcdef", 6);
+	char buf[64] = {0};
+	int l = read(fd, buf, 6);
+	printf("read file %d %s\n", l, buf);
+	close(fd);
+
 	Message msg(all_processes::NET);
 
 	while (1) {

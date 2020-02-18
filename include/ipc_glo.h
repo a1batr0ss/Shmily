@@ -37,6 +37,14 @@ namespace dr {
 };
 
 namespace fs {
+	const unsigned int MKDIR = 1;
+	const unsigned int RMDIR = 2;
+	const unsigned int OPEN_FILE = 3;
+	const unsigned int CLOSE_FILE = 4;
+	const unsigned int WRITE_FILE = 5;
+	const unsigned int READ_FILE = 6;
+	const unsigned int MKFILE = 7;
+	const unsigned int RMFILE = 8;
 };
 
 namespace kr {

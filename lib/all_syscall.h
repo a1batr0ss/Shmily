@@ -14,5 +14,14 @@ void get_mac_addr(char *mac_addr);
 void register_intr_handler(unsigned int intr_num, void *handler);
 unsigned long long get_current_time();
 
+void mkdir(char *path);
+void rmdir(char *path);
+void mkfile(char *path);
+void rmfile(char *path);
+int open(char *path);
+void close(unsigned int fd);
+void write(unsigned int fd, char *str, unsigned int count);
+unsigned int read(unsigned int fd, char *buf, unsigned int count);
+
 #endif
 

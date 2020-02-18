@@ -12,22 +12,95 @@ int main()
 {
 	init_fs(); 
 
-	mkdir("/abc");
-	mkdir("/abc/def");
-	rmdir("/abc/def");
-	mkfile("/abc/a.txt");
-	int desc = open_file("/abc/a.txt");
-	printf("desc is %d.\n", desc);
-	close_file(desc);
-	desc = open_file("/abc/a.txt");
-	printf("desc is %d.\n", desc);
-	rmfile("/abc/a.txt");
-
 	Message msg;
 
-	msg.receive(0);
-	printf("fs received message: %x.\n", msg.get_context().con_1);
-	while (1);
+	while (1) {
+		msg.receive(all_processes::ANY);
+		struct _context con = msg.get_context();
+
+		switch (msg.get_type()) {
+		case fs::MKDIR:
+		{
+			char *path = (char*)(con.con_1);
+			sys_mkdir(path);
+			msg.reply();
+
+			break;
+		}
+		case fs::RMDIR:
+		{
+			char *path = (char*)(con.con_1);
+			sys_rmdir(path);
+			msg.reply();
+
+			break;
+		}
+		case fs::MKFILE:
+		{
+			char *path = (char*)(con.con_1);
+			sys_mkfile(path);
+			msg.reply();
+
+			break;
+		}
+		case fs::RMFILE:
+		{
+			char *path = (char*)(con.con_1);
+			sys_rmfile(path);
+			msg.reply();
+
+			break;
+		}
+		case fs::OPEN_FILE:
+		{
+			char *path = (char*)(con.con_1);
+			int fd = open_file(path);
+
+			struct _context con_ret;
+			con_ret.con_1 = fd;
+			msg.reset_message(1, con_ret);
+			msg.reply();
+
+			break;
+		}
+		case fs::CLOSE_FILE:
+		{
+			unsigned int fd = con.con_1;
+			close_file(fd);
+
+			break;
+		}
+		case fs::WRITE_FILE:
+		{
+			unsigned int fd = con.con_1;
+			char *str = (char*)(con.con_2);
+			unsigned int count = con.con_3;
+			write_file(fd, str, count);
+
+			msg.reply();
+
+			break;
+		}
+		case fs::READ_FILE:
+		{
+			unsigned int fd = con.con_1;
+			char *buf = (char*)(con.con_2);
+			unsigned int count = con.con_3;
+			unsigned int len = read_file(fd, buf, count);
+
+			struct _context con_ret;
+			con_ret.con_1 = len;
+			msg.reset_message(1, con_ret);
+			msg.reply();
+
+			break;
+		}
+		default:
+		{
+			printf("fs received unknown message type.\n");
+		}
+		}
+	}
 
 	return 0;
 }

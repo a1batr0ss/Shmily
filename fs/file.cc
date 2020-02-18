@@ -14,7 +14,7 @@ void free_inode_sectors(struct inode inode);
 int get_fdt_free_slot();
 void free_fdt_slot(unsigned int slot);
 
-void mkfile(char *path)
+void sys_mkfile(char *path)
 {
 	/* Create a dir entry in the parent directory. */
 	char parent[64] = {0};
@@ -42,7 +42,7 @@ void mkfile(char *path)
 	return;
 }
 
-void rmfile(char *path)
+void sys_rmfile(char *path)
 {
 	char parent[64] = {0};
 	char *file_del = split_path_2parts(path, parent);
@@ -65,6 +65,91 @@ void rmfile(char *path)
 	free_inode(file_del_ino);
 	sync_inode_bitmap();
 	return;
+}
+
+/* Take a start from head. */
+void write_file(unsigned int fd, char *str, unsigned int count)
+{
+	struct file *file = file_desc_tbl[fd];
+	if (NULL == file)
+		return;
+
+	if (strlen(str) < count)
+		count = strlen(str) + 1;  /* The '/0'. */
+
+	unsigned int sector_cnts = count / _fs::sector_size;
+	unsigned int last_sector_bytes = count % _fs::sector_size;
+	struct inode *inode = file->inode;
+
+	/* Allocate block for the inode. */
+	for (int i=0; i<sector_cnts+1; i++) {
+		if (0 == inode->sectors[i]) {
+			unsigned int block_no = allocate_block();
+			inode->sectors[i] = cur_part->sb->data_start + block_no;
+		}
+	}
+	sync_inode(inode);
+	sync_block_bitmap();
+
+	unsigned int disk_nr = 1;
+	/* Write to disk. Not serial, we must write to disk singly. */
+	int i = 0;
+	for (; i<sector_cnts; i++) {
+		write_disk(disk_nr, inode->sectors[i], str + (i*512), 1);
+	}
+
+	/* The last sector.(padding 0) */
+	char *buf = (char*)malloc(_fs::sector_size);
+	memcpy(buf, str + (i*512), last_sector_bytes);
+	write_disk(disk_nr, inode->sectors[i], buf, 1);
+
+	bool has_surplus = false;
+	/* Free the remainder sectors previously. */
+	for(int i=sector_cnts+1; i<9; i++) {
+		if (0 == inode->sectors[i])
+			continue;
+
+		unsigned int block_no = inode->sectors[i] - cur_part->sb->data_start;
+		free_block(block_no);
+		inode->sectors[i] = 0;
+		has_surplus = true;
+	}
+	inode->size = count;
+
+	if (has_surplus) {
+		sync_inode(inode);
+		sync_block_bitmap();
+	}
+	
+	free(buf);
+}
+
+int read_file(unsigned int fd, char *buf, unsigned int count)
+{
+	struct file *file = file_desc_tbl[fd];
+	if (NULL == file)
+		return -1;
+
+	struct inode *inode = file->inode;
+	if (count > inode->size)
+		count = inode->size;
+	unsigned int sector_cnts = count / _fs::sector_size;
+	unsigned int last_sector_bytes = count % _fs::sector_size;
+
+	unsigned int disk_nr = 1;
+	int i = 0;
+	for (; i<sector_cnts; i++) {
+		read_disk(disk_nr, inode->sectors[i], buf + (i*512), 1);
+	}
+
+	/* The last sector. */
+	char *buf_last = (char*)malloc(_fs::sector_size);
+	read_disk(disk_nr, inode->sectors[i], buf_last, 1);
+	memcpy(buf + (i*512), buf_last, last_sector_bytes);
+
+	free(buf_last);
+
+	return count;
 }
 
 void free_inode_sectors(struct inode inode)

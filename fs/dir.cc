@@ -16,7 +16,7 @@ bool dir_is_empty(char *path);
 
 
 /* Couldn't create directory recursively. */
-void mkdir(char *path)
+void sys_mkdir(char *path)
 {
 	char parent[64] = {0};
 	char *child_name = split_path_2parts(path, parent);	
@@ -43,7 +43,7 @@ void mkdir(char *path)
 }
 
 /* Delete the last directory. */
-void rmdir(char *path)
+void sys_rmdir(char *path)
 {
 	if (!dir_is_empty(path)) {
 		printf("dir is not empty.\n");

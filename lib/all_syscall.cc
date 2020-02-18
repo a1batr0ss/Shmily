@@ -128,3 +128,94 @@ unsigned long long get_current_time()
     return (year << 32) | ((month&0xf) << 28) | ((day&0x3f) << 22) |
         ((hour&0x3f) << 16) | (minute << 8) | second;
 }
+
+/* ************************************* */
+
+void mkdir(char *path)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = (unsigned int)path;
+    msg.reset_message(fs::MKDIR, con);
+    msg.send_then_recv(all_processes::FS);  
+    return;
+}
+
+void rmdir(char *path)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = (unsigned int)path;
+    msg.reset_message(fs::RMDIR, con);
+    msg.send_then_recv(all_processes::FS);
+    return;
+}
+
+void mkfile(char *path)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = (unsigned int)path;
+    msg.reset_message(fs::MKFILE, con);
+    msg.send_then_recv(all_processes::FS);  
+    return;
+
+}
+
+void rmfile(char *path)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = (unsigned int)path;
+    msg.reset_message(fs::RMFILE, con);
+    msg.send_then_recv(all_processes::FS);
+    return;
+}
+
+int open(char *path)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = (unsigned int)path;
+    msg.reset_message(fs::OPEN_FILE, con);
+    msg.send_then_recv(all_processes::FS);
+
+    struct _context con_ret = msg.get_context();
+    return con_ret.con_1;
+}
+
+void close(unsigned int fd)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = fd;
+    msg.reset_message(fs::CLOSE_FILE, con);
+    msg.send_then_recv(all_processes::FS);
+    return;
+}
+
+void write(unsigned int fd, char *str, unsigned int count)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = fd;
+    con.con_2 = (unsigned int)str;
+    con.con_3= count;
+    msg.reset_message(fs::WRITE_FILE, con);
+    msg.send_then_recv(all_processes::FS);
+    return;
+}
+
+unsigned int read(unsigned int fd, char *buf, unsigned int count)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = fd;
+    con.con_2 = (unsigned int)buf;
+    con.con_3 = count;
+    msg.reset_message(fs::READ_FILE, con);
+    msg.send_then_recv(all_processes::FS);
+
+    struct _context con_ret = msg.get_context();
+    return con_ret.con_1;
+}

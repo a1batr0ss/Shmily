@@ -56,7 +56,7 @@ void init_fs()
 
 		read_disk(disk_nr, prim_part->start_lba+1, (char*)buf, 1);
 
-		if (!strcmp(buf->magic, "Shmily"))
+		if (!strcmp(buf->magic, "hmily"))
 			partition_install_fs(prim_part, disk_nr);
 	}
 
@@ -152,7 +152,7 @@ void partition_install_fs(struct partition *part, unsigned int disk_nr)
 	e++;
 	memcpy(e->name, "..", 2);
 	e->inode_no = 0;
-	write_disk(disk_nr, sb->data_start, (char*)buf, 1);
+	write_disk(disk_nr, sb->data_start, (char*)buf, 3);
 
 	free(sb);
 	free(buf);

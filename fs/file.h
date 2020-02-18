@@ -8,10 +8,12 @@ struct file {
 
 extern struct file* file_desc_tbl[64];
 
-void mkfile(char *path);
-void rmfile(char *path);
+void sys_mkfile(char *path);
+void sys_rmfile(char *path);
 int open_file(char *path);
 void close_file(unsigned int fd);
+void write_file(unsigned int fd, char *str, unsigned int count);
+int read_file(unsigned int fd, char *buf, unsigned int count);
 
 #endif
 
