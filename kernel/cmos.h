@@ -13,6 +13,7 @@ struct time {
 extern struct time systime_start;
 
 void init_systime();
+struct time get_cmos_time();
 
 #endif
 

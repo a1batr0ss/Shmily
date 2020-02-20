@@ -17,6 +17,7 @@ class Message {
 	struct _context context;
 
   public:
+    Message();
     Message(unsigned int source_);  /* For receiving. */
     Message(unsigned int source_, int type_, struct _context context_);  /* For sending. */
     unsigned int get_source();

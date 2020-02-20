@@ -2,9 +2,10 @@ section init vstart=0x500
 
 jmp init_start
 
-INIT_CC_BASE_ADDR equ 0x70000
+INIT_CC_BASE_ADDR equ 0x60000
 INIT_START_SECTOR equ 0x5
 INIT_CC_ENTRY equ 0x10000
+WILL_USE_SECTOR equ 300
 PT_NULL equ 0
 
 GDT_BASE:
@@ -75,10 +76,18 @@ prot_start:
     mov ecx, 255
     call read_disk
 
-	; xchg bx, bx
+.more_than_255:
+	mov ecx, WILL_USE_SECTOR
+	sub ecx, 255
+	jc .load_modules_head
+	
+	mov eax, INIT_START_SECTOR + 255
+	mov ebx, 130560  ; 255*512
+	add ebx, INIT_CC_BASE_ADDR
 
-    ; load the elf file
-    ; call load_elf32_init
+	call read_disk
+
+.load_modules_head:
 	mov ecx, 0
 .load_modules:
 	mov edi, [INIT_CC_BASE_ADDR + ecx*4]

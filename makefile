@@ -9,5 +9,5 @@ install_boot: $(BUILD_DIR)/boot.bin
 
 install_kernel: $(BUILD_DIR)/init.bin $(BUILD_DIR)/image
 	dd if=./build/init.bin of=./bochs/testdisk.img bs=512 count=1 seek=1 conv=notrunc
-	dd if=./build/image of=./bochs/testdisk.img bs=512 count=255 seek=5 conv=notrunc
+	dd if=./build/image of=./bochs/testdisk.img bs=512 count=300 seek=5 conv=notrunc
 

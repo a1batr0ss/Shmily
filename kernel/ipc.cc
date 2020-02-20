@@ -5,6 +5,12 @@
 #include "process.h"
 #include "print.h"
 
+/* Couldn't assgin 0, it can't get the current process as user process.(No interrupt.) */
+Message::Message()
+{
+    source = (unsigned int)get_current_proc();
+}
+
 Message::Message(unsigned int source_) : source(source_) {}
 
 Message::Message(unsigned int source_, int type_, struct _context context_)
