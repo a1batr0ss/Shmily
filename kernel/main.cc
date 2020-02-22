@@ -58,6 +58,27 @@ void kernel_work()
 
 			break;
 		}
+		case kr::GET_TIME:
+		{
+			struct time cur_time = get_cmos_time();
+			struct _context con_ret;
+			con_ret.con_1 = (cur_time.second) | (cur_time.minute << 8) |
+							(cur_time.hour << 16) | (cur_time.day << 24);
+			con_ret.con_2 = cur_time.month & 0xff;
+			con_ret.con_3 = cur_time.year;
+
+			msg.reset_message(1, con_ret);
+			msg.reply();
+
+			break;
+		}
+		case kr::CMD_PS:
+		{
+			ps();
+			msg.reply();
+
+			break;
+		}
 		default:
 		{
 			printf("default.\n");

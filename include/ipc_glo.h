@@ -45,12 +45,18 @@ namespace fs {
 	const unsigned int READ_FILE = 6;
 	const unsigned int MKFILE = 7;
 	const unsigned int RMFILE = 8;
+
+	const unsigned int CMD_PWD = 256;
+	const unsigned int CMD_CD = 257;
+	const unsigned int CMD_LS = 258;
 };
 
 namespace kr {
 	const unsigned int REGR_INTR = 1;  /* register a interrupt handler. */
 	const unsigned int SLEEP = 2;
-	const unsigned int GET_TIME = 2;
+	const unsigned int GET_TIME = 3;
+
+	const unsigned int CMD_PS = 256;
 };
 
 namespace net {

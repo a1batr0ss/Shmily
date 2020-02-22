@@ -192,5 +192,8 @@ void mount_partition(char *part_name)
 	cur_part->inode_bmap.base = inode_bmap;
 	cur_part->inode_bmap.bytes_len = sb->inode_bitmap_sectors * _fs::sector_size;
 
+	memset(cur_dir, 0, 64);
+	strcpy(cur_dir, "/");
+
 	return;
 }

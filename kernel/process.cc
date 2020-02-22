@@ -245,3 +245,11 @@ struct pcb* get_current_proc()
 	return (struct pcb*)(esp & 0xffffff000);
 }	
 
+void ps()
+{
+    for (int i=0; i<NR_PROC; i++) {
+        if (NULL == processes[i])
+            continue;
+        printf("%d  %d  %s\n", processes[i]->pid, processes[i]->status, processes[i]->name);
+    }
+}

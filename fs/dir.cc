@@ -6,6 +6,8 @@
 #include "fs.h"
 #include "super_block.h"
 
+char cur_dir[64];
+
 int find_dir_entry(struct inode &inode, char *child);
 int dir_is_exists(char *path);
 char* split_path_2parts(char *path, char *parent);
@@ -14,8 +16,8 @@ char* split_path(char *path, char *cur_path);
 void remove_dir_entry(struct inode inode, char *path_del);
 bool dir_is_empty(char *path);
 
-
 /* Couldn't create directory recursively. */
+/* TODO: create the . and .. entry for the new directory. */
 void sys_mkdir(char *path)
 {
 	char parent[64] = {0};
@@ -316,4 +318,54 @@ int find_dir_entry(struct inode &inode, char *child)
 
 	free(buf);
 	return -1;
+}
+
+void pwd()
+{
+	printf("%s\n", cur_dir);
+}
+
+void cd(char *path)
+{
+	unsigned int ino = dir_is_exists(path);
+	if (-1 == ino)
+		return;
+
+	strcpy(cur_dir, path);
+	return;
+}
+
+void ls(char *path)
+{
+	if (NULL == path)
+		path = cur_dir;
+
+	unsigned int ino = dir_is_exists(path);
+	if (-1 == ino)
+		return;
+	
+	struct inode inode = ino2inode(ino);
+	unsigned int disk_nr = 1;
+	char *buf = (char*)malloc(_fs::sector_size);
+
+	for (int i=0; i<9; i++) {
+		if (0 == inode.sectors[i])
+			continue;
+
+		memset(buf, 0, _fs::sector_size);
+		read_disk(disk_nr, inode.sectors[i], buf, 1);
+		
+		struct dir_entry *p = (struct dir_entry*)buf;
+		/* Check the sector. */
+		for (int j=0; j<(_fs::sector_size / sizeof(struct dir_entry)); j++, p++) {
+			if (0 == p->name[0]) 
+				continue;
+			
+			printf("%s ", p->name);
+		}
+	}
+	printf("\n");
+
+	free(buf);
+	return;
 }

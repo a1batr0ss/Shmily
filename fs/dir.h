@@ -13,12 +13,18 @@ struct dir_entry {
 	enum dir_entry_type type;
 };
 
+extern char cur_dir[64];
+
 void sys_mkdir(char *path);
 void sys_rmdir(char *path);
 char* split_path_2parts(char *path, char *parent);
 int dir_is_exists(char *path);
 void create_dir_entry(struct inode inode, struct dir_entry child);
 void remove_dir_entry(struct inode inode, char *child);
+
+void pwd();
+void cd(char *path);
+void ls(char *path);
 
 #endif
 

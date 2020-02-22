@@ -13,7 +13,7 @@ void create_inode(struct inode *inode)
 
 	/* Set to 0 tentatively. */
 	inode->size = 0;
-	inode->last_modify_time = 0;
+	inode->last_modify_time = get_current_time();
 	inode->link_cnt = 0;
 	inode->uid = 0;
 	inode->gid = 0;

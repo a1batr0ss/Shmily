@@ -95,6 +95,29 @@ int main()
 
 			break;
 		}
+		case fs::CMD_PWD:
+		{
+			pwd();
+			msg.reply();
+
+			break;
+		}
+		case fs::CMD_CD:
+		{
+			unsigned int path = con.con_1;
+			cd((char*)path);
+			msg.reply();
+
+			break;
+		}
+		case fs::CMD_LS:
+		{
+			unsigned int path = con.con_1;
+			ls((char*)path);
+			msg.reply();
+
+			break;
+		}
 		default:
 		{
 			printf("fs received unknown message type.\n");

@@ -52,5 +52,7 @@ void traverse_ready_queue();
 void idle_process(void *args);
 struct pcb* get_current_proc();
 
+void ps();
+
 #endif
 

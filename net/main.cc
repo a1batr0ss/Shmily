@@ -4,19 +4,24 @@
 #include <syscall.h>
 #include "arp.h"
 #include "net.h"
+#include "builtin_cmd.h"
 
 int main()
 {
 	init_net();
 
 	mkdir("/abc");
+	// ps();
+	ls();
 	mkfile("/abc/a.txt");
-	int fd = open("/abc/a.txt");
-	write(fd, "abcdef", 6);
-	char buf[64] = {0};
-	int l = read(fd, buf, 6);
-	printf("read file %d %s\n", l, buf);
-	close(fd);
+	cd("/abc");
+	ls();
+	// int fd = open("/abc/a.txt");
+	// write(fd, "abcdef", 6);
+	// char buf[64] = {0};
+	// int l = read(fd, buf, 6);
+	// printf("read file %d %s\n", l, buf);
+	// close(fd);
 
 	Message msg(all_processes::NET);
 
