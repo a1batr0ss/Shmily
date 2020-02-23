@@ -10,12 +10,12 @@ int main()
 {
 	init_net();
 
-	mkdir("/abc");
+	// mkdir("/abc");
 	// ps();
-	ls();
-	mkfile("/abc/a.txt");
-	cd("/abc");
-	ls();
+	// ls();
+	// mkfile("/abc/a.txt");
+	// cd("/abc");
+	// ls();
 	// int fd = open("/abc/a.txt");
 	// write(fd, "abcdef", 6);
 	// char buf[64] = {0};
@@ -33,7 +33,7 @@ int main()
 		case net::PKT_ARRIVED:
 		{
 			unsigned char *data = (unsigned char*)(con.con_1);
-			
+
 			resolve_packet(data);
 
 			break;
@@ -45,7 +45,7 @@ int main()
 		}
 	}
 
-	
+
 	return 0;
 }
 

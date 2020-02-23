@@ -22,6 +22,7 @@ int main()
 	start_process("fs", 32, (void (*)(void*))0x30000, NULL, all_processes::FS_PCB);
 	start_process("dr", 32, (void (*)(void*))0x40000, NULL, all_processes::DR_PCB);
 	start_process("net", 32, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB);
+	start_process("terminal", 32, (void (*)(void*))0x60000, NULL, all_processes::TER_PCB);
 	start_process("kernel", 32, (void (*)(void*))kernel_work, NULL, all_processes::KR_PCB);
 
     enable_intr();
@@ -44,14 +45,14 @@ void kernel_work()
 			unsigned int handler_addr = msg.get_context().con_2;
 			register_intr_handler(intr_nr, (void (*)(void))handler_addr);
 			msg.reply();
-			
+
 			break;
 		}
 		case kr::SLEEP:
 		{
 			unsigned int seconds = msg.get_context().con_1;
 			printf("will sleep %x seconds.\n", seconds);
-			
+
 			/* Not sure it's the best way as the kernel process will sleep.(Others can still work.) */
 			sleep_seconds(seconds);
 			msg.reply();

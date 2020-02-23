@@ -45,7 +45,7 @@ putchar:
     out dx, al
     mov dx, 0x03d5
     in al, dx
-    
+
     mov bx, ax
     ; argument: the character will be printed.
     mov ecx, [esp + 36]
@@ -107,7 +107,7 @@ putchar:
     mov dx, 0x03d5
     mov al, bh
     out dx, al
-    
+
     mov dx, 0x03d4
     mov al, 0x0f
     out dx, al
@@ -186,4 +186,20 @@ puthex:
     jl .put_each_number
     popad
     ret
+
+global cls
+cls:
+	pushad
+	; push ebx
+	; push ecx
+    mov ebx, 0
+    mov ecx, 80*25
+.rm:
+    mov word [gs:ebx], 0x0720
+    add ebx, 2
+    loop .rm
+	; pop ecx
+	; pop ebx
+	popad
+	ret
 

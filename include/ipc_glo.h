@@ -10,6 +10,7 @@ namespace all_processes {
 	struct pcb *KR_PCB = (struct pcb*)0x93000;
 	struct pcb *DR_PCB = (struct pcb*)0x94000;
 	struct pcb *NET_PCB = (struct pcb*)0x95000;
+	struct pcb *TER_PCB = (struct pcb*)0x96000;
 	struct pcb *INTERRUPT_PCB = (struct pcb*)0x98000;
 	const unsigned int ANY = 0x0;
 	const unsigned int INTERRUPT = 0x98000;
@@ -18,6 +19,7 @@ namespace all_processes {
 	const unsigned int KR = 0x93000;
 	const unsigned int DR = 0x94000;
 	const unsigned int NET = 0x95000;
+ 	const unsigned int TER = 0x96000;
 };
 
 namespace mm {
@@ -34,6 +36,7 @@ namespace dr {
 	const unsigned int ASK_DISK = 6;
 	const unsigned int SEND_PKT = 7;
 	const unsigned int GET_MAC = 8;
+	const unsigned int WHERE_KEYBOARD_BUFFER = 9;
 };
 
 namespace fs {

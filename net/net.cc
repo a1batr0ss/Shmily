@@ -15,7 +15,7 @@ void init_net()
 
 	/* Initialize the arp cache table. */
 	arp_tbl.set_item(0, (unsigned char*)mac_addr, ip_addr);
-	arp_tbl.print_all();
+	// arp_tbl.print_all();
 }
 
 /* Only recognize arp and ip protocol in link layer. */
@@ -26,7 +26,7 @@ void resolve_packet(unsigned char *data)
 	switch (swap_word(pkt_eth->next_protocol)) {
 	case _net::ARP:
 	{
-		printf("An arp packet.\n");
+		// printf("An arp packet.\n");
 
 		struct arp_packet *pkt_arp = (struct arp_packet*)(data + sizeof(struct eth_packet));
 
@@ -45,7 +45,7 @@ void resolve_packet(unsigned char *data)
 	}
 	case _net::IP:
 	{
-		printf("A ip packet.\n");
+		// printf("A ip packet.\n");
 
 		break;
 	}

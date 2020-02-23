@@ -10,7 +10,7 @@
 
 int main()
 {
-	init_fs(); 
+	init_fs();
 
 	Message msg;
 

@@ -4,6 +4,7 @@
 void* malloc(unsigned int cnt);
 void free(void *addr);
 
+unsigned int get_keyboard_buffer();
 void write_disk(unsigned int disk_nr, unsigned int lba, char *str, unsigned int cnt);
 void read_disk(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt);
 void print_partition_info(unsigned int disk_nr);

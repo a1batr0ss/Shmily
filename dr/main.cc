@@ -89,6 +89,15 @@ int main()
 
 			break;
 		}
+		case dr::WHERE_KEYBOARD_BUFFER:
+		{
+			struct _context con_ret;
+			con_ret.con_1 = (unsigned int)&keyboard_buf;
+			msg.reset_message(1, con_ret);
+			msg.reply();
+
+			break;
+		}
 		default:
 		{
 			printf("dr received default. %d\n", msg.get_type());

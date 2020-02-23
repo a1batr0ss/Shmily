@@ -51,7 +51,7 @@ void init_fs()
 		/* We recorded the extend partition, buf we needn't handle it(Just as offset). */
 		if (EXTEND == prim_part->type)
 			continue;
-		
+
 		memset((char*)buf, 0, _fs::sector_size);
 
 		read_disk(disk_nr, prim_part->start_lba+1, (char*)buf, 1);
@@ -74,7 +74,7 @@ void init_fs()
 		if (!strcmp(buf->magic, "Shmily"))
 			partition_install_fs(logic_part, disk_nr);
 	}
-	
+
 	free(buf);
 
 	mount_partition("sda0");
@@ -87,7 +87,7 @@ void init_fs()
 void partition_install_fs(struct partition *part, unsigned int disk_nr)
 {
 	struct super_block *sb = (struct super_block*)malloc(_fs::sector_size);
-	printf("%s is installing file system.\n", part->name);
+	// printf("%s is installing file system.\n", part->name);
 	memset((char*)sb, 0, _fs::sector_size);
 
 	unsigned int i_bmap_sectors = DIV_ROUND_UP(_fs::max_file_nr, 8 * _fs::sector_size);
@@ -168,7 +168,7 @@ void mount_partition(char *part_name)
 		struct partition *part = &disk->primary[i];
 		if (i > 3)
 			part = &disk->logic[i-4];
-		
+
 		if (strcmp(part_name, part->name))
 			cur_part = part;  /* Cross process. */
 
@@ -178,7 +178,7 @@ void mount_partition(char *part_name)
 	/* Load this partition's infomation from disk. */
 	struct super_block *sb = (struct super_block*)malloc(_fs::sector_size);
 	read_disk(disk_nr, cur_part->start_lba+1, (char*)sb, 1);
-	
+
 	cur_part->sb = sb;
 
 	unsigned char *block_bmap = (unsigned char*)malloc(sb->block_bitmap_sectors * _fs::sector_size);
