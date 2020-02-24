@@ -21,6 +21,7 @@ int main()
 			continue;
 
 		unsigned char ch = ringbuffer_get(keyboard_buf);
+		putchar(ch);
 
 		if (13 != ch)  /* Not '\n' (10) */
 			line[line_idx++] = ch;

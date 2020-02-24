@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <string.h>
+#include <builtin_cmd.h>
 
 char cur_user[64];
 char cur_dir[64];
@@ -23,6 +24,12 @@ void print_shell()
 
 void handler_input(char *line)
 {
-	printf("get a line %s\n", line);
+	if (strcmp(line, "ps"))
+		ps();
+	else if (strcmp(line, "pwd"))
+		pwd();
+	else
+		;
+
 }
 

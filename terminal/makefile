@@ -7,7 +7,7 @@ LD_FLAGS = -e main -m elf_i386 -Ttext 0x60000
 
 all: $(BUILD_DIR)/terminal
 
-$(BUILD_DIR)/terminal: $(BUILD_DIR)/terminal_main.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/ring_buffer.cc.o $(BUILD_DIR)/terminal.cc.o
+$(BUILD_DIR)/terminal: $(BUILD_DIR)/terminal_main.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/ring_buffer.cc.o $(BUILD_DIR)/terminal.cc.o $(BUILD_DIR)/builtin_cmd.cc.o
 	$(LD) $(LD_FLAGS) $^ -o $@
 
 $(BUILD_DIR)/terminal_main.cc.o: main.cc

@@ -23,6 +23,9 @@ void init_process_info(struct pcb *proc, char *name_, unsigned int priority_)
     proc->ticks = priority_;
     proc->elapsed_ticks = 0;
     proc->pagedir_pos = NULL;
+
+	memset(proc->name, 0, 16);
+	strcpy(proc->name, name_);
 }
 
 void execute_func(proc_target func, void *args)
@@ -121,16 +124,16 @@ void schedule()
             first_ready_proc = cur_proc;
             last_ready_proc = cur_proc;
             last_ready_proc->next_ready = first_ready_proc;
-        } else {    
+        } else {
              /* Append to ready queue. */
             last_ready_proc->next_ready = cur_proc;
             last_ready_proc = cur_proc;
             last_ready_proc->next_ready = first_ready_proc;
         }
-    } else { 
+    } else {
     }
 
-    if (NULL != first_ready_proc) { 
+    if (NULL != first_ready_proc) {
         next_proc = first_ready_proc;
         next_proc->status = RUNNING;
 
@@ -140,7 +143,7 @@ void schedule()
             first_ready_proc = NULL;
             last_ready_proc = NULL;
         } else {
-            last_ready_proc->next_ready = first_ready_proc->next_ready; 
+            last_ready_proc->next_ready = first_ready_proc->next_ready;
             first_ready_proc = first_ready_proc->next_ready;
         }
 
@@ -160,6 +163,8 @@ void deal_init_process()
     cur_proc_idx = -1;
     init_proc->status = RUNNING;
 
+	append_ready_array(init_proc);
+
     first_ready_proc = NULL;
     last_ready_proc = NULL;
 }
@@ -170,7 +175,7 @@ void self_block(enum process_status stat)
 
     cur_proc->status = stat;
 
-    schedule(); 
+    schedule();
 
     set_intr(old_status);
 }
@@ -196,7 +201,7 @@ void unblock_proc(struct pcb *proc)
     bool old_status = disable_intr();
 
     proc->status = READY;
-    
+
     if ((NULL == last_ready_proc) && (NULL == first_ready_proc)) {
         first_ready_proc = proc;
         last_ready_proc = proc;
@@ -208,7 +213,7 @@ void unblock_proc(struct pcb *proc)
     }
 
     set_intr(old_status);
-} 
+}
 
 /* Just for debug. */
 void traverse_ready_queue()
@@ -225,7 +230,7 @@ void traverse_ready_queue()
         putstring("-->");
         first = first->next_ready;
     }
-    putstring("\n"); 
+    putstring("\n");
 }
 
 void idle_process(void *args)
@@ -241,9 +246,9 @@ struct pcb* get_current_proc()
 {
 	unsigned int esp = 0;
 	asm volatile ("mov %%esp, %0" : "=g"(esp));
-	
+
 	return (struct pcb*)(esp & 0xffffff000);
-}	
+}
 
 void ps()
 {
