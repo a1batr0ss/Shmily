@@ -23,7 +23,7 @@ class Message {
     unsigned int get_source();
     int get_type();
     struct _context get_context();
-	unsigned int get_destination();
+	unsigned int get_dest();
     void set_source(unsigned int source_);
     void set_type(int type_);
     void set_context(struct _context context_);

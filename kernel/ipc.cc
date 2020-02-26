@@ -40,6 +40,11 @@ void Message::set_source(unsigned int source_)
     source = source_;
 }
 
+unsigned int Message::get_dest()
+{
+	return destination;
+}
+
 void Message::set_type(int type_)
 {
     type = type_;
@@ -62,7 +67,8 @@ void Message::send(unsigned int dest)
 
 	// printf("In sending: %x->%x %x.\n", source, dest, dst_status);
 
-    if (WAITING_MSG == dst_status) {
+	/* That girl is waiting me? */
+    if ((WAITING_MSG == dst_status) && ((all_processes::ANY == dst->message->get_dest()) || (source == dst->message->get_dest()))) {
         /* Copy the message to dest, not only point to the message. */
         // dst->message->set_source(source); // There would occured a bug.
         dst->message->set_type(type);
@@ -85,7 +91,7 @@ void Message::send(unsigned int dest)
        		/* Block self, and append to dest's sending queue. */
         	self_block(SENDING_MSG);  /* Set the status to BLOCKED tentatively. */
 		}
-    } 
+    }
 }
 
 void Message::receive(unsigned int want_whose_msg)
@@ -96,7 +102,7 @@ void Message::receive(unsigned int want_whose_msg)
     struct pcb *want_whose = (struct pcb*)want_whose_msg;
 
 	// printf("source is %x.\n", source);
-	// printf("current is %x.\n", (unsigned int)get_current_proc());	
+	// printf("current is %x.\n", (unsigned int)get_current_proc());
 
     if (NULL != prev_sender) {
         if ((want_whose == prev_sender) || (0 == want_whose)) {
@@ -108,7 +114,7 @@ void Message::receive(unsigned int want_whose_msg)
 			destination = (unsigned int)prev_sender;
             if (SENDING_MSG == prev_sender->status)
                 unblock_proc(prev_sender);
-            return; 
+            return;
         }
 
         /* Havent's test. */
@@ -119,7 +125,7 @@ void Message::receive(unsigned int want_whose_msg)
                 type = want_whose->message->get_type();
                 context = want_whose->message->get_context();
 
-                prev_sender->next_ready = sender->next_ready;    
+                prev_sender->next_ready = sender->next_ready;
 
                	destination = (unsigned int)prev_sender;
                 if (SENDING_MSG == prev_sender->status)
@@ -127,9 +133,10 @@ void Message::receive(unsigned int want_whose_msg)
                 return;
             }
             prev_sender = prev_sender->next_ready;
-        } 
+        }
     }
 
+	destination = want_whose_msg;  // include ANY (0)
     /* Store the message's pointer so that we can assign to the message when sender is sending. */
     src->message = this;
     /* Sendings queue is empty, Block self. */
@@ -139,16 +146,16 @@ void Message::receive(unsigned int want_whose_msg)
 /* The dest also as the want_whose_msg */
 void Message::send_then_recv(unsigned int dest)
 {
-    send(dest); 
+    send(dest);
     receive(dest);
 }
 
-void Message::reset_message(int type_, struct _context context_)                               
+void Message::reset_message(int type_, struct _context context_)
 {
     type = type_;
-    context = context_; 
+    context = context_;
 }
-  
+
 void Message::reply()
 {
     send(destination);
