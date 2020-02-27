@@ -115,12 +115,11 @@ void write_file(unsigned int fd, char *str, unsigned int count)
 		has_surplus = true;
 	}
 	inode->size = count;
+	sync_inode(inode);
 
-	if (has_surplus) {
-		sync_inode(inode);
+	if (has_surplus)
 		sync_block_bitmap();
-	}
-	
+
 	free(buf);
 }
 

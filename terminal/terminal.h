@@ -11,14 +11,18 @@ class Terminal {
 	unsigned char line_idx;
 	struct ring_buffer *keyboard_buf;
 
+	void print_login_interface();
 	void print_shell();
 	void handle_input();
 	void reset_terminal();
+	bool user_check(char *login_str);
+	bool login();
 
   public:
 	Terminal(struct ring_buffer *rb);
 	void init_screen();
 	void run();
+	void user_login();
 };
 
 #endif

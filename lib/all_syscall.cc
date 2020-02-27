@@ -252,3 +252,17 @@ void lseek(unsigned int fd, unsigned int offset)
 
 	return;
 }
+
+/* It might be slow, or we can make is as a independent call of fs. */
+void readline(unsigned int fd, char *buf)
+{
+    while (!eof(fd)) {
+        read(fd, buf, 1);
+        if ('\n' == *buf) {
+            *buf = 0;
+            break;
+        }
+        buf++;
+    }
+    return;
+}

@@ -2,7 +2,7 @@ section init vstart=0x500
 
 jmp init_start
 
-INIT_CC_BASE_ADDR equ 0x70000
+INIT_CC_BASE_ADDR equ 0x72000
 INIT_START_SECTOR equ 0x5
 INIT_CC_ENTRY equ 0x10000
 WILL_USE_SECTOR equ 350
@@ -20,7 +20,7 @@ GDT_BASE:
     dd 0x00cf9200
 .VIDEO_DESC:
     dd 0x80000007
-    dd 0x00c0920b 
+    dd 0x00c0920b
 .USER_CODE_DESC:
 	dd 0x0000ffff
 	dd 0x00cffa00
@@ -44,7 +44,7 @@ init_start:
     call enable_A20
     lgdt [gdt_ptr]
     call enable_PE
-    jmp dword SELECTOR_CODE:prot_start 
+    jmp dword SELECTOR_CODE:prot_start
 
 ; don't put the function below [bits 32], it will compile 32 bits(should be 16 bits)
 get_mem_capacity:
@@ -57,7 +57,7 @@ get_mem_capacity:
     or edx, eax
     add edx, 0x100000
     mov esi, edx
-    
+
     xor eax, eax
     mov ax, bx
     mov ecx, 0x10000
@@ -69,7 +69,7 @@ get_mem_capacity:
 
 [bits 32]
 prot_start:
-    call reload_ds    
+    call reload_ds
     ; read main.cc
     mov eax, INIT_START_SECTOR
     mov ebx, INIT_CC_BASE_ADDR
@@ -80,7 +80,7 @@ prot_start:
 	mov ecx, WILL_USE_SECTOR
 	sub ecx, 255
 	jc .load_modules_head
-	
+
 	mov eax, INIT_START_SECTOR + 255
 	mov ebx, 130560  ; 255*512
 	add ebx, INIT_CC_BASE_ADDR
@@ -104,9 +104,9 @@ prot_start:
 
     jmp INIT_CC_ENTRY
 
-    ; can't get here, since it's the jmp instruction above, not call, 
+    ; can't get here, since it's the jmp instruction above, not call,
     ; not push the return address
-    jmp $ 
+    jmp $
 
 ; global enable_A20
 enable_A20:

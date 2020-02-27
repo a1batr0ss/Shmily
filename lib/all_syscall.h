@@ -25,6 +25,7 @@ void write(unsigned int fd, char *str, unsigned int count);
 unsigned int read(unsigned int fd, char *buf, unsigned int count);
 bool eof(unsigned int fd);
 void lseek(unsigned int fd, unsigned int offset);
+void readline(unsigned int fd, char *buf);
 
 #endif
 

@@ -67,6 +67,7 @@ int main()
 		{
 			unsigned int fd = con.con_1;
 			close_file(fd);
+			msg.reply();
 
 			break;
 		}
