@@ -95,6 +95,28 @@ int main()
 
 			break;
 		}
+		case fs::LSEEK_FILE:
+		{
+			unsigned int fd = con.con_1;
+			unsigned int offset = con.con_2;
+
+			lseek_file(fd, offset);
+
+			msg.reply();
+
+			break;
+		}
+		case fs::IS_EOF:
+		{
+			unsigned int res = is_eof(con.con_1);
+
+			struct _context con_ret;
+			con_ret.con_1 = res;
+			msg.reset_message(1, con_ret);
+			msg.reply();
+
+			break;
+		}
 		case fs::CMD_PWD:
 		{
 			pwd();

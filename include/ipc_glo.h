@@ -48,7 +48,9 @@ namespace fs {
 	const unsigned int READ_FILE = 6;
 	const unsigned int MKFILE = 7;
 	const unsigned int RMFILE = 8;
-
+	const unsigned int LSEEK_FILE = 9;
+	const unsigned int IS_EOF = 10;
+	
 	const unsigned int CMD_PWD = 256;
 	const unsigned int CMD_CD = 257;
 	const unsigned int CMD_LS = 258;

@@ -229,3 +229,26 @@ unsigned int read(unsigned int fd, char *buf, unsigned int count)
     struct _context con_ret = msg.get_context();
     return con_ret.con_1;
 }
+
+bool eof(unsigned int fd)
+{
+	Message msg;
+	struct _context con;
+	con.con_1 = fd;
+	msg.reset_message(fs::IS_EOF, con);
+	msg.send_then_recv(all_processes::FS);
+
+	return (bool)(msg.get_context().con_1);
+}
+
+void lseek(unsigned int fd, unsigned int offset)
+{
+	Message msg;
+	struct _context con;
+	con.con_1 = fd;
+	con.con_2 = offset;
+	msg.reset_message(fs::LSEEK_FILE, con);
+	msg.send_then_recv(all_processes::FS);
+
+	return;
+}

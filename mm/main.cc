@@ -5,33 +5,33 @@
 
 int main()
 {
-	init_mem();
+	MemoryManager mm;
 
 	Message msg(all_processes::MM);
 	while (1) {
 		msg.receive(all_processes::ANY);
 		struct _context con = msg.get_context();
-		
+
 		switch (msg.get_type()) {
 		case mm::MALLOC:
 		{
 			struct _context con_ret;
 			unsigned int cnt = con.con_1;
-			unsigned int addr = (unsigned int)malloc(cnt);
+			unsigned int addr = (unsigned int)mm.malloc(cnt);
 
 			con_ret.con_1 = addr;
 			msg.reset_message(1, con_ret);
 			msg.reply();
-			break;		
+			break;
 		}
 		case mm::FREE:
 		{
 			unsigned int addr = con.con_1;
-			free((void*)addr);
+			mm.free((void*)addr);
 			msg.reply();
 
 			break;
-		}			
+		}
 		default:
 		{
 			printf("Unknown message's type.\n");

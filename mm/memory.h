@@ -7,7 +7,6 @@ namespace memory {
 	const unsigned int glo_desc_nr = 7;
 };
 
-
 struct viraddr_manage {
     struct bitmap vaddr_bmap;
     unsigned int vaddr_start;
@@ -26,9 +25,28 @@ struct mem_global_desc {
 	struct bitmap bmap;
 };
 
-void init_mem();
-void* malloc(unsigned int cnt_bytes);
-void free(void *buf);
+class MemoryManager {
+  private:
+	struct viraddr_manage initproc_vir;
+	struct mem_pool phypool;
+	struct mem_global_desc glo_desc[7];  /* 16B, 32B, 64B, 128B, 256B, 512B, 1024B */
+
+	unsigned int get_mem_capacity();
+	void* malloc_page(unsigned int cnt);
+	void* get_vir_page(unsigned int cnt);
+	void* get_phy_page();
+	void free_page(void *viraddr, unsigned int cnt);
+	void free_phy_page(unsigned int phyaddr);
+	void free_vir_page(unsigned int viraddr, unsigned int cnt);
+	void remove_map_addr(unsigned int viraddr);
+
+	void map_vir_phy(unsigned int viraddr, unsigned int phyaddr);
+
+  public:
+	MemoryManager();
+	void* malloc(unsigned int cnt_bytes);
+	void free(void *addr);
+};
 
 #endif
 

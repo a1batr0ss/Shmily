@@ -14,6 +14,8 @@ int open_file(char *path);
 void close_file(unsigned int fd);
 void write_file(unsigned int fd, char *str, unsigned int count);
 int read_file(unsigned int fd, char *buf, unsigned int count);
+void lseek_file(unsigned int fd, unsigned int offset);
+bool is_eof(unsigned int fd);
 
 #endif
 

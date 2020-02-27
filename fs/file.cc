@@ -127,29 +127,56 @@ void write_file(unsigned int fd, char *str, unsigned int count)
 int read_file(unsigned int fd, char *buf, unsigned int count)
 {
 	struct file *file = file_desc_tbl[fd];
+
 	if (NULL == file)
 		return -1;
 
 	struct inode *inode = file->inode;
 	if (count > inode->size)
 		count = inode->size;
-	unsigned int sector_cnts = count / _fs::sector_size;
-	unsigned int last_sector_bytes = count % _fs::sector_size;
-
+	unsigned int start_sector = file->offset / _fs::sector_size;
+	unsigned int start_offset_first = file->offset % _fs::sector_size;
+	unsigned int bytes_first_sector = count > 512 ? _fs::sector_size - file->offset : count;
+	unsigned int sector_cnts = count > 512 ? (count-bytes_first_sector) / _fs::sector_size : 0;
+	unsigned int last_sector_bytes = (count-bytes_first_sector) % _fs::sector_size;
 	unsigned int disk_nr = 1;
-	int i = 0;
-	for (; i<sector_cnts; i++) {
+
+	char *buf_temp = (char*)malloc(_fs::sector_size);
+	/* The first sector. */
+	read_disk(disk_nr, inode->sectors[start_sector], buf_temp, 1);
+	memcpy(buf, buf_temp + start_offset_first, bytes_first_sector);
+	buf += bytes_first_sector;
+
+	int i = start_sector + 1;
+	for (; i<sector_cnts; i++)
 		read_disk(disk_nr, inode->sectors[i], buf + (i*512), 1);
+
+	if (count > 512) {
+		/* The last sector. */
+		read_disk(disk_nr, inode->sectors[i], buf_temp, 1);
+		memcpy(buf + (i*512), buf_temp, last_sector_bytes);
 	}
 
-	/* The last sector. */
-	char *buf_last = (char*)malloc(_fs::sector_size);
-	read_disk(disk_nr, inode->sectors[i], buf_last, 1);
-	memcpy(buf + (i*512), buf_last, last_sector_bytes);
-
-	free(buf_last);
+	free(buf_temp);
+	file->offset += count;
 
 	return count;
+}
+
+void lseek_file(unsigned int fd, unsigned int offset)
+{
+	struct file *file = file_desc_tbl[fd];
+	if (offset > file->inode->size)
+		offset = file->inode->size;
+
+	file->offset = offset;
+	return;
+}
+
+bool is_eof(unsigned int fd)
+{
+	struct file *file = file_desc_tbl[fd];
+	return file->offset >= file->inode->size;
 }
 
 void free_inode_sectors(struct inode inode)
