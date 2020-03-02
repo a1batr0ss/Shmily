@@ -54,7 +54,7 @@ MemoryManager::MemoryManager()
 
 unsigned int MemoryManager::get_mem_capacity()
 {
-   return *(unsigned int*)0x538;
+   return *(unsigned int*)0x548;
 }
 
 void* MemoryManager::get_vir_page(unsigned int cnt)
@@ -159,7 +159,9 @@ void MemoryManager::remove_map_addr(unsigned int viraddr)
 {
 	unsigned int *pte = vaddr2pte(viraddr);
 	*pte &= ~paging::P;
-	asm volatile ("invlpg %0" :: "m" (viraddr) : "memory");
+
+	/* INVLPG: privilege instruction, if run below protect mode, the CPL must be zero. Now our MM is a user process.(CPL is 3) So we can't execute it. */
+	// asm volatile ("invlpg %0" :: "m" (viraddr) : "memory");
 }
 
 void MemoryManager::free_page(void *viraddr, unsigned int cnt)

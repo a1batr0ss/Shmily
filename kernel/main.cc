@@ -7,6 +7,7 @@
 #include "sync.h"
 #include "timer.h"
 #include "cmos.h"
+#include "tss.h"
 
 void kernel_work();
 
@@ -15,14 +16,15 @@ int main()
     enable_paging();
     init_intr();
 	init_systime();
+	install_tss();
 
     deal_init_process();  /* The init process. */
     start_process("idle", 12, (void (*)(void*))idle_process, NULL, (struct pcb*)0x99000);
-	start_process("mm", 32, (void (*)(void*))0x20000, NULL, all_processes::MM_PCB);
-	start_process("fs", 32, (void (*)(void*))0x60000, NULL, all_processes::FS_PCB);
-	start_process("dr", 32, (void (*)(void*))0x40000, NULL, all_processes::DR_PCB);
-	start_process("net", 32, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB);
-	start_process("terminal", 32, (void (*)(void*))0x30000, NULL, all_processes::TER_PCB);
+	start_userprocess("mm", 32, (void (*)(void*))0x20000, NULL, all_processes::MM_PCB);
+	start_userprocess("fs", 32, (void (*)(void*))0x60000, NULL, all_processes::FS_PCB);
+	start_userprocess("dr", 32, (void (*)(void*))0x40000, NULL, all_processes::DR_PCB);
+	start_userprocess("net", 32, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB);
+	start_userprocess("terminal", 32, (void (*)(void*))0x30000, NULL, all_processes::TER_PCB);
 	start_process("kernel", 32, (void (*)(void*))kernel_work, NULL, all_processes::KR_PCB);
 
     enable_intr();

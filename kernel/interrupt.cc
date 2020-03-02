@@ -171,7 +171,8 @@ void init_idt()
    set_idt_entry(46, (unsigned int)intr_handler46, selector::code, 0x8e); 
    set_idt_entry(47, (unsigned int)intr_handler47, selector::code, 0x8e); 
 
-   set_idt_entry(0x99, (unsigned int)syscall_pre_handler, selector::code, 0x8e); 
+   /* Syscall, DPL is 3 for user process. */
+   set_idt_entry(0x99, (unsigned int)syscall_pre_handler, selector::code, 0xee); 
 
    load_idt((unsigned int)(&idt_ptr));
 }

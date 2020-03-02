@@ -14,7 +14,7 @@ GDT_BASE:
     dd 0x00000000
 .CODE_DESC:
     dd 0x0000ffff
-    dd 0x00cf9a00
+    dd 0x00cf9800
 .DATA_DESC:
     dd 0x0000ffff
     dd 0x00cf9200
@@ -22,11 +22,17 @@ GDT_BASE:
     dd 0x80000007
     dd 0x00c0920b
 .USER_CODE_DESC:
-	dd 0x0000ffff
-	dd 0x00cffa00
+    dd 0x0000ffff
+    dd 0x00cff800
 .USER_DATA_DESC:
-	dd 0x0000ffff
-	dd 0x00cff200
+    dd 0x0000ffff
+    dd 0x00cff200
+.USER_VIDEO_DESC:
+    dd 0x80000007
+    dd 0x00c0f20b
+.TSS_DESC:  ; placeholder
+    dd 0x00000000
+    dd 0x00000000
 
 SELECTOR_CODE equ (0x0001<<3) + 0b + 00b
 SELECTOR_DATA equ (0x0002<<3) + 0b + 00b
@@ -100,7 +106,7 @@ prot_start:
 
 .load_modules_end:
     ; set stack pointer
-    mov esp, 0x81000
+    mov esp, 0x91000
 
     jmp INIT_CC_ENTRY
 

@@ -2,5 +2,5 @@ make
 cd ../tools
 make
 cd ..
-make
+make DEBUGGER=1
 

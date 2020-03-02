@@ -1,4 +1,4 @@
-SELECTOR_VIDEO equ (0x0003<<3) + 0b + 00b
+SELECTOR_VIDEO equ (0x0006<<3) + 0b + 00b
 
 section .data
 number_buffer dq 0

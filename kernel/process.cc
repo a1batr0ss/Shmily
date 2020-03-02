@@ -5,6 +5,7 @@
 #include "process.h"
 #include "interrupt.h"
 #include "print.h"
+#include "tss.h"
 
 struct pcb *processes[NR_PROC];
 struct pcb *cur_proc;
@@ -147,11 +148,66 @@ void schedule()
             first_ready_proc = first_ready_proc->next_ready;
         }
 
+        if (next_proc->is_userproc)
+            update_tss(next_proc);
         /* 2. switch to the ready process which just picked. */
         switch_to(next_proc);
     } else {
         /* TODO: Revoke the idle. */
     }
+}
+
+void init_userprocess(proc_target func)
+{
+    // asm volatile ("xchg %%bx, %%bx"::);
+    /* Kernel mode. */
+    struct pcb *cur_proc = get_current_proc();
+    cur_proc->esp =(unsigned int*)((unsigned int)cur_proc + sizeof(struct pcb));
+    struct intr_stack *intr_stack = (struct intr_stack*)(cur_proc->esp);
+    intr_stack->edi = 0;
+    intr_stack->esi = 0;
+    intr_stack->ebp = 0;
+    intr_stack->esp_ = 0;
+    intr_stack->ebx = 0;
+    intr_stack->edx = 0;
+    intr_stack->ecx = 0;
+    intr_stack->eax = 0;
+
+    intr_stack->gs = SELECTOR_GS;
+    intr_stack->ds = SELECTOR_U_DATA;
+    intr_stack->fs = SELECTOR_U_DATA;
+    intr_stack->es = SELECTOR_U_DATA;
+
+    intr_stack->ip = func;
+    intr_stack->cs = SELECTOR_U_CODE;
+    intr_stack->eflags = EF_MBS | EF_IOPL_ON | EF_IF_ON;
+    intr_stack->esp = (unsigned int)cur_proc - 0x10000 + 0x1000;
+    intr_stack->ss = SELECTOR_U_DATA;
+
+    asm volatile ("movl %0, %%esp; jmp intr_exit":: "g" (intr_stack) : "memory");
+}
+
+void start_userprocess(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc)
+{
+    init_process_info(proc, name, priority);
+    create_process(proc, (void (*)(void*))init_userprocess, (void*)func);
+    proc->is_userproc = true;
+
+    /* Append to all queue. */
+    append_ready_array(proc);
+
+    /* Append to ready queue. */
+    if (NULL == first_ready_proc)
+        first_ready_proc = proc;
+
+    if (NULL != last_ready_proc) {
+        last_ready_proc->next_ready = proc;
+        last_ready_proc = proc;
+    } else {
+        last_ready_proc = proc;
+    }
+
+    last_ready_proc->next_ready = first_ready_proc;
 }
 
 /* The init process's information. */
