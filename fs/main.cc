@@ -118,6 +118,15 @@ int main()
 
 			break;
 		}
+		case fs::GET_CUR_DIR:
+		{
+			struct _context con_ret;
+			con_ret.con_1 = (unsigned int)cur_dir;
+			msg.reset_message(1, con_ret);
+			msg.reply();
+
+			break;
+		}
 		case fs::CMD_PWD:
 		{
 			pwd();

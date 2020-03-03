@@ -11,10 +11,13 @@ Terminal::Terminal(struct ring_buffer *rb)
 	memset(this->cur_user, 0, 32);
 	memset(this->cur_dir, 0, 64);
 	memset(this->line, 0, 128);
-	strcpy(this->cur_user, "shmily");
-	strcpy(this->cur_dir, "~");  /* tentatively, it should get from filesystem by message-passing. */
+	memset((char*)(this->argv), 0, 9);
+
 	this->keyboard_buf = rb;
 	this->line_idx = 0;
+	this->argc = 0;
+
+	get_cur_dir(this->cur_dir);
 
 	return;
 }
@@ -105,11 +108,36 @@ void Terminal::print_shell()
 	printf("%s@localhost:%s$", this->cur_user, this->cur_dir);
 }
 
+
+void Terminal::format_input()
+{
+	/* Change all space and '-' to 0. */
+	for (int i=0; 0!=this->line[i]; i++) {
+		if ((' ' == this->line[i]) || ('-' == this->line[i]))
+				this->line[i] = 0;
+	}
+
+	bool is_head = true;
+	for (int i=0; i<this->line_idx; i++) {
+		while (0 == this->line[i++])
+			is_head = true;
+
+		i--;
+		if (is_head)
+			this->argv[this->argc++] = &(this->line[i]);
+
+		is_head = false;
+	}
+	this->argc--;
+}
+
 void Terminal::handle_input()
 {
-	if (strcmp(this->line, "ps"))
+	format_input();
+
+	if (strcmp(this->argv[0], "ps"))
 		ps();
-	else if (strcmp(this->line, "pwd"))
+	else if (strcmp(this->argv[0], "pwd"))
 		pwd();
 	else
 		;
@@ -117,8 +145,10 @@ void Terminal::handle_input()
 
 void Terminal::reset_terminal()
 {
-	memset(this->line, 0, 64);
+	memset(this->line, 0, 128);
 	this->line_idx = 0;
+	memset((char*)this->argv, 0, 9);
+	this->argc = 0;
 	print_shell();
 
 	return;

@@ -1,6 +1,7 @@
 #include <ipc_glo.h>
 #include <syscall.h>
 #include <stdio.h>
+#include <string.h>
 #include "all_syscall.h"
 
 void* malloc(unsigned int cnt)
@@ -21,7 +22,7 @@ void free(void *addr)
 	con.con_1 = (unsigned int)addr;
 	msg.reset_message(mm::FREE, con);
 	msg.send_then_recv(all_processes::MM);
-	return;	
+	return;
 }
 
 /********************************************************/
@@ -43,19 +44,19 @@ void read_disk(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int c
     con.con_1 = disk_nr;
     con.con_2 = lba;
     con.con_3 = (unsigned int)buf;
-    con.con_4 = cnt;    
+    con.con_4 = cnt;
     msg.reset_message(dr::READ, con);
     msg.send_then_recv(all_processes::DR);
-    return; 
+    return;
 }
 
 void write_disk(unsigned int disk_nr, unsigned int lba, char *str, unsigned int cnt)
 {
     Message msg;
     struct _context con;
-    con.con_1 = disk_nr;                                                                                 
+    con.con_1 = disk_nr;
     con.con_2 = lba;
-    con.con_3 = (unsigned int)str;  
+    con.con_3 = (unsigned int)str;
     con.con_4 = cnt;
     msg.reset_message(dr::WRITE, con);
     msg.send_then_recv(all_processes::DR);  /* Write must be sychronized. */
@@ -127,7 +128,7 @@ unsigned long long get_current_time()
     msg.send_then_recv(all_processes::KR);
 
     struct _context con_ret = msg.get_context();
-   
+
     unsigned char second = con_ret.con_1 & 0xff;
     unsigned char minute = (con_ret.con_1 >> 8 ) & 0xff;
     unsigned char hour = (con_ret.con_1 >> 16) & 0xff;
@@ -147,7 +148,7 @@ void mkdir(char *path)
     struct _context con;
     con.con_1 = (unsigned int)path;
     msg.reset_message(fs::MKDIR, con);
-    msg.send_then_recv(all_processes::FS);  
+    msg.send_then_recv(all_processes::FS);
     return;
 }
 
@@ -167,7 +168,7 @@ void mkfile(char *path)
     struct _context con;
     con.con_1 = (unsigned int)path;
     msg.reset_message(fs::MKFILE, con);
-    msg.send_then_recv(all_processes::FS);  
+    msg.send_then_recv(all_processes::FS);
     return;
 
 }
@@ -265,4 +266,17 @@ void readline(unsigned int fd, char *buf)
         buf++;
     }
     return;
+}
+
+void get_cur_dir(char *buf)
+{
+	Message msg;
+	struct _context con;
+	msg.reset_message(fs::GET_CUR_DIR, con);
+	msg.send_then_recv(all_processes::FS);
+
+	char *cur_dir = (char*)(msg.get_context().con_1);
+	strcpy(buf, cur_dir);
+
+	return;
 }

@@ -26,6 +26,7 @@ unsigned int read(unsigned int fd, char *buf, unsigned int count);
 bool eof(unsigned int fd);
 void lseek(unsigned int fd, unsigned int offset);
 void readline(unsigned int fd, char *buf);
+void get_cur_dir(char *buf);
 
 #endif
 
