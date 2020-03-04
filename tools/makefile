@@ -1,14 +1,15 @@
+BUILD_DIR = ../build
 GG = g++
 
-all:  build_image
-	./build_image
+all:  $(BUILD_DIR)/build_image
+	$(BUILD_DIR)/build_image
 
 exec:
-	./build_image
+	$(BUILD_DIR)/build_image
 
-build_image: build_img.cc
+$(BUILD_DIR)/build_image: build_img.cc
 	$(GG) $^ -o $@
 
 clean:
-	rm -rf build_image
+	rm -rf $(BUILD_DIR)/build_image
 
