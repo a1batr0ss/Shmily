@@ -137,7 +137,10 @@ int main()
 		case fs::CMD_CD:
 		{
 			unsigned int path = con.con_1;
-			cd((char*)path);
+			struct _context con_ret;
+			con_ret.con_1 = (unsigned int)cd((char*)path);
+
+			msg.reset_message(1, con_ret);
 			msg.reply();
 
 			break;

@@ -185,6 +185,7 @@ void* MemoryManager::malloc(unsigned int cnt_bytes)
 	if (cnt_bytes > 1024) {
 		unsigned int page_cnt = DIV_ROUND_UP(cnt_bytes+4, paging::page_size);
 		void *ret = malloc_page(page_cnt);
+		memset((char*)ret, 0, page_cnt*paging::page_size);
 		*(unsigned int*)ret = page_cnt;
 		return ret+sizeof(void*);  /* ret + 1 is really ret + 1 ?? */
 	} else {
@@ -197,6 +198,7 @@ void* MemoryManager::malloc(unsigned int cnt_bytes)
 		bitmap_set_bit(&(desc->bmap), bit_idx, 1);
 
 		void *ret = (void*)(desc->start + bit_idx*(desc->size_bytes / desc->desc_nr));
+		memset((char*)ret, 0, 2<<(desc_idx+4));
 		return ret;
 	}
 }

@@ -5,7 +5,7 @@
 
 void ps();
 void ls(char *path=NULL);
-void cd(char *path="/");
+bool cd(char *path="/");
 void pwd();
 
 #endif

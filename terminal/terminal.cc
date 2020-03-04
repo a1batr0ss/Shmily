@@ -139,6 +139,18 @@ void Terminal::handle_input()
 		ps();
 	else if (strcmp(this->argv[0], "pwd"))
 		pwd();
+	else if (strcmp(this->argv[0], "cd")) {
+		if (cd(argv[1])) {
+			memset(this->cur_dir, 0, 64);
+			strcpy(this->cur_dir, argv[1]);  /* Just for Absolute path. */
+		}
+	}
+	else if (strcmp(this->argv[0], "ls"))
+		ls(argv[1]);
+	else if (strcmp(this->argv[0], "mkdir"))
+		mkdir(argv[1]);
+	else if (strcmp(this->argv[0], "rmdir"))
+		rmdir(argv[1]);
 	else
 		;
 }
@@ -154,7 +166,6 @@ void Terminal::reset_terminal()
 	return;
 }
 
-/* TODO: There are some flaw when input '\b' */
 void Terminal::run()
 {
 	print_shell();
@@ -165,14 +176,20 @@ void Terminal::run()
 		unsigned char ch = ringbuffer_get(this->keyboard_buf);
 		if ((0 == this->line_idx) && ('\b' == ch))  /* Avoid to delete the shell's prompt. */
 			continue;
+		else if ('\b' == ch) {
+			this->line_idx--;
+			this->line[this->line_idx] = 0;
+			putchar('\b');
+			continue;
+		} else {
+			putchar(ch);
 
-		putchar(ch);
-
-		if (13 != ch)
-			this->line[this->line_idx++] = ch;
-		else {
-			handle_input();
-			reset_terminal();
+			if (13 != ch)
+				this->line[this->line_idx++] = ch;
+			else {
+				handle_input();
+				reset_terminal();
+			}
 		}
 	}
 }

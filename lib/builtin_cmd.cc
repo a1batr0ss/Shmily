@@ -22,7 +22,7 @@ void pwd()
 	return;
 }
 
-void cd(char *path="/")
+bool cd(char *path="/")
 {
 	Message msg;
 	struct _context con;
@@ -30,7 +30,7 @@ void cd(char *path="/")
 	msg.reset_message(fs::CMD_CD, con);
 	msg.send_then_recv(all_processes::FS);
 
-	return;
+	return (bool)(msg.get_context().con_1);
 }
 
 void ls(char *path=NULL)

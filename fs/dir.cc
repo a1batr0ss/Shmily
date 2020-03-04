@@ -15,13 +15,14 @@ void create_dir_entry(struct inode inode, struct dir_entry child);
 char* split_path(char *path, char *cur_path);
 void remove_dir_entry(struct inode inode, char *path_del);
 bool dir_is_empty(char *path);
+void init_child_dir(unsigned int parent_ino, unsigned int ino);
 
 /* Couldn't create directory recursively. */
 /* TODO: create the . and .. entry for the new directory. */
 void sys_mkdir(char *path)
 {
 	char parent[64] = {0};
-	char *child_name = split_path_2parts(path, parent);	
+	char *child_name = split_path_2parts(path, parent);
 	unsigned int parent_ino = dir_is_exists(parent);
 
 	if (-1 == parent_ino)
@@ -42,6 +43,7 @@ void sys_mkdir(char *path)
 	child.inode_no = child_inode.inode_no;
 
 	create_dir_entry(inode, child);
+	init_child_dir(parent_ino, child.inode_no);
 }
 
 /* Delete the last directory. */
@@ -60,10 +62,10 @@ void sys_rmdir(char *path)
 
 	if (-1 == parent_ino)
 		return;
-	
+
 	struct inode inode_parent = ino2inode(parent_ino);
 	remove_dir_entry(inode_parent, path_del);
-	
+
 	free_inode(child_ino);
 	sync_inode_bitmap();
 
@@ -112,7 +114,7 @@ char* split_path_2parts(char *path, char *parent)
 	if (0 != parent_[1]) {
 		*(parent-1) = 0;  /* Replace the last '/' with 0 */
 	/* else parent = "/" */
-	
+
 		skip_last_slash(parent_);
 	}
 
@@ -133,7 +135,7 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 
 		memset(buf, 0, _fs::sector_size);
 		read_disk(disk_nr, inode.sectors[i], buf, 1);
-		
+
 		struct dir_entry *p = (struct dir_entry*)buf;
 		/* Check the sector. */
 		for (int j=0; j<(_fs::sector_size / sizeof(struct dir_entry)); j++, p++) {
@@ -159,7 +161,7 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 		struct dir_entry *p = (struct dir_entry*)buf;
 		p[free_offset] = child;
 		write_disk(disk_nr, free_sector, buf, 1);
-		
+
 		free(buf);
 
 		return;
@@ -175,7 +177,7 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 		*(struct dir_entry*)buf = child;
 		sync_block(block_no, buf);
 
-		inode.sectors[i] = cur_part->sb->data_start + block_no;				
+		inode.sectors[i] = cur_part->sb->data_start + block_no;
 		sync_inode(&inode);
 
 		sync_block_bitmap();
@@ -183,6 +185,29 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 		free(buf);
 		return;
 	}
+}
+
+void init_child_dir(unsigned int parent_ino, unsigned int ino)
+{
+	unsigned int disk_nr = 1;
+	char *buf = (char*)malloc(_fs::sector_size);
+	struct inode inode = ino2inode(ino);
+
+	struct dir_entry *e = (struct dir_entry*)buf;
+	memcpy(e->name, ".", 1);
+	e->inode_no = ino;
+	e++;
+	memcpy(e->name, "..", 2);
+	e->inode_no = parent_ino;
+
+	/* Write to disk. */
+	unsigned int block_no = allocate_block();
+	inode.sectors[0] = cur_part->sb->data_start + block_no;
+
+	write_disk(disk_nr, inode.sectors[0], buf, 1);
+	sync_inode(&inode);
+	sync_block_bitmap();
+	free(buf);
 }
 
 /* The directory which will be deleted must be empty. */
@@ -198,7 +223,7 @@ void remove_dir_entry(struct inode inode, char *path_del)
 
 		memset(buf, 0, _fs::sector_size);
 		read_disk(disk_nr, inode.sectors[i], buf, 1);
-		
+
 		unsigned int empty_cnts = 0;
 		struct dir_entry *p = (struct dir_entry*)buf;
 		/* Check the sector. */
@@ -282,7 +307,7 @@ int dir_is_exists(char *path)
 		parent_inode_no = find_dir_entry(inode, cur_path);
 		if (-1 == parent_inode_no)
 			return -1;
-		
+
 		inode = ino2inode(parent_inode_no);
 	}
 
@@ -300,9 +325,9 @@ int find_dir_entry(struct inode &inode, char *child)
 		unsigned int sector_lba = inode.sectors[i];
 		if (0 == sector_lba)
 			continue;
-		
+
 		read_disk(disk_nr, sector_lba, buf, 1);
-		
+
 		struct dir_entry *p_de = (struct dir_entry*)buf;
 		for (int j=0; j<entries_per_sector; j++, p_de++) {
 			if (0 == p_de->name[0])
@@ -325,14 +350,15 @@ void pwd()
 	printf("%s\n", cur_dir);
 }
 
-void cd(char *path)
+bool cd(char *path)
 {
 	unsigned int ino = dir_is_exists(path);
 	if (-1 == ino)
-		return;
+		return false;
 
+	memset(cur_dir, 0, 64);
 	strcpy(cur_dir, path);
-	return;
+	return true;
 }
 
 void ls(char *path)
@@ -343,7 +369,7 @@ void ls(char *path)
 	unsigned int ino = dir_is_exists(path);
 	if (-1 == ino)
 		return;
-	
+
 	struct inode inode = ino2inode(ino);
 	unsigned int disk_nr = 1;
 	char *buf = (char*)malloc(_fs::sector_size);
@@ -354,13 +380,13 @@ void ls(char *path)
 
 		memset(buf, 0, _fs::sector_size);
 		read_disk(disk_nr, inode.sectors[i], buf, 1);
-		
+
 		struct dir_entry *p = (struct dir_entry*)buf;
 		/* Check the sector. */
 		for (int j=0; j<(_fs::sector_size / sizeof(struct dir_entry)); j++, p++) {
-			if (0 == p->name[0]) 
+			if (0 == p->name[0])
 				continue;
-			
+
 			printf("%s ", p->name);
 		}
 	}
@@ -369,3 +395,4 @@ void ls(char *path)
 	free(buf);
 	return;
 }
+

@@ -23,7 +23,7 @@ void create_dir_entry(struct inode inode, struct dir_entry child);
 void remove_dir_entry(struct inode inode, char *child);
 
 void pwd();
-void cd(char *path);
+bool cd(char *path);
 void ls(char *path);
 
 #endif
