@@ -8,6 +8,8 @@ namespace _net {
 	const unsigned short ARP = 0x0806;
 };
 
+extern char mac_addr[6];
+
 void init_net();
 void resolve_packet(unsigned char *data);
 

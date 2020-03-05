@@ -2,12 +2,12 @@ GG = g++
 LD = ld
 BUILD_DIR = ../build
 
-GG_FLAGS = -c -m32 -fno-stack-protector -I ../lib -I ../include 
+GG_FLAGS = -c -m32 -fno-stack-protector -I ../lib -I ../include
 LD_FLAGS = -e main -m elf_i386 -Ttext 0x50000
 
 all: $(BUILD_DIR)/net
 
-$(BUILD_DIR)/net: $(BUILD_DIR)/net_main.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/byte_order.cc.o $(BUILD_DIR)/arp.cc.o $(BUILD_DIR)/net.cc.o $(BUILD_DIR)/builtin_cmd.cc.o
+$(BUILD_DIR)/net: $(BUILD_DIR)/net_main.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/byte_order.cc.o $(BUILD_DIR)/arp.cc.o $(BUILD_DIR)/net.cc.o $(BUILD_DIR)/builtin_cmd.cc.o $(BUILD_DIR)/ethernet.cc.o $(BUILD_DIR)/ip.cc.o $(BUILD_DIR)/icmp.cc.o
 	$(LD) $(LD_FLAGS) $^ -o $@
 
 $(BUILD_DIR)/net_main.cc.o: main.cc
@@ -22,6 +22,15 @@ $(BUILD_DIR)/arp.cc.o: arp.cc
 $(BUILD_DIR)/net.cc.o: net.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
+$(BUILD_DIR)/ethernet.cc.o: ethernet.cc
+	$(GG) $(GG_FLAGS) $< -o $@
+
+$(BUILD_DIR)/ip.cc.o: ip.cc
+	$(GG) $(GG_FLAGS) $< -o $@
+
+$(BUILD_DIR)/icmp.cc.o: icmp.cc
+	$(GG) $(GG_FLAGS) $< -o $@
+
 clean:
-	rm -rf $(BUILD_DIR)/net $(BUILD_DIR)/net.cc.o $(BUILD_DIR)/net_main.cc.o $(BUILD_DIR)/arp.cc.o $(BUILD_DIR)/byte_order.cc.o
+	rm -rf $(BUILD_DIR)/net $(BUILD_DIR)/net.cc.o $(BUILD_DIR)/net_main.cc.o $(BUILD_DIR)/arp.cc.o $(BUILD_DIR)/byte_order.cc.o $(BUILD_DIR)/ethernet.cc.o $(BUILD_DIR)/ip.cc.o $(BUILD_DIR)/icmp.cc.o
 

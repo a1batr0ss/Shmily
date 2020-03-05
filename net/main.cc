@@ -4,24 +4,16 @@
 #include <syscall.h>
 #include "arp.h"
 #include "net.h"
+#include "icmp.h"
 #include "builtin_cmd.h"
 
 int main()
 {
 	init_net();
 
-	// mkdir("/abc");
-	// ps();
-	// ls();
-	// mkfile("/abc/a.txt");
-	// cd("/abc");
-	// ls();
-	// int fd = open("/abc/a.txt");
-	// write(fd, "abcdef", 6);
-	// char buf[64] = {0};
-	// int l = read(fd, buf, 6);
-	// printf("read file %d %s\n", l, buf);
-	// close(fd);
+	unsigned char req_ip[4] = {192, 168, 11, 99};
+	unsigned char target_mac_addr[6] = {11, 11, 11, 22, 22, 22};
+	icmp_reply(req_ip, target_mac_addr);
 
 	Message msg(all_processes::NET);
 

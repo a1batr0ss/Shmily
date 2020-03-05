@@ -8,14 +8,9 @@
 extern char mac_addr[6];
 unsigned char ip_addr[4] = {192, 168, 22, 44};
 
-void arp_request(unsigned char *target_ip)
+void init_arp_request(unsigned char *data, unsigned char *target_ip)
 {
-	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct arp_packet));
-
-	struct eth_packet *eth = (struct eth_packet*)data;;
-	struct arp_packet *pkt = (struct arp_packet*)(data + sizeof(struct eth_packet));
-
-	eth->next_protocol = swap_word(frame::next_is_arp);
+	struct arp_packet *pkt = (struct arp_packet*)data;
 
 	pkt->hw_type = swap_word(arp::hw_type);
 	pkt->req_protocol = swap_word(arp::ipv4);
@@ -25,17 +20,21 @@ void arp_request(unsigned char *target_ip)
 
 	for (int i=0; i<6; i++) {
 		pkt->src_mac_addr[i] = mac_addr[i];
-	    pkt->dst_mac_addr[i] = 0;	
-
-		/* Process link layer at the same time. */
-		eth->dst_mac_addr[i] = arp::mac_broadcast[i];
-		eth->src_mac_addr[i] = mac_addr[i];
+	    pkt->dst_mac_addr[i] = 0;
 	}
 
 	for (int i=0; i<4; i++) {
 		pkt->src_ip_addr[i] = ip_addr[i];
 		pkt->target_ip[i] = target_ip[i];
 	}
+}
+
+void arp_request(unsigned char *target_ip)
+{
+	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct arp_packet));
+
+	init_ethernet_packet(data, arp::mac_broadcast, frame::next_is_arp);
+	init_arp_request(data + sizeof(struct eth_packet), target_ip);
 
 	struct packet p;
 	p.size = sizeof(struct eth_packet) + sizeof(struct arp_packet);
@@ -46,14 +45,9 @@ void arp_request(unsigned char *target_ip)
 	free(data);
 }
 
-void arp_response(unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsigned char *req_ip)
+void init_arp_response(unsigned char *data, unsigned char *res_mac_addr, unsigned char *req_ip)
 {
-	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct arp_packet));
-
-	struct eth_packet *eth = (struct eth_packet*)data;;
-	struct arp_packet *pkt = (struct arp_packet*)(data + sizeof(struct eth_packet));
-
-	eth->next_protocol = swap_word(frame::next_is_arp);
+	struct arp_packet *pkt = (struct arp_packet*)data;
 
 	pkt->hw_type = swap_word(arp::hw_type);
 	pkt->req_protocol = swap_word(arp::ipv4);
@@ -64,16 +58,21 @@ void arp_response(unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsi
 	for (int i=0; i<6; i++) {
 		pkt->src_mac_addr[i] = mac_addr[i];
 	    pkt->dst_mac_addr[i] = res_mac_addr[i];  /* Target mac address. */
-
-		/* Process link layer at the same time. */
-		eth->dst_mac_addr[i] = src_mac_addr[i];
-		eth->src_mac_addr[i] = mac_addr[i];
 	}
 
 	for (int i=0; i<4; i++) {
 		pkt->src_ip_addr[i] = ip_addr[i];
 		pkt->target_ip[i] = req_ip[i];
 	}
+}
+
+/* No test! */
+void arp_response(unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsigned char *req_ip)
+{
+	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct arp_packet));
+
+	init_ethernet_packet(data, src_mac_addr, frame::next_is_arp);
+	init_arp_response(data + sizeof(struct ethernet), res_mac_addr, req_ip);
 
 	struct packet p;
 	p.size = sizeof(struct eth_packet) + sizeof(struct arp_packet);
@@ -82,7 +81,6 @@ void arp_response(unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsi
 	send_packet((unsigned int)&p);
 
 	free(data);
-
 }
 
 bool is_same_mac_addr(unsigned char *mac_addr1, unsigned char *mac_addr2)

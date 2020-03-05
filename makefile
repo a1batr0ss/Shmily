@@ -16,7 +16,7 @@ install_boot: $(BUILD_DIR)/boot.bin
 
 install_kernel: $(BUILD_DIR)/init.bin $(BUILD_DIR)/image
 	dd if=./build/init.bin of=./bochs/testdisk.img bs=512 count=1 seek=1 conv=notrunc
-	dd if=./build/image of=./bochs/testdisk.img bs=512 count=350 seek=5 conv=notrunc
+	dd if=./build/image of=./bochs/testdisk.img bs=512 count=370 seek=5 conv=notrunc
 
 clean:
 	rm -rf $(BUILD_DIR)/* $(DISK_DIR)/testdisk.img $(DISK_DIR)/fs_test.img

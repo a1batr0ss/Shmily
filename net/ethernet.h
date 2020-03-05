@@ -30,8 +30,11 @@ namespace {
 	namespace frame {
 		const unsigned int MAX_LEN = 1532;  /* 1526 */
 		unsigned short next_is_arp = 0x0806;
+		unsigned short next_is_ip = 0x0800;
 	};
-}
+};
+
+void init_ethernet_packet(unsigned char *data, unsigned char *target_mac_addr, unsigned short next_proto);
 
 #endif
 

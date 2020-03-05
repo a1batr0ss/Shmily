@@ -12,12 +12,12 @@ int main()
 	init_disk();
 	init_ne2k();
 
-	Message msg(all_processes::DR);	
+	Message msg(all_processes::DR);
 
 	while (1) {
 		msg.receive(all_processes::ANY);
 		struct _context con = msg.get_context();
-		
+
 		switch (msg.get_type()) {
 		case dr::IDEN:
 		{
@@ -77,6 +77,7 @@ int main()
 			struct packet pkt = *(struct packet*)pkt_;
 
 			send_packet(pkt);
+			msg.reply();
 
 			break;
 		}
