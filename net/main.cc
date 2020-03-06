@@ -6,6 +6,7 @@
 #include "net.h"
 #include "icmp.h"
 #include "udp.h"
+#include "dns.h"
 #include "builtin_cmd.h"
 
 int main()
@@ -15,7 +16,8 @@ int main()
 	unsigned char req_ip[4] = {192, 168, 11, 99};
 	unsigned char target_mac_addr[6] = {11, 11, 11, 22, 22, 22};
 	// icmp_reply(req_ip, target_mac_addr);
-	send_udp(53, 0, target_mac_addr, req_ip);
+	// send_udp(53, 0, target_mac_addr, req_ip);
+	send_dns_packet(target_mac_addr, req_ip, "www.baidu.com");
 
 	Message msg(all_processes::NET);
 
