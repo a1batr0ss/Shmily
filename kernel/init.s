@@ -2,7 +2,7 @@ section init vstart=0x500
 
 jmp init_start
 
-INIT_CC_BASE_ADDR equ 0x72000
+INIT_CC_BASE_ADDR equ 0x70000
 INIT_START_SECTOR equ 0x5
 INIT_CC_ENTRY equ 0x10000
 WILL_USE_SECTOR equ 370

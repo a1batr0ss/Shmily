@@ -19,7 +19,7 @@ void init_ipv4_header(unsigned char *data, unsigned char *target_ip, unsigned sh
 	pkt->next_protocol = next_proto;
 	pkt->header_checksum = 0;
 
-	for (int i=0; i<6; i++) {
+	for (int i=0; i<4; i++) {
 		pkt->src_ip[i] = ip_addr[i];
 		pkt->dst_ip[i] = target_ip[i];
 	}
