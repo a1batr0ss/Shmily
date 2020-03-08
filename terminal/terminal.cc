@@ -153,6 +153,8 @@ void Terminal::handle_input()
 		rmdir(argv[1]);
 	else if (strcmp(this->argv[0], "meminfo"))
 		meminfo();
+	else if (strcmp(this->argv[0], "cat"))
+		cat(argv[1]);
 	else
 		;
 }

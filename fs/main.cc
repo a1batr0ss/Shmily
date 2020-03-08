@@ -153,6 +153,14 @@ int main()
 
 			break;
 		}
+		case fs::CMD_CAT:
+		{
+			unsigned int filename = con.con_1;
+			sys_cat((char*)filename);
+			msg.reply();
+
+			break;
+		}
 		default:
 		{
 			printf("fs received unknown message type.\n");

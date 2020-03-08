@@ -57,6 +57,7 @@ namespace fs {
 	const unsigned int CMD_PWD = 256;
 	const unsigned int CMD_CD = 257;
 	const unsigned int CMD_LS = 258;
+	const unsigned int CMD_CAT = 259;
 };
 
 namespace kr {

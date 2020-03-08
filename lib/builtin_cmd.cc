@@ -54,3 +54,13 @@ void ls(char *path=NULL)
 	return;
 }
 
+void cat(char *filename)
+{
+	Message msg;
+	struct _context con;
+	con.con_1 = (unsigned int)filename;
+	msg.reset_message(fs::CMD_CAT, con);
+	msg.send_then_recv(all_processes::FS);
+
+	return;
+}

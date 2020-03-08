@@ -8,6 +8,7 @@ void meminfo();
 void ls(char *path=NULL);
 bool cd(char *path="/");
 void pwd();
+void cat(char *filename);
 
 #endif
 

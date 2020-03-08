@@ -8,6 +8,8 @@
 #include "fs.h"
 #include "super_block.h"
 
+#define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
+
 struct file* file_desc_tbl[64];
 
 void free_inode_sectors(struct inode inode);
@@ -241,5 +243,29 @@ void free_fdt_slot(unsigned int slot)
 	if (slot > 63)
 		return;
 	file_desc_tbl[slot] = NULL;
+}
+
+void sys_cat(char *filename)
+{
+	unsigned int ino = dir_is_exists(filename);
+	if (-1 == ino) {
+		printf("File is not exists.\n");
+		return;
+	}
+
+	struct inode inode = ino2inode(ino);
+	char *buf = (char*)malloc(_fs::sector_size);
+	unsigned int sectors_cnt = DIV_ROUND_UP(inode.size, _fs::sector_size);
+	unsigned int disk_nr = 1;
+
+	for (int i=0; i<sectors_cnt; i++) {
+		read_disk(disk_nr, inode.sectors[i], buf, 1);
+		printf("%s", buf);
+		memset(buf, 0, _fs::sector_size);
+	}
+	printf("\n");
+
+	free(buf);
+	return;
 }
 
