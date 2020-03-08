@@ -32,6 +32,13 @@ int main()
 
 			break;
 		}
+		case mm::CMD_MEMINFO:
+		{
+			mm.print_mem_info();
+			msg.reply();
+
+			break;
+		}
 		default:
 		{
 			printf("Unknown message's type.\n");

@@ -46,6 +46,8 @@ class MemoryManager {
 	MemoryManager();
 	void* malloc(unsigned int cnt_bytes);
 	void free(void *addr);
+
+	void print_mem_info();
 };
 
 #endif

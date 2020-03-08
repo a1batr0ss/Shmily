@@ -25,6 +25,8 @@ namespace all_processes {
 namespace mm {
 	const unsigned int MALLOC = 1;
 	const unsigned int FREE = 2;
+
+	const unsigned int CMD_MEMINFO = 256;
 };
 
 namespace dr {

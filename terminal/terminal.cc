@@ -151,6 +151,8 @@ void Terminal::handle_input()
 		mkdir(argv[1]);
 	else if (strcmp(this->argv[0], "rmdir"))
 		rmdir(argv[1]);
+	else if (strcmp(this->argv[0], "meminfo"))
+		meminfo();
 	else
 		;
 }

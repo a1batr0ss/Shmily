@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <bitmap.h>
 #include "memory.h"
+#include "swar.h"
 
 #define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
 
@@ -217,4 +218,28 @@ void MemoryManager::free(void *buf)
 	} else {
 		printf("Error.\n");
 	}
+}
+
+/* Roughly calculate the memory information. */
+void MemoryManager::print_mem_info()
+{
+	unsigned int all_mem = get_mem_capacity();
+    unsigned int *start = (unsigned int*)(this->phypool.phyaddr_bmap.base);
+
+	unsigned int used_pages = 0;
+	for (unsigned int i=0; i<(this->phypool.phyaddr_bmap.bytes_len / 4); i++)
+		used_pages += swar(start[i]);
+
+	/* Scattered. */
+	unsigned int cnt_bytes = 0;
+	for (int i=0; i<memory::glo_desc_nr; i++) {
+		unsigned int bytes_units = 2 << (i + 4);
+		unsigned int *start_desc = (unsigned int*)(this->glo_desc[i].bmap.base);
+
+		for (int j; j<(this->glo_desc[i].bmap.bytes_len / 4); j++)
+			cnt_bytes += bytes_units * swar(start_desc[j]);
+	}
+
+	unsigned int all_used = used_pages*paging::page_size + cnt_bytes + 0x200000;
+	printf("totoal: %dKB   used: %dKB   free:  %dKB\n", all_mem>>10, all_used>>10, (all_mem-all_used)>>10);
 }

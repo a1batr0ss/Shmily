@@ -4,6 +4,7 @@
 #include <global.h>
 
 void ps();
+void meminfo();
 void ls(char *path=NULL);
 bool cd(char *path="/");
 void pwd();

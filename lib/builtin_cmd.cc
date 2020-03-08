@@ -12,6 +12,16 @@ void ps()
 	return;
 }
 
+void meminfo()
+{
+	Message msg;
+	struct _context con;
+	msg.reset_message(mm::CMD_MEMINFO, con);
+	msg.send_then_recv(all_processes::MM);
+
+	return;
+}
+
 void pwd()
 {
 	Message msg;
