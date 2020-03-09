@@ -20,11 +20,14 @@ class Terminal {
 	void reset_terminal();
 	bool user_check(char *login_str);
 	bool login();
-  public:
-	Terminal(struct ring_buffer *rb);
 	void init_screen();
 	void run();
 	void user_login();
+	void record_to_log();
+
+  public:
+	Terminal(struct ring_buffer *rb);
+	void start();
 };
 
 #endif

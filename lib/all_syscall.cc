@@ -2,6 +2,8 @@
 #include <syscall.h>
 #include <stdio.h>
 #include <string.h>
+#include <time.h>
+#include <cmos.h>
 #include "all_syscall.h"
 
 void* malloc(unsigned int cnt)
@@ -129,15 +131,15 @@ unsigned long long get_current_time()
 
     struct _context con_ret = msg.get_context();
 
-    unsigned char second = con_ret.con_1 & 0xff;
-    unsigned char minute = (con_ret.con_1 >> 8 ) & 0xff;
-    unsigned char hour = (con_ret.con_1 >> 16) & 0xff;
-    unsigned char day = (con_ret.con_1 >> 24) & 0xff;
-    unsigned char month = con_ret.con_2 & 0xff;
-    unsigned long long year = con_ret.con_3;
+    struct time t;
+    t.second = con_ret.con_1 & 0xff;
+    t.minute = (con_ret.con_1 >> 8 ) & 0xff;
+    t.hour = (con_ret.con_1 >> 16) & 0xff;
+    t.day = (con_ret.con_1 >> 24) & 0xff;
+    t.month = con_ret.con_2 & 0xff;
+    t.year = con_ret.con_3;
 
-    return (year << 32) | ((month&0xf) << 28) | ((day&0x3f) << 22) |
-        ((hour&0x3f) << 16) | (minute << 8) | second;
+    return time2num(t);
 }
 
 /* ************************************* */
@@ -205,13 +207,14 @@ void close(unsigned int fd)
     return;
 }
 
-void write(unsigned int fd, char *str, unsigned int count)
+void write(unsigned int fd, char *str, unsigned int count, unsigned char mode)
 {
     Message msg;
     struct _context con;
     con.con_1 = fd;
     con.con_2 = (unsigned int)str;
     con.con_3= count;
+	con.con_4 = mode;
     msg.reset_message(fs::WRITE_FILE, con);
     msg.send_then_recv(all_processes::FS);
     return;

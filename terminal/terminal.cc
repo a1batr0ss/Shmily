@@ -1,9 +1,12 @@
+#include <global.h>
 #include <stdio.h>
 #include <print.h>
 #include <string.h>
 #include <builtin_cmd.h>
 #include <ring_buffer.h>
 #include <all_syscall.h>
+#include <cmos.h>
+#include <time.h>
 #include "terminal.h"
 
 Terminal::Terminal(struct ring_buffer *rb)
@@ -41,6 +44,31 @@ void Terminal::print_login_interface()
 void Terminal::user_login()
 {
 	while (!login()) ;
+}
+
+void Terminal::start()
+{
+	user_login();
+
+	record_to_log();
+
+	init_screen();
+
+	run();
+}
+
+void Terminal::record_to_log()
+{
+	char record[32] = {0};
+	unsigned long long time_n = get_current_time();
+	struct time t = num2time(time_n);
+	sprintf(record, "User: %s Date: %d-%d-%d %d:%d\n", cur_user, t.year, t.month, t.day, t.hour, t.minute);
+
+	/* Write to disk. */
+	unsigned int fd = open("/var/login.log");
+	write(fd, record, strlen(record), file_io::APPEND);
+	close(fd);
+	return;
 }
 
 /* Bad code. */

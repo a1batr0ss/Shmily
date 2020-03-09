@@ -76,7 +76,8 @@ int main()
 			unsigned int fd = con.con_1;
 			char *str = (char*)(con.con_2);
 			unsigned int count = con.con_3;
-			write_file(fd, str, count);
+			unsigned int mode = con.con_4;
+			write_file(fd, str, count, mode);
 
 			msg.reply();
 

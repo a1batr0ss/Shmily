@@ -70,7 +70,7 @@ void sys_rmfile(char *path)
 }
 
 /* Take a start from head. */
-void write_file(unsigned int fd, char *str, unsigned int count)
+void write_file(unsigned int fd, char *str, unsigned int count, unsigned char mode)
 {
 	struct file *file = file_desc_tbl[fd];
 	if (NULL == file)
@@ -79,12 +79,21 @@ void write_file(unsigned int fd, char *str, unsigned int count)
 	if (strlen(str) < count)
 		count = strlen(str) + 1;  /* The '/0'. */
 
-	unsigned int sector_cnts = count / _fs::sector_size;
-	unsigned int last_sector_bytes = count % _fs::sector_size;
 	struct inode *inode = file->inode;
+	int sector_cnts = count / _fs::sector_size;  /* The sector is must 512B */
+	unsigned int last_sector_bytes = count % _fs::sector_size;
+	unsigned int start_sector = 0;
+	unsigned int start_pos = 0;  /* start position in the start sector. */
+	if (file_io::APPEND == mode) {
+		start_sector = inode->size / _fs::sector_size;
+		start_pos = inode->size % _fs::sector_size;
+		unsigned int all_bytes = inode->size + count;
+		last_sector_bytes = all_bytes % _fs::sector_size;
+		sector_cnts = all_bytes / _fs::sector_size - start_sector;
+	}
 
 	/* Allocate block for the inode. */
-	for (int i=0; i<sector_cnts+1; i++) {
+	for (int i=start_sector; i<sector_cnts+1; i++) {
 		if (0 == inode->sectors[i]) {
 			unsigned int block_no = allocate_block();
 			inode->sectors[i] = cur_part->sb->data_start + block_no;
@@ -95,15 +104,25 @@ void write_file(unsigned int fd, char *str, unsigned int count)
 
 	unsigned int disk_nr = 1;
 	/* Write to disk. Not serial, we must write to disk singly. */
-	int i = 0;
-	for (; i<sector_cnts; i++) {
-		write_disk(disk_nr, inode->sectors[i], str + (i*512), 1);
-	}
-
-	/* The last sector.(padding 0) */
+	/* The first sector. */
+	unsigned int start_sector_surplus = _fs::sector_size - start_pos;
+	unsigned int will_write_first_sector = start_sector_surplus < count ? start_sector_surplus : count;
 	char *buf = (char*)malloc(_fs::sector_size);
-	memcpy(buf, str + (i*512), last_sector_bytes);
-	write_disk(disk_nr, inode->sectors[i], buf, 1);
+	read_disk(disk_nr, inode->sectors[start_sector], buf, 1);
+	memcpy(buf+start_pos, str, will_write_first_sector);
+	write_disk(disk_nr, inode->sectors[start_sector], buf, 1);
+	str += will_write_first_sector;
+
+	int i = start_sector + 1;
+	for (; i<sector_cnts-1; i++)
+		write_disk(disk_nr, inode->sectors[i], str + (i*512), 1);
+
+	if (count > start_sector_surplus) {
+		/* The last sector.(padding 0) */
+		memset(buf, 0, _fs::sector_size);
+		memcpy(buf, str + (i*512), last_sector_bytes);
+		write_disk(disk_nr, inode->sectors[i], buf, 1);
+	}
 
 	bool has_surplus = false;
 	/* Free the remainder sectors previously. */
@@ -116,7 +135,12 @@ void write_file(unsigned int fd, char *str, unsigned int count)
 		inode->sectors[i] = 0;
 		has_surplus = true;
 	}
-	inode->size = count;
+
+	if (file_io::APPEND == mode)
+		inode->size += count;
+	else
+		inode->size = count;
+
 	sync_inode(inode);
 
 	if (has_surplus)

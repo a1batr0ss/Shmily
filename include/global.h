@@ -14,6 +14,10 @@ namespace paging {
     const int P = 1;
 };
 
+namespace file_io {
+	const unsigned char APPEND = 0;
+	const unsigned char COVER = 1;
+};
 
 #endif
 
