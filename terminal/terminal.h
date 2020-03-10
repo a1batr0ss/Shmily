@@ -18,7 +18,6 @@ class Terminal {
 	void format_input();
 	void handle_input();
 	void reset_terminal();
-	bool user_check(char *login_str);
 	bool login();
 	void init_screen();
 	void run();

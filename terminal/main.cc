@@ -5,17 +5,17 @@
 #include <all_syscall.h>
 #include <ring_buffer.h>
 #include "terminal.h"
+#include "user.h"
 
 int main()
 {
-	mkfile("/passwd");
-	int fd = open("/passwd");
-	char *passwd = "root:root\nhalou:world\n";
-	write(fd, passwd, strlen(passwd), file_io::COVER);
-	close(fd);
-
+	mkdir("/etc");
+	mkfile("/etc/passwd");
 	mkdir("/var");
 	mkfile("/var/login.log");
+
+	useradd("root", "root");
+	useradd("halou", "world");
 
 	struct ring_buffer *keyboard_buf = (struct ring_buffer*)get_keyboard_buffer();
 	Terminal ter1(keyboard_buf);

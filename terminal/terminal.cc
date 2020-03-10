@@ -8,6 +8,7 @@
 #include <cmos.h>
 #include <time.h>
 #include "terminal.h"
+#include "user.h"
 
 Terminal::Terminal(struct ring_buffer *rb)
 {
@@ -75,7 +76,9 @@ void Terminal::record_to_log()
 bool Terminal::login()
 {
 	bool is_passwd = false;
-	char login_str[64] = {0};
+	char username[32] = {0};
+	char password[32] = {0};
+	char *login_str = username;
 	unsigned char idx = 0;
 
 	print_login_interface();
@@ -93,11 +96,12 @@ bool Terminal::login()
 
 		if ((13 == ch) && (false == is_passwd)) {
 			is_passwd = true;
-			login_str[idx++] = ':';
+			login_str = password;
+			idx = 0;
 			set_cursor(90);
 			continue;
 		} else if ((13 == ch) && (true == is_passwd)) {
-			bool ret = user_check(login_str);
+			bool ret = user_check(username, password);
 			return ret;
 		}
 
@@ -110,25 +114,6 @@ bool Terminal::login()
 
 		login_str[idx++] = ch;
 	}
-
-}
-
-bool Terminal::user_check(char *login_str)
-{
-	char buf[64] = {0};
-	unsigned int fd = open("/passwd");
-
-	while (!eof(fd)) {
-		readline(fd, buf);
-
-		if (strcmp(buf, login_str)) {
-			close(fd);
-			return true;
-		}
-		memset(buf, 0, 64);
-	}
-	close(fd);
-	return false;
 }
 
 void Terminal::print_shell()
@@ -168,21 +153,23 @@ void Terminal::handle_input()
 	else if (strcmp(this->argv[0], "pwd"))
 		pwd();
 	else if (strcmp(this->argv[0], "cd")) {
-		if (cd(argv[1])) {
+		if (cd(this->argv[1])) {
 			memset(this->cur_dir, 0, 64);
 			strcpy(this->cur_dir, argv[1]);  /* Just for Absolute path. */
 		}
 	}
 	else if (strcmp(this->argv[0], "ls"))
-		ls(argv[1]);
+		ls(this->argv[1]);
 	else if (strcmp(this->argv[0], "mkdir"))
-		mkdir(argv[1]);
+		mkdir(this->argv[1]);
 	else if (strcmp(this->argv[0], "rmdir"))
-		rmdir(argv[1]);
+		rmdir(this->argv[1]);
 	else if (strcmp(this->argv[0], "meminfo"))
 		meminfo();
 	else if (strcmp(this->argv[0], "cat"))
-		cat(argv[1]);
+		cat(this->argv[1]);
+	else if (strcmp(this->argv[0], "useradd"))
+		useradd(this->argv[1], this->argv[2]);
 	else
 		;
 }
