@@ -3,7 +3,7 @@ LD = ld
 BUILD_DIR = ../build
 
 GG_FLAGS = -c -m32 -fno-stack-protector -I ../lib -I ../include
-LD_FLAGS = -e main -m elf_i386 -Ttext 0x60000
+LD_FLAGS = -e main -m elf_i386 -Ttext 0x30000
 
 all: $(BUILD_DIR)/fs
 

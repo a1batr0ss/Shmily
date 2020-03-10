@@ -53,7 +53,7 @@ int main()
 	install_module_table(image, 0 + kernel_info.st_size + mm_info.st_size);
 	install_module_table(image, 0 + kernel_info.st_size + mm_info.st_size + fs_info.st_size);
 	install_module_table(image, 0 + kernel_info.st_size + mm_info.st_size + fs_info.st_size + dr_info.st_size);
-	// install_module_table(image, 0 + kernel_info.st_size + mm_info.st_size + fs_info.st_size + dr_info.st_size + net_info.st_size);
+	install_module_table(image, 0 + kernel_info.st_size + mm_info.st_size + fs_info.st_size + dr_info.st_size + net_info.st_size);
 	write(image, m_table, 64);
 
 	while (n = read(kernel, buf, 256))
@@ -71,9 +71,9 @@ int main()
 	while (n = read(dr, buf, 256))
 		write(image, buf, n);
 
-	// memset(buf, 0, 256);
-	// while (n = read(net, buf, 256))
-		// write(image, buf, n);
+	memset(buf, 0, 256);
+	while (n = read(net, buf, 256))
+		write(image, buf, n);
 
 	memset(buf, 0, 256);
 	while (n=read(terminal, buf, 256))
