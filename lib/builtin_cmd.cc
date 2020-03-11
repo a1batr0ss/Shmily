@@ -64,3 +64,27 @@ void cat(char *filename)
 
 	return;
 }
+
+void cp_file(char *src, char *dst)
+{
+	Message msg;
+	struct _context con;
+	con.con_1 = (unsigned int)src;
+	con.con_2 = (unsigned int)dst;
+	msg.reset_message(fs::CMD_CPFILE, con);
+	msg.send_then_recv(all_processes::FS);
+
+	return;
+}
+
+void mv_file(char *src, char *dst)
+{
+	Message msg;
+	struct _context con;
+	con.con_1 = (unsigned int)src;
+	con.con_2 = (unsigned int)dst;
+	msg.reset_message(fs::CMD_MVFILE, con);
+	msg.send_then_recv(all_processes::FS);
+
+	return;
+}

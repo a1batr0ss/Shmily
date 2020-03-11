@@ -170,6 +170,12 @@ void Terminal::handle_input()
 		cat(this->argv[1]);
 	else if (strcmp(this->argv[0], "useradd"))
 		useradd(this->argv[1], this->argv[2]);
+	else if (strcmp(this->argv[0], "userdel"))
+		userdel(this->argv[1]);
+	else if (strcmp(this->argv[0], "cpfile"))
+		cp_file(this->argv[1], this->argv[2]);
+	else if (strcmp(this->argv[0], "mvfile"))
+		mv_file(this->argv[1], this->argv[2]);
 	else
 		;
 }

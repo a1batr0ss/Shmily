@@ -162,6 +162,24 @@ int main()
 
 			break;
 		}
+		case fs::CMD_CPFILE:
+		{
+			unsigned int src = con.con_1;
+			unsigned int dst = con.con_2;
+			copy_file((char*)src, (char*)dst);
+			msg.reply();
+
+			break;
+		}
+		case fs::CMD_MVFILE:
+		{
+			unsigned int src = con.con_1;
+			unsigned int dst = con.con_2;
+			move_file((char*)src, (char*)dst);
+			msg.reply();
+
+			break;
+		}
 		default:
 		{
 			printf("fs received unknown message type.\n");

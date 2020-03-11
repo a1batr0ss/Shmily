@@ -9,6 +9,8 @@ void ls(char *path=NULL);
 bool cd(char *path="/");
 void pwd();
 void cat(char *filename);
+void cp_file(char *src, char *dst);
+void mv_file(char *src, char *dst);
 
 #endif
 

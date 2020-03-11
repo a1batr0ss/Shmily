@@ -293,3 +293,57 @@ void sys_cat(char *filename)
 	return;
 }
 
+void copy_file(char *src, char *dst)
+{
+	/* Make directory entry. */
+	sys_mkfile(dst);
+
+	/* Copy sector content by inode. */
+	int src_ino = dir_is_exists(src);
+	int dst_ino = dir_is_exists(dst);
+	struct inode src_inode = ino2inode(src_ino);
+	struct inode dst_inode = ino2inode(dst_ino);
+	char *buf = (char*)malloc(_fs::sector_size);
+	unsigned int disk_nr = 1;
+
+	for (int i=0; i<9; i++) {
+		if (0 == src_inode.sectors[i])
+			continue;
+
+		unsigned int block_no = allocate_block();
+		dst_inode.sectors[i] = cur_part->sb->data_start + block_no;
+
+		read_disk(disk_nr, src_inode.sectors[i], buf, 1);
+		write_disk(disk_nr, dst_inode.sectors[i], buf, 1);
+	}
+	dst_inode.size = src_inode.size;
+	sync_inode(&dst_inode);
+	sync_block_bitmap();
+}
+
+/* Not the best scheme. */
+void move_file(char *src, char *dst)
+{
+	/* Make directory entry. */
+	sys_mkfile(dst);
+
+	char src_parent[64] = {0};
+	char *src_filename = split_path_2parts(src, src_parent);
+	int src_parent_ino = dir_is_exists(src_parent);
+	int src_ino = dir_is_exists(src);
+	int dst_ino = dir_is_exists(dst);
+	struct inode src_parent_inode = ino2inode(src_parent_ino);
+	struct inode src_inode = ino2inode(src_ino);
+	struct inode dst_inode = ino2inode(dst_ino);
+
+	/* Copy inode sectors address, not content. */
+	for (int i=0; i<9; i++)
+		dst_inode.sectors[i] = src_inode.sectors[i];
+	dst_inode.size = src_inode.size;
+
+	remove_dir_entry(src_parent_inode, src_filename);
+	free_inode(src_ino);
+	sync_inode(&dst_inode);
+	sync_inode_bitmap();
+}
+

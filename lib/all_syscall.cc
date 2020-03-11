@@ -263,7 +263,7 @@ void readline(unsigned int fd, char *buf)
     while (!eof(fd)) {
         read(fd, buf, 1);
         if ('\n' == *buf) {
-            *buf = 0;
+            *++buf = 0;  /* Include the '\n'. */
             break;
         }
         buf++;

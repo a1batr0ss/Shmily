@@ -17,6 +17,8 @@ int read_file(unsigned int fd, char *buf, unsigned int count);
 void lseek_file(unsigned int fd, unsigned int offset);
 bool is_eof(unsigned int fd);
 void sys_cat(char *filename);
+void copy_file(char *src, char *dst);
+void move_file(char *src, char *dst);
 
 #endif
 
