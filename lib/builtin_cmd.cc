@@ -1,6 +1,9 @@
 #include <ipc_glo.h>
 #include <global.h>
 #include <syscall.h>
+#include <all_syscall.h>
+#include <stdio.h>
+#include <string.h>
 
 void ps()
 {
@@ -50,7 +53,7 @@ void ls(char *path=NULL)
 	con.con_1 = (unsigned int)path;
 	msg.reset_message(fs::CMD_LS, con);
 	msg.send_then_recv(all_processes::FS);
-	
+
 	return;
 }
 
@@ -88,3 +91,19 @@ void mv_file(char *src, char *dst)
 
 	return;
 }
+
+/* First show earlier login event. */
+void last()
+{
+	int fd = open("/var/login.log");
+	char buf[64] = {0};
+
+	while (!eof(fd)) {
+		readline(fd, buf);
+		printf("%s", buf);
+		memset(buf, 0, 64);
+	}
+
+	close(fd);
+}
+

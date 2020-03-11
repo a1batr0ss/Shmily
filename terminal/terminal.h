@@ -23,6 +23,7 @@ class Terminal {
 	void run();
 	void user_login();
 	void record_to_log();
+	void exit();
 
   public:
 	Terminal(struct ring_buffer *rb);

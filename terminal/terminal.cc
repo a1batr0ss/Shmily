@@ -60,7 +60,8 @@ void Terminal::start()
 
 void Terminal::record_to_log()
 {
-	char record[32] = {0};
+	/* Couldn't be so small. like 32B */
+	char record[64] = {0};
 	unsigned long long time_n = get_current_time();
 	struct time t = num2time(time_n);
 	sprintf(record, "User: %s Date: %d-%d-%d %d:%d\n", cur_user, t.year, t.month, t.day, t.hour, t.minute);
@@ -91,8 +92,15 @@ bool Terminal::login()
 
 		unsigned char ch = ringbuffer_get(this->keyboard_buf);
 
-		if ('\b' == ch)
+		if ((0 == idx) && ('\b' == ch))
+			continue;
+
+		if ('\b' == ch) {
 			idx--;
+			login_str[idx] = 0;
+			putchar('\b');
+			continue;
+		}
 
 		if ((13 == ch) && (false == is_passwd)) {
 			is_passwd = true;
@@ -144,6 +152,14 @@ void Terminal::format_input()
 	this->argc--;
 }
 
+void Terminal::exit()
+{
+	memset(this->cur_dir, 0, 64);
+	memset(this->cur_user, 0, 32);
+	reset_terminal();
+	start();
+}
+
 void Terminal::handle_input()
 {
 	format_input();
@@ -176,6 +192,10 @@ void Terminal::handle_input()
 		cp_file(this->argv[1], this->argv[2]);
 	else if (strcmp(this->argv[0], "mvfile"))
 		mv_file(this->argv[1], this->argv[2]);
+	else if (strcmp(this->argv[0], "last"))
+		last();
+	else if (strcmp(this->argv[0], "exit"))
+		exit();
 	else
 		;
 }
