@@ -13,11 +13,6 @@ struct idt_entry {
     unsigned short off_high16;
 } __attribute__((packed));
 
-struct idt_ptr {
-    unsigned short limit;
-    unsigned int base;
-} __attribute__((packed));
-
 namespace interrupt {
     const unsigned int idt_entries_cnt = 256;
 };
@@ -227,3 +222,9 @@ void register_intr_handler(unsigned int nr, intr_handler handler)
     real_handlers[nr] = handler;
 } 
 
+void disable_all_intr()
+{
+    outb(0x21, 0xff);
+    outb(0xa1, 0xff);
+    return;
+}

@@ -8,6 +8,7 @@
 #include "timer.h"
 #include "cmos.h"
 #include "tss.h"
+#include "machine.h"
 
 void kernel_work();
 
@@ -81,6 +82,18 @@ void kernel_work()
 			msg.reply();
 
 			break;
+		}
+		case kr::CMD_HALT:
+		{
+			sys_halt();  /* Wouldn't continue execute down. */
+
+			break;
+		}
+		case kr::CMD_POWEROFF:
+		{
+			sys_power_off();
+
+			break;  /* Wouldn't get here. */
 		}
 		default:
 		{

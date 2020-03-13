@@ -107,3 +107,19 @@ void last()
 	close(fd);
 }
 
+void halt()
+{
+	Message msg;
+	struct _context con;
+	msg.reset_message(kr::CMD_HALT, con);
+	msg.send(all_processes::KR);  /* Not wait. As it can't return here. */
+}
+
+void power_off()
+{
+	Message msg;
+	struct _context con;
+	msg.reset_message(kr::CMD_POWEROFF, con);
+	msg.send(all_processes::KR);  /* Not wait. As it can't return here. */
+}
+

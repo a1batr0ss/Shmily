@@ -12,6 +12,8 @@ void cat(char *filename);
 void cp_file(char *src, char *dst);
 void mv_file(char *src, char *dst);
 void last();
+void halt();
+void power_off();
 
 #endif
 

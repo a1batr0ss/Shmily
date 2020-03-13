@@ -196,6 +196,10 @@ void Terminal::handle_input()
 		last();
 	else if (strcmp(this->argv[0], "exit"))
 		exit();
+	else if (strcmp(this->argv[0], "halt"))
+		halt();
+	else if (strcmp(this->argv[0], "poweroff"))
+		power_off();
 	else
 		;
 }

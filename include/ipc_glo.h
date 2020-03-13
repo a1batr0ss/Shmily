@@ -68,6 +68,8 @@ namespace kr {
 	const unsigned int GET_TIME = 3;
 
 	const unsigned int CMD_PS = 256;
+	const unsigned int CMD_HALT = 257;
+	const unsigned int CMD_POWEROFF = 258;
 };
 
 namespace net {
