@@ -2,17 +2,20 @@
 #include <stdio.h>
 #include <print.h>
 #include <string.h>
-#include <builtin_cmd.h>
 #include <ring_buffer.h>
+#include <syscall.h>
+#include <ipc_glo.h>
 #include <all_syscall.h>
 #include <cmos.h>
 #include <time.h>
+#include "builtin_cmd.h"
 #include "terminal.h"
 #include "user.h"
 
 Terminal::Terminal(struct ring_buffer *rb)
 {
-	memset(this->cur_user, 0, 32);
+	this->cur_user.uid = -1;
+	memset(this->cur_user.username, 0, 32);
 	memset(this->cur_dir, 0, 64);
 	memset(this->line, 0, 128);
 	memset((char*)(this->argv), 0, 9);
@@ -44,7 +47,17 @@ void Terminal::print_login_interface()
 
 void Terminal::user_login()
 {
-	while (!login()) ;
+	while (-1 == login()) ;
+}
+
+void Terminal::tell_fs()
+{
+	Message msg;
+	struct _context con;
+
+	con.con_1 = this->cur_user.uid;
+	msg.reset_message(fs::CUR_USER, con);
+	msg.send(all_processes::FS);  /* Not necessary to block. */
 }
 
 void Terminal::start()
@@ -52,6 +65,8 @@ void Terminal::start()
 	user_login();
 
 	record_to_log();
+
+	tell_fs();
 
 	init_screen();
 
@@ -64,7 +79,7 @@ void Terminal::record_to_log()
 	char record[64] = {0};
 	unsigned long long time_n = get_current_time();
 	struct time t = num2time(time_n);
-	sprintf(record, "User: %s Date: %d-%d-%d %d:%d\n", cur_user, t.year, t.month, t.day, t.hour, t.minute);
+	sprintf(record, "User: %s Date: %d-%d-%d %d:%d\n", this->cur_user.username, t.year, t.month, t.day, t.hour, t.minute);
 
 	/* Write to disk. */
 	unsigned int fd = open("/var/login.log");
@@ -74,7 +89,7 @@ void Terminal::record_to_log()
 }
 
 /* Bad code. */
-bool Terminal::login()
+int Terminal::login()
 {
 	bool is_passwd = false;
 	char username[32] = {0};
@@ -84,7 +99,9 @@ bool Terminal::login()
 
 	print_login_interface();
 	set_cursor(6);
-	memset(cur_user, 0, 32);
+
+	this->cur_user.uid = -1;
+	memset(this->cur_user.username, 0, 32);
 
 	while (1) {
 		if (ringbuffer_is_empty(this->keyboard_buf))
@@ -109,15 +126,16 @@ bool Terminal::login()
 			set_cursor(90);
 			continue;
 		} else if ((13 == ch) && (true == is_passwd)) {
-			bool ret = user_check(username, password);
-			return ret;
+			int uid = user_check(username, password);
+			this->cur_user.uid = uid;
+			return uid;
 		}
 
 		if (is_passwd && '\b' != ch)
 			putchar('*');
 		else {
 			putchar(ch);
-			this->cur_user[idx] = ch;
+			this->cur_user.username[idx] = ch;
 		}
 
 		login_str[idx++] = ch;
@@ -126,7 +144,7 @@ bool Terminal::login()
 
 void Terminal::print_shell()
 {
-	printf("%s@localhost:%s$", this->cur_user, this->cur_dir);
+	printf("%s@localhost:%s$", this->cur_user.username, this->cur_dir);
 }
 
 
@@ -155,7 +173,8 @@ void Terminal::format_input()
 void Terminal::exit()
 {
 	memset(this->cur_dir, 0, 64);
-	memset(this->cur_user, 0, 32);
+	this->cur_user.uid = -1;
+	memset(this->cur_user.username, 0, 32);
 	reset_terminal();
 	start();
 }
@@ -186,8 +205,13 @@ void Terminal::handle_input()
 		cat(this->argv[1]);
 	else if (strcmp(this->argv[0], "useradd"))
 		useradd(this->argv[1], this->argv[2]);
-	else if (strcmp(this->argv[0], "userdel"))
+	else if (strcmp(this->argv[0], "userdel")) {
+		if (strcmp(argv[1], this->cur_user.username)) {
+			printf("Couldn't delete the current user.\n");
+			return;
+		}
 		userdel(this->argv[1]);
+	}
 	else if (strcmp(this->argv[0], "cpfile"))
 		cp_file(this->argv[1], this->argv[2]);
 	else if (strcmp(this->argv[0], "mvfile"))
@@ -200,6 +224,8 @@ void Terminal::handle_input()
 		halt();
 	else if (strcmp(this->argv[0], "poweroff"))
 		power_off();
+	else if (strcmp(this->argv[0], "id"))
+		printf("user %s, uid %d\n", this->cur_user.username, this->cur_user.uid);
 	else
 		;
 }

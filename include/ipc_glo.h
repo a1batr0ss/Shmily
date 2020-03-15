@@ -53,6 +53,7 @@ namespace fs {
 	const unsigned int LSEEK_FILE = 9;
 	const unsigned int IS_EOF = 10;
 	const unsigned int GET_CUR_DIR = 11;
+	const unsigned int CUR_USER = 12;
 
 	const unsigned int CMD_PWD = 256;
 	const unsigned int CMD_CD = 257;

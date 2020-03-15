@@ -2,7 +2,7 @@
 #include <stdio.h>
 #include <all_syscall.h>
 #include <string.h>
-#include <builtin_cmd.h>
+#include "builtin_cmd.h"
 #include "user.h"
 
 static unsigned int allocate_uid();
@@ -67,8 +67,9 @@ void userdel(char *username)
 	mv_file("/etc/passwd_", "/etc/passwd");
 }
 
-bool user_check(char *username, char *password)
+int user_check(char *username, char *password)
 {
+	int uid = -1;
 	char buf[64] = {0};
 	char *real_uname = NULL;
 	char *real_pwd = NULL;
@@ -80,8 +81,10 @@ bool user_check(char *username, char *password)
 		buf[strlen(buf)-1] = 0;  /* The '\n' */
 
 		unsigned int colon_cnt = 0;
-		for (int i=0; i<strlen(buf); i++) {
+		int l = strlen(buf);
+		for (int i=0; i<l; i++) {
 			if ((':' == buf[i]) && (0 == colon_cnt)) {
+				buf[i] = 0;
 				real_uname = &buf[i+1];
 				colon_cnt++;
 			} else if ((':' == buf[i]) && (1 == colon_cnt)) {
@@ -89,15 +92,16 @@ bool user_check(char *username, char *password)
 				real_pwd = &buf[i+1];
 			}
 		}
+		uid = string2int(buf);
 
 		if (strcmp(username, real_uname) && strcmp(password, real_pwd)) {
 			close(fd);
-			return true;
+			return uid;
 		}
 		memset(buf, 0, 64);
 	}
 	close(fd);
-	return false;
+	return -1;
 }
 
 bool user_is_exists(char *username)

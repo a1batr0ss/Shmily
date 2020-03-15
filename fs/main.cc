@@ -180,6 +180,13 @@ int main()
 
 			break;
 		}
+		case fs::CUR_USER:  /* A notify to fs. */
+		{
+			unsigned int uid = con.con_1;
+			printf("fs uid is %d.\n", uid);
+
+			break;
+		}
 		default:
 		{
 			printf("fs received unknown message type.\n");

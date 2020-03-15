@@ -11,6 +11,8 @@
 
 #define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
 
+unsigned int uid;  /* Assigned by terminal module when user login. */
+
 struct disk {
 	char name[16];
 	struct channel *channel;

@@ -1,11 +1,13 @@
 #ifndef __TERMINAL_TERMINAL_H__
 #define __TERMINAL_TERMINAL_H__
 
+#include "user.h"
+
 struct ring_buffer;
 
 class Terminal {
   private:
-	char cur_user[32];
+	struct user cur_user;
 	char cur_dir[64];
 	char line[128];
 	unsigned char line_idx;
@@ -18,11 +20,12 @@ class Terminal {
 	void format_input();
 	void handle_input();
 	void reset_terminal();
-	bool login();
+	int login();
 	void init_screen();
 	void run();
 	void user_login();
 	void record_to_log();
+	void tell_fs();
 	void exit();
 
   public:

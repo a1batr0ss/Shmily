@@ -27,6 +27,8 @@ namespace {
 	};
 }
 
+extern unsigned int uid;
+
 extern struct partition *cur_part;
 
 void init_fs();

@@ -35,3 +35,18 @@ bool strcmp(const char *str1, const char *str2)
 	return false;
 }
 
+int string2int(char *buf)
+{
+	int ret = 0;
+	int t = 1;
+	int l = strlen(buf);
+
+	if (-1 == l)
+		return -1;
+
+	for (int i=l-1; i>=0; i--, t*=10)
+		ret += ((buf[i] - '0') * t);
+
+	return ret;
+}
+

@@ -7,7 +7,6 @@
 #include "icmp.h"
 #include "udp.h"
 #include "dns.h"
-#include "builtin_cmd.h"
 
 int main()
 {

@@ -16,9 +16,12 @@ $(BUILD_DIR)/terminal_main.cc.o: main.cc
 $(BUILD_DIR)/terminal.cc.o: terminal.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
+$(BUILD_DIR)/builtin_cmd.cc.o: builtin_cmd.cc
+	$(GG) $(GG_FLAGS) $< -o $@
+
 $(BUILD_DIR)/user.cc.o: user.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)/terminal_main.cc.o $(BUILD_DIR)/terminal $(BUILD_DIR)/terminal.cc.o $(BUILD_DIR)/user.cc.o
+	rm -rf $(BUILD_DIR)/terminal_main.cc.o $(BUILD_DIR)/terminal $(BUILD_DIR)/terminal.cc.o $(BUILD_DIR)/user.cc.o $(BUILD_DIR)/builtin_cmd.cc.o
 
