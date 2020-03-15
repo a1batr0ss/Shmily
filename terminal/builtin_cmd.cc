@@ -92,6 +92,21 @@ void mv_file(char *src, char *dst)
 	return;
 }
 
+void chmod(char *new_mode, char *path)
+{
+	unsigned int mode = new_mode[1] - '0';
+	mode += ((new_mode[0] - '0') << 3);
+
+	Message msg;
+	struct _context con;
+	con.con_1 = (unsigned int)path;
+	con.con_2 = mode;
+	msg.reset_message(fs::CMD_CHMOD, con);
+	msg.send_then_recv(all_processes::FS);
+
+	return;
+}
+
 /* First show earlier login event. */
 void last()
 {

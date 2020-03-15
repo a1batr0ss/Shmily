@@ -15,6 +15,19 @@ struct inode {
 	unsigned int sectors[9];
 } __attribute__((packed));
 
+namespace {
+	namespace inode_mode {
+		const unsigned char DEFAULT_MASK = 0x38;  /* RWE for owner. */
+		/* Directory or file. Don't have group tentatively. */
+		const unsigned char READ_OWNER = 0x20;
+		const unsigned char WRITE_OWNER = 0x10;
+		const unsigned char EXEC_OWNER = 0x08;
+		const unsigned char READ_OTHER = 0x04;
+		const unsigned char WRITE_OTHER = 0x02;
+		const unsigned char EXEC_OTHER = 0x01;
+	};
+}
+
 void create_inode(struct inode *inode);
 void free_inode(unsigned int ino);
 void sync_inode(struct inode *inode);

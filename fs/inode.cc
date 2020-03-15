@@ -15,9 +15,9 @@ void create_inode(struct inode *inode)
 	inode->size = 0;
 	inode->last_modify_time = get_current_time();
 	inode->link_cnt = 0;
-	inode->uid = 0;
+	inode->uid = uid;
 	inode->gid = 0;
-	inode->mode = 0;
+	inode->mode = inode_mode::DEFAULT_MASK;
 	for (int i=0; i<9; i++)
 		inode->sectors[i] = 0;
 }

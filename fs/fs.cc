@@ -84,6 +84,8 @@ void init_fs()
 	/* Initialize the file descriptor table. */
 	for (int i=0; i<64; i++)
 		file_desc_tbl[i] = NULL;
+
+	uid = 0;  /* When start, default is root to execute some command. */
 }
 
 void partition_install_fs(struct partition *part, unsigned int disk_nr)

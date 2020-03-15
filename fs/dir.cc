@@ -5,6 +5,7 @@
 #include "dir.h"
 #include "fs.h"
 #include "super_block.h"
+#include "protect.h"
 
 char cur_dir[64];
 
@@ -29,6 +30,10 @@ void sys_mkdir(char *path)
 		return;
 
 	struct inode inode = ino2inode(parent_ino);
+	if (!check_inode_permission(inode, access_mode::WRITE)) {
+		printf("Permission denied. path: %s\n", parent);
+		return;
+	}
 
 	struct inode child_inode;
 	memset((char*)&child_inode, 0, sizeof(struct inode));
@@ -64,6 +69,12 @@ void sys_rmdir(char *path)
 		return;
 
 	struct inode inode_parent = ino2inode(parent_ino);
+	/* Check the parent directory can be write? */
+	if (!check_inode_permission(inode_parent, access_mode::WRITE)) {
+		printf("Permission denied. path: %s\n", parent);
+		return;
+	}
+
 	remove_dir_entry(inode_parent, path_del);
 
 	free_inode(child_ino);
@@ -356,6 +367,13 @@ bool cd(char *path)
 	if (-1 == ino)
 		return false;
 
+	struct inode inode = ino2inode(ino);
+	/* Check the directory can be enter? */
+	if (!check_inode_permission(inode, access_mode::EXEC)) {
+		printf("Permission denied. path: %s\n", path);
+		return false;
+	}
+
 	memset(cur_dir, 0, 64);
 	strcpy(cur_dir, path);
 	return true;
@@ -371,6 +389,12 @@ void ls(char *path)
 		return;
 
 	struct inode inode = ino2inode(ino);
+	/* Check the directory can be read? */
+	if (!check_inode_permission(inode, access_mode::READ)) {
+		printf("Permission denied. path: %s\n", path);
+		return;
+	}
+
 	unsigned int disk_nr = 1;
 	char *buf = (char*)malloc(_fs::sector_size);
 

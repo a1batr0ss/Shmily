@@ -14,8 +14,11 @@ void useradd(char *username, char *password)
 		printf("user: %s is already exists.\n", username);
 		return;
 	}
+	
+	unsigned int uid = 0;
+	if (!strcmp("root", username))
+		uid = allocate_uid();
 
-	unsigned int uid = allocate_uid();
 	char buf[128] = {0};
 	int fd = open("/etc/passwd");
 

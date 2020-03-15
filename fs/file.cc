@@ -7,6 +7,7 @@
 #include "dir.h"
 #include "fs.h"
 #include "super_block.h"
+#include "protect.h"
 
 #define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
 
@@ -27,6 +28,12 @@ void sys_mkfile(char *path)
 		return;
 
 	struct inode parent_inode = ino2inode(parent_ino);
+	/* The parent can be write? */
+	if (!check_inode_permission(parent_inode, access_mode::WRITE)) {
+		printf("Permission denied. path: %s\n", parent);
+		return;
+	}
+
 	struct inode file_inode;
 	memset((char*)&file_inode, 0, sizeof(struct inode));
 	create_inode(&file_inode);
@@ -57,6 +64,12 @@ void sys_rmfile(char *path)
 	}
 
 	struct inode inode_parent = ino2inode(parent_ino);
+	/* The parent can be write? */
+	if (!check_inode_permission(inode_parent, access_mode::WRITE)) {
+		printf("Permission denied. path: %s\n", parent);
+		return;
+	}
+
 	struct inode inode_del = ino2inode(file_del_ino);
 
 	remove_dir_entry(inode_parent, file_del);
@@ -80,6 +93,12 @@ void write_file(unsigned int fd, char *str, unsigned int count, unsigned char mo
 		count = strlen(str) + 1;  /* The '/0'. */
 
 	struct inode *inode = file->inode;
+	/* The parent can be write? */
+	if (!check_inode_permission(*inode, access_mode::WRITE)) {
+		printf("Permission denied.\n");
+		return;
+	}
+
 	int sector_cnts = count / _fs::sector_size;  /* The sector is must 512B */
 	unsigned int last_sector_bytes = count % _fs::sector_size;
 	unsigned int start_sector = 0;
@@ -157,8 +176,15 @@ int read_file(unsigned int fd, char *buf, unsigned int count)
 		return -1;
 
 	struct inode *inode = file->inode;
+	/* The parent can be write? */
+	if (!check_inode_permission(*inode, access_mode::READ)) {
+		printf("Permission denied.\n");
+		return -1;
+	}
+
 	if (count > inode->size)
 		count = inode->size;
+
 	unsigned int start_sector = file->offset / _fs::sector_size;
 	unsigned int start_offset_first = file->offset % _fs::sector_size;
 	unsigned int bytes_first_sector = count > 512 ? _fs::sector_size - file->offset : count;
@@ -228,6 +254,12 @@ int open_file(char *path)
 	/* The inode will exist in file_desc_table, so it couldn't be a local variable. */
 	struct inode *inode = (struct inode*)malloc(sizeof(struct inode));
 	*inode = ino2inode(ino);
+	/* The file can be read? */
+	if (!check_inode_permission(*inode, access_mode::READ)) {
+		printf("Permission denied path: %s.\n", path);
+		return -1;
+	}
+
 	struct file *file = (struct file*)malloc(sizeof(struct file));
 	file->inode = inode;
 	file->offset = 0;
@@ -278,6 +310,12 @@ void sys_cat(char *filename)
 	}
 
 	struct inode inode = ino2inode(ino);
+	/* The file can be read? */
+	if (!check_inode_permission(inode, access_mode::READ)) {
+		printf("Permission denied. path: %s\n", filename);
+		return;
+	}
+
 	char *buf = (char*)malloc(_fs::sector_size);
 	unsigned int sectors_cnt = DIV_ROUND_UP(inode.size, _fs::sector_size);
 	unsigned int disk_nr = 1;
@@ -305,6 +343,11 @@ void copy_file(char *src, char *dst)
 	struct inode dst_inode = ino2inode(dst_ino);
 	char *buf = (char*)malloc(_fs::sector_size);
 	unsigned int disk_nr = 1;
+	/* The src can be read? */
+	if (!check_inode_permission(src_inode, access_mode::READ)) {
+		printf("Permission denied. path: %s\n", src);
+		return;
+	}
 
 	for (int i=0; i<9; i++) {
 		if (0 == src_inode.sectors[i])
@@ -335,6 +378,11 @@ void move_file(char *src, char *dst)
 	struct inode src_parent_inode = ino2inode(src_parent_ino);
 	struct inode src_inode = ino2inode(src_ino);
 	struct inode dst_inode = ino2inode(dst_ino);
+	/* The src can be write? */
+	if (!check_inode_permission(src_inode, access_mode::WRITE)) {
+		printf("Permission denied. path %s\n", src);
+		return;
+	}
 
 	/* Copy inode sectors address, not content. */
 	for (int i=0; i<9; i++)

@@ -11,6 +11,7 @@ void pwd();
 void cat(char *filename);
 void cp_file(char *src, char *dst);
 void mv_file(char *src, char *dst);
+void chmod(char *new_mode, char *path);
 void last();
 void halt();
 void power_off();

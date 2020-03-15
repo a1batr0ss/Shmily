@@ -7,6 +7,7 @@
 #include "inode.h"
 #include "dir.h"
 #include "file.h"
+#include "protect.h"
 
 int main()
 {
@@ -180,11 +181,18 @@ int main()
 
 			break;
 		}
+		case fs::CMD_CHMOD:
+		{
+			unsigned int path = con.con_1;
+			unsigned int new_mode = con.con_2;
+			sys_chmod((char*)path, new_mode);
+			msg.reply();
+
+			break;
+		}
 		case fs::CUR_USER:  /* A notify to fs. */
 		{
-			unsigned int uid = con.con_1;
-			printf("fs uid is %d.\n", uid);
-
+			uid = con.con_1;  /* Defined in fs.cc */
 			break;
 		}
 		default:

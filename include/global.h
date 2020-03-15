@@ -19,5 +19,11 @@ namespace file_io {
 	const unsigned char COVER = 1;
 };
 
+namespace access_mode {
+	const unsigned char READ = 0x4;
+	const unsigned char WRITE = 0x2;
+	const unsigned char EXEC = 0x1;
+};
+
 #endif
 

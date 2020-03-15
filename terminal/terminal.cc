@@ -173,8 +173,11 @@ void Terminal::format_input()
 void Terminal::exit()
 {
 	memset(this->cur_dir, 0, 64);
-	this->cur_user.uid = -1;
+
+	this->cur_user.uid = 0;  /* Must be 0(root) to read /etc/passwd. (Not -1) */
 	memset(this->cur_user.username, 0, 32);
+	tell_fs();
+
 	reset_terminal();
 	start();
 }
@@ -226,6 +229,8 @@ void Terminal::handle_input()
 		power_off();
 	else if (strcmp(this->argv[0], "id"))
 		printf("user %s, uid %d\n", this->cur_user.username, this->cur_user.uid);
+	else if (strcmp(this->argv[0], "chmod"))
+		chmod(this->argv[1], this->argv[2]);
 	else
 		;
 }

@@ -61,6 +61,7 @@ namespace fs {
 	const unsigned int CMD_CAT = 259;
 	const unsigned int CMD_CPFILE = 260;
 	const unsigned int CMD_MVFILE = 261;
+	const unsigned int CMD_CHMOD = 262;
 };
 
 namespace kr {
