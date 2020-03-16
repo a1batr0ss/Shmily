@@ -144,6 +144,7 @@ void partition_install_fs(struct partition *part, unsigned int disk_nr)
 	struct inode *inode = (struct inode*)buf;
 	inode->size = sizeof(struct dir_entry) * 2;
 	inode->inode_no = 0;
+	inode->mode = inode_mode::DEFAULT_PRIVILEGE;
 	inode->sectors[0] = sb->data_start;
 	write_disk(disk_nr, sb->inode_table_lba, (char*)buf, sb->inode_table_sectors);
 
@@ -201,3 +202,4 @@ void mount_partition(char *part_name)
 
 	return;
 }
+

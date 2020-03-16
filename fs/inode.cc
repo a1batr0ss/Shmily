@@ -17,7 +17,7 @@ void create_inode(struct inode *inode)
 	inode->link_cnt = 0;
 	inode->uid = uid;
 	inode->gid = 0;
-	inode->mode = inode_mode::DEFAULT_MASK;
+	inode->mode = inode_mode::DEFAULT_PRIVILEGE;
 	for (int i=0; i<9; i++)
 		inode->sectors[i] = 0;
 }
@@ -29,7 +29,7 @@ static unsigned int allocate_inode_no()
 	bitmap_set_bit(inode_bmap, slot, 1);
 
 	/* Normal for positive number. */
-	if (-1 != slot) 
+	if (-1 != slot)
 		return slot;
 }
 
@@ -48,7 +48,7 @@ void sync_inode(struct inode *inode)
 	unsigned int inodes_per_sector = _fs::sector_size / sizeof(struct inode);  /* Not cross two sectors. */
 	unsigned int sector_offset = ino / inodes_per_sector;
 	unsigned int in_sector_offset = ino % inodes_per_sector;
-	unsigned int inode_tbl_lba = cur_part->sb->inode_table_lba; 
+	unsigned int inode_tbl_lba = cur_part->sb->inode_table_lba;
 	char *buf = (char*)malloc(_fs::sector_size);
 	unsigned int disk_nr = 1;
 
@@ -70,7 +70,7 @@ struct inode ino2inode(unsigned int ino)
 
 	char *buf = (char*)malloc(_fs::sector_size);
 	unsigned int disk_nr = 1;
-	
+
 	read_disk(disk_nr, inode_tbl_lba + sector_offset, buf, 1);
 
 	struct inode inode = *((struct inode*)buf + in_sector_offset);
@@ -85,7 +85,7 @@ unsigned int allocate_block()
 	struct bitmap *bmap = &(cur_part->block_bmap);
 	int slot = bitmap_scan(bmap, 1);
 	bitmap_set_bit(bmap, slot, 1);
-	
+
 	if (-1 != slot)
 		return slot;
 }

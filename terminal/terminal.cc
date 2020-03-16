@@ -48,6 +48,8 @@ void Terminal::print_login_interface()
 void Terminal::user_login()
 {
 	while (-1 == login()) ;
+
+	this->cur_dir[0] = '/';  /* Should be home directory. */
 }
 
 void Terminal::tell_fs()
@@ -182,8 +184,34 @@ void Terminal::exit()
 	start();
 }
 
+void Terminal::path_realtive2abs(char *realtive_path, char *abs_path)
+{
+	if ((0 == realtive_path[0]) || (0 == realtive_path)) {
+		strcpy(abs_path, this->cur_dir);  /* Default is cur_dir. */
+		return;
+	}
+
+	if ('/' == realtive_path[0]) {
+		strcpy(abs_path, realtive_path);
+		return;
+	}
+
+	strcpy(abs_path, this->cur_dir);
+
+	if (strcmp(this->cur_dir, "/")) {
+		strcpy(abs_path + strlen(this->cur_dir), realtive_path);
+	} else {
+		abs_path[strlen(this->cur_dir)] = '/';
+		strcpy(abs_path + strlen(this->cur_dir) + 1, realtive_path);
+	}
+	return;
+}
+
 void Terminal::handle_input()
 {
+	char abs_path[64] = {0};
+	char abs_path2[64] = {0};
+	
 	format_input();
 
 	if (strcmp(this->argv[0], "ps"))
@@ -195,18 +223,21 @@ void Terminal::handle_input()
 			memset(this->cur_dir, 0, 64);
 			strcpy(this->cur_dir, argv[1]);  /* Just for Absolute path. */
 		}
-	}
-	else if (strcmp(this->argv[0], "ls"))
-		ls(this->argv[1]);
-	else if (strcmp(this->argv[0], "mkdir"))
-		mkdir(this->argv[1]);
-	else if (strcmp(this->argv[0], "rmdir"))
-		rmdir(this->argv[1]);
-	else if (strcmp(this->argv[0], "meminfo"))
+	} else if (strcmp(this->argv[0], "ls")) {
+		path_realtive2abs(this->argv[1], abs_path);
+		ls(abs_path);
+	} else if (strcmp(this->argv[0], "mkdir")) {
+		path_realtive2abs(this->argv[1], abs_path);
+		mkdir(abs_path);
+	} else if (strcmp(this->argv[0], "rmdir")) {
+		path_realtive2abs(this->argv[1], abs_path);
+		rmdir(abs_path);
+	} else if (strcmp(this->argv[0], "meminfo"))
 		meminfo();
-	else if (strcmp(this->argv[0], "cat"))
-		cat(this->argv[1]);
-	else if (strcmp(this->argv[0], "useradd"))
+	else if (strcmp(this->argv[0], "cat")) {
+		path_realtive2abs(this->argv[1], abs_path);
+		cat(abs_path);
+	} else if (strcmp(this->argv[0], "useradd"))
 		useradd(this->argv[1], this->argv[2]);
 	else if (strcmp(this->argv[0], "userdel")) {
 		if (strcmp(argv[1], this->cur_user.username)) {
@@ -214,12 +245,15 @@ void Terminal::handle_input()
 			return;
 		}
 		userdel(this->argv[1]);
-	}
-	else if (strcmp(this->argv[0], "cpfile"))
-		cp_file(this->argv[1], this->argv[2]);
-	else if (strcmp(this->argv[0], "mvfile"))
-		mv_file(this->argv[1], this->argv[2]);
-	else if (strcmp(this->argv[0], "last"))
+	} else if (strcmp(this->argv[0], "cpfile")) {
+		path_realtive2abs(this->argv[1], abs_path);
+		path_realtive2abs(this->argv[2], abs_path2);
+		cp_file(abs_path, abs_path2);
+	} else if (strcmp(this->argv[0], "mvfile")) {
+		path_realtive2abs(this->argv[1], abs_path);
+		path_realtive2abs(this->argv[2], abs_path2);
+		mv_file(abs_path, abs_path2);
+	} else if (strcmp(this->argv[0], "last"))
 		last();
 	else if (strcmp(this->argv[0], "exit"))
 		exit();
@@ -229,9 +263,10 @@ void Terminal::handle_input()
 		power_off();
 	else if (strcmp(this->argv[0], "id"))
 		printf("user %s, uid %d\n", this->cur_user.username, this->cur_user.uid);
-	else if (strcmp(this->argv[0], "chmod"))
-		chmod(this->argv[1], this->argv[2]);
-	else
+	else if (strcmp(this->argv[0], "chmod")) {
+		path_realtive2abs(argv[1], abs_path);
+		chmod(this->argv[1], abs_path);
+	} else
 		;
 }
 
