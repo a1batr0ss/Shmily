@@ -29,3 +29,17 @@ void sys_chmod(char *path, unsigned char new_mode)
 	return;
 }
 
+void sys_chown(char *path, unsigned int new_uid)
+{
+	int ino = dir_is_exists(path);
+	if (-1 == ino)
+		return;
+
+	struct inode inode = ino2inode(ino);
+	if ((0 == uid) || (uid == inode.uid))
+		inode.uid = new_uid;
+
+	sync_inode(&inode);
+	return;
+}
+

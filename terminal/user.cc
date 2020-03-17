@@ -7,14 +7,29 @@
 
 static unsigned int allocate_uid();
 bool user_is_exists(char *username);
+int create_user_account(char *username, char *password);
+void create_user_homedir(char *username, unsigned int uid);
+void delete_user_account(char *username);
+void delete_user_homedir(char * username);
 
 void useradd(char *username, char *password)
 {
+	int uid = create_user_account(username, password);
+
+	/* root's home directory is /, need not to create. */
+	if (strcmp(username, "root"))
+		return;
+
+	create_user_homedir(username, uid);
+}
+
+int create_user_account(char *username, char *password)
+{
 	if (user_is_exists(username)) {
 		printf("user: %s is already exists.\n", username);
-		return;
+		return -1;
 	}
-	
+
 	unsigned int uid = 0;
 	if (!strcmp("root", username))
 		uid = allocate_uid();
@@ -25,10 +40,33 @@ void useradd(char *username, char *password)
 	sprintf(buf, "%d:%s:%s\n", uid, username, password);
 	write(fd, buf, strlen(buf), file_io::APPEND);
 	close(fd);
+
+	return uid;
+}
+
+void create_user_homedir(char *username, unsigned int uid)
+{
+	char home_path[64] = {0};
+	strcpy(home_path, "/home/");
+	strcpy(home_path + strlen(home_path), username);
+
+	mkdir(home_path);
+	chown(home_path, username);
 }
 
 void userdel(char *username)
 {
+	delete_user_account(username);
+	delete_user_homedir(username);
+}
+
+void delete_user_account(char *username)
+{
+	if (strcmp(username, "root")) {
+		printf("User root can't be deleted.\n");
+		return;
+	}
+
 	if (!user_is_exists(username)) {
 		printf("User: %s is not exists.\n", username);
 		return;
@@ -45,7 +83,7 @@ void userdel(char *username)
 		memset(buf, 0, 128);
 		memset(buf_will_write, 0, 128);
 		readline(fd_src, buf);
-		// printf("%s", buf);
+
 		memcpy(buf_will_write, buf, strlen(buf));
 
 		unsigned int colon_cnt = 0;
@@ -68,6 +106,16 @@ void userdel(char *username)
 
 	rmfile("/etc/passwd");
 	mv_file("/etc/passwd_", "/etc/passwd");
+}
+
+/* Should delete the home's file recursively. */
+void delete_user_homedir(char *username)
+{
+	char home_path[64] = {0};
+	strcpy(home_path, "/home/");
+	strcpy(home_path + strlen(home_path), username);
+
+	rmdir(home_path);
 }
 
 int user_check(char *username, char *password)
@@ -98,6 +146,41 @@ int user_check(char *username, char *password)
 		uid = string2int(buf);
 
 		if (strcmp(username, real_uname) && strcmp(password, real_pwd)) {
+			close(fd);
+			return uid;
+		}
+		memset(buf, 0, 64);
+	}
+	close(fd);
+	return -1;
+}
+
+int username2uid(char *username)
+{
+	int uid = -1;
+	char buf[64] = {0};
+	char *real_uname = NULL;
+	int fd = open("/etc/passwd");
+
+	while (!eof(fd)) {
+		readline(fd, buf);
+
+		buf[strlen(buf)-1] = 0;  /* The '\n' */
+		unsigned int colon_cnt = 0;
+		int l = strlen(buf);
+		for (int i=0; i<l; i++) {
+			if ((':' == buf[i]) && (0 == colon_cnt)) {
+				buf[i] = 0;
+				real_uname = &buf[i+1];
+				colon_cnt++;
+			} else if ((':' == buf[i]) && (1 == colon_cnt)) {
+				buf[i] = 0;
+				break;
+			}
+		}
+
+		uid = string2int(buf);
+		if (strcmp(username, real_uname)) {
 			close(fd);
 			return uid;
 		}

@@ -27,7 +27,7 @@ class Terminal {
 	void record_to_log();
 	void tell_fs();
 	void exit();
-	void path_realtive2abs(char *realtive_path, char *abs_path);
+	void path_relative2abs(char *realtive_path, char *abs_path);
 
   public:
 	Terminal(struct ring_buffer *rb);

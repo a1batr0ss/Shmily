@@ -49,7 +49,13 @@ void Terminal::user_login()
 {
 	while (-1 == login()) ;
 
-	this->cur_dir[0] = '/';  /* Should be home directory. */
+	if (strcmp(this->cur_user.username, "root"))
+		this->cur_dir[0] = '/';
+	else {
+		/* Assume the home directory is alreay exists. No check. */
+		strcpy(this->cur_dir, "/home/");
+		strcpy(this->cur_dir + strlen("/home/"), this->cur_user.username);
+	}
 }
 
 void Terminal::tell_fs()
@@ -184,7 +190,7 @@ void Terminal::exit()
 	start();
 }
 
-void Terminal::path_realtive2abs(char *realtive_path, char *abs_path)
+void Terminal::path_relative2abs(char *realtive_path, char *abs_path)
 {
 	if ((0 == realtive_path[0]) || (0 == realtive_path)) {
 		strcpy(abs_path, this->cur_dir);  /* Default is cur_dir. */
@@ -219,23 +225,24 @@ void Terminal::handle_input()
 	else if (strcmp(this->argv[0], "pwd"))
 		pwd();
 	else if (strcmp(this->argv[0], "cd")) {
-		if (cd(this->argv[1])) {
+		path_relative2abs(this->argv[1], abs_path);
+		if (cd(abs_path)) {
 			memset(this->cur_dir, 0, 64);
-			strcpy(this->cur_dir, argv[1]);  /* Just for Absolute path. */
+			strcpy(this->cur_dir, abs_path);  /* Just for Absolute path. */
 		}
 	} else if (strcmp(this->argv[0], "ls")) {
-		path_realtive2abs(this->argv[1], abs_path);
+		path_relative2abs(this->argv[1], abs_path);
 		ls(abs_path);
 	} else if (strcmp(this->argv[0], "mkdir")) {
-		path_realtive2abs(this->argv[1], abs_path);
+		path_relative2abs(this->argv[1], abs_path);
 		mkdir(abs_path);
 	} else if (strcmp(this->argv[0], "rmdir")) {
-		path_realtive2abs(this->argv[1], abs_path);
+		path_relative2abs(this->argv[1], abs_path);
 		rmdir(abs_path);
 	} else if (strcmp(this->argv[0], "meminfo"))
 		meminfo();
 	else if (strcmp(this->argv[0], "cat")) {
-		path_realtive2abs(this->argv[1], abs_path);
+		path_relative2abs(this->argv[1], abs_path);
 		cat(abs_path);
 	} else if (strcmp(this->argv[0], "useradd"))
 		useradd(this->argv[1], this->argv[2]);
@@ -246,12 +253,12 @@ void Terminal::handle_input()
 		}
 		userdel(this->argv[1]);
 	} else if (strcmp(this->argv[0], "cpfile")) {
-		path_realtive2abs(this->argv[1], abs_path);
-		path_realtive2abs(this->argv[2], abs_path2);
+		path_relative2abs(this->argv[1], abs_path);
+		path_relative2abs(this->argv[2], abs_path2);
 		cp_file(abs_path, abs_path2);
 	} else if (strcmp(this->argv[0], "mvfile")) {
-		path_realtive2abs(this->argv[1], abs_path);
-		path_realtive2abs(this->argv[2], abs_path2);
+		path_relative2abs(this->argv[1], abs_path);
+		path_relative2abs(this->argv[2], abs_path2);
 		mv_file(abs_path, abs_path2);
 	} else if (strcmp(this->argv[0], "last"))
 		last();
@@ -264,8 +271,11 @@ void Terminal::handle_input()
 	else if (strcmp(this->argv[0], "id"))
 		printf("user %s, uid %d\n", this->cur_user.username, this->cur_user.uid);
 	else if (strcmp(this->argv[0], "chmod")) {
-		path_realtive2abs(argv[1], abs_path);
+		path_relative2abs(argv[1], abs_path);
 		chmod(this->argv[1], abs_path);
+	} else if (strcmp(this->argv[0], "chown")) {
+		path_relative2abs(argv[1], abs_path);
+		chown(abs_path, this->argv[2]);
 	} else
 		;
 }

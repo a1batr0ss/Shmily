@@ -87,15 +87,29 @@ bool dir_is_empty(char *path)
 {
 	unsigned int ino = dir_is_exists(path);
 	struct inode inode = ino2inode(ino);
+	char *buf = (char*)malloc(_fs::sector_size);
+	unsigned int disk_nr = 1;
 
-	/* Check all sectors. */
-	for (int i=0; i<9; i++) {
+	read_disk(disk_nr, inode.sectors[0], buf, 1);
+
+	/* Check the first sector. */
+	struct dir_entry *p = (struct dir_entry*)buf;
+	/* Cross the . and .. */
+	for (int i=2; i<(_fs::sector_size / sizeof(struct dir_entry)); i++) {
+		if (0 != p[i].name[0]) {
+			free(buf);
+			return false;
+		}
+	}
+	free(buf);
+
+	/* Check surplus sectors. */
+	for (int i=1; i<9; i++) {
 		if (0 != inode.sectors[i])
 			return false;
 	}
 	return true;
 }
-
 void skip_last_slash(char *str)
 {
 	int l = strlen(str);

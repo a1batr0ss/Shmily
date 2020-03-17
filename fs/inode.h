@@ -17,7 +17,7 @@ struct inode {
 
 namespace {
 	namespace inode_mode {
-		const unsigned char DEFAULT_PRIVILEGE = 0x3c;  /* RWE for owner. R for others. */
+		const unsigned char DEFAULT_PRIVILEGE = 0x3d;  /* RWX for owner. RX for others. Include file and directory. */
 		/* Directory or file. Don't have group tentatively. */
 		const unsigned char READ_OWNER = 0x20;
 		const unsigned char WRITE_OWNER = 0x10;

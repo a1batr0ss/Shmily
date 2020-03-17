@@ -190,6 +190,15 @@ int main()
 
 			break;
 		}
+		case fs::CMD_CHOWN:
+		{
+			unsigned int path = con.con_1;
+			unsigned int new_uid = con.con_2;
+			sys_chown((char*)path, new_uid);
+			msg.reply();
+
+			break;
+		}
 		case fs::CUR_USER:  /* A notify to fs. */
 		{
 			uid = con.con_1;  /* Defined in fs.cc */

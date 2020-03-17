@@ -14,6 +14,7 @@ int main()
 	mkdir("/var");
 	mkfile("/var/login.log");
 
+	mkdir("/home");
 	useradd("root", "root");
 	useradd("halou", "world");
 

@@ -4,6 +4,7 @@
 #include <all_syscall.h>
 #include <stdio.h>
 #include <string.h>
+#include "user.h"
 
 void ps()
 {
@@ -102,6 +103,22 @@ void chmod(char *new_mode, char *path)
 	con.con_1 = (unsigned int)path;
 	con.con_2 = mode;
 	msg.reset_message(fs::CMD_CHMOD, con);
+	msg.send_then_recv(all_processes::FS);
+
+	return;
+}
+
+void chown(char *path, char *new_owner)
+{
+	int uid = username2uid(new_owner);
+	if (-1 == uid)
+		return;
+
+	Message msg;
+	struct _context con;
+	con.con_1 = (unsigned int)path;
+	con.con_2 = uid;
+	msg.reset_message(fs::CMD_CHOWN, con);
 	msg.send_then_recv(all_processes::FS);
 
 	return;

@@ -9,6 +9,7 @@ struct user {
 int user_check(char *username, char *password);
 void useradd(char *username, char *password);
 void userdel(char *username);
+int username2uid(char *username);
 
 #endif
 
