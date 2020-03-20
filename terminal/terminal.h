@@ -28,6 +28,8 @@ class Terminal {
 	void tell_fs();
 	void exit();
 	void path_relative2abs(char *realtive_path, char *abs_path);
+	void path_double_dot(char *path);
+	void format_path(char *path, char *new_path);
 
   public:
 	Terminal(struct ring_buffer *rb);
