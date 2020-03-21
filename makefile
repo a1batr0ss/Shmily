@@ -2,11 +2,14 @@ BUILD_DIR = ./build
 DISK_DIR = ./bochs
 DEBUGGER=0
 
-all: check_disk build_all install_boot install_kernel
+all: check_disk check_build_dir build_all install_boot install_kernel
 	if [ $(DEBUGGER) == 0 ]; then echo "c" | sudo bochs -f ./bochs/config.bcs; else sudo bochs -f ./bochs/config.bcs; fi
 
 check_disk:
 	./make_disk.sh
+
+check_build_dir:
+	if [ ! -d $(BUILD_DIR) ]; then mkdir $(BUILD_DIR); fi
 
 build_all:
 	./build_all.sh

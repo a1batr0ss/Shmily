@@ -12,7 +12,10 @@
 
 ## Environment
 
-`sudo apt-get install bochs`
+`sudo apt-get install -y bochs`
+`sudo apt-get install -y boch-x`
+`sudo apt-get install -y g++`
+`sudo apt-get install -y nasm`
 
 -------
 
