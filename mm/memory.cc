@@ -4,6 +4,7 @@
 #include <stdio.h>
 #include <bitmap.h>
 #include "memory.h"
+#include "doublebit_map.h"
 #include "swar.h"
 
 #define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
@@ -29,10 +30,11 @@ MemoryManager::MemoryManager()
 
     /* Initialise the virtaul address bitmap. */
     this->initproc_vir.vaddr_start = 0x210000;
-    this->initproc_vir.vaddr_bmap.bytes_len = bmap_length;
-    this->initproc_vir.vaddr_bmap.base = (unsigned char*)(0x9000 + bmap_length);
+    // this->initproc_vir.vaddr_bmap.bytes_len = bmap_length;
+    // this->initproc_vir.vaddr_bmap.base = (unsigned char*)(0x9000 + bmap_length);
 
-    init_bitmap(&(this->initproc_vir.vaddr_bmap));
+    // init_bitmap(&(this->initproc_vir.vaddr_bmap));
+	this->initproc_vir.vaddr_bmap.initialize(bmap_length, (unsigned char*)(0x9000 + bmap_length));
 
 	/* Initialize the global descriptor. */
 	unsigned int desc_start = 0x200000;
@@ -62,13 +64,10 @@ void* MemoryManager::get_vir_page(unsigned int cnt)
 {
     int idx_start = -1;
     int vaddr_start = 0;
-    idx_start = bitmap_scan(&(this->initproc_vir.vaddr_bmap), cnt);
+	idx_start = this->initproc_vir.vaddr_bmap.get_free_slots(cnt);
+
     if (-1 == idx_start)
         return NULL;
-
-    unsigned int cnt_idx = 0;
-    while (cnt_idx < cnt)
-        bitmap_set_bit(&(this->initproc_vir.vaddr_bmap), idx_start+(cnt_idx++), 1);
 
     vaddr_start = this->initproc_vir.vaddr_start + idx_start*paging::page_size;
 
@@ -147,13 +146,13 @@ void MemoryManager::free_phy_page(unsigned int phyaddr)
 	bitmap_set_bit(&phypool.phyaddr_bmap, idx, 0);
 }
 
-void MemoryManager::free_vir_page(unsigned int viraddr, unsigned int cnt)
+unsigned int MemoryManager::free_vir_page(unsigned int viraddr)
 {
-	unsigned int cnt_idx = 0;
+	unsigned int cnt = 0;
 	unsigned idx = (viraddr - this->initproc_vir.vaddr_start) / paging::page_size;
 
-	while (cnt_idx < cnt)
-		bitmap_set_bit(&(this->initproc_vir.vaddr_bmap), idx+(cnt_idx++), 0);
+	cnt = this->initproc_vir.vaddr_bmap.free_slots(idx);
+	return cnt;
 }
 
 void MemoryManager::remove_map_addr(unsigned int viraddr)
@@ -165,11 +164,11 @@ void MemoryManager::remove_map_addr(unsigned int viraddr)
 	// asm volatile ("invlpg %0" :: "m" (viraddr) : "memory");
 }
 
-void MemoryManager::free_page(void *viraddr, unsigned int cnt)
+void MemoryManager::free_page(void *viraddr)
 {
 	unsigned int vaddr = (unsigned int)viraddr;
-	unsigned int cnt_ = cnt;
 	unsigned int paddr = 0;
+	unsigned int cnt_ = free_vir_page((unsigned int)viraddr);
 
 	while ((cnt_--) > 0) {
 		paddr = vaddr2phy(vaddr);
@@ -178,17 +177,16 @@ void MemoryManager::free_page(void *viraddr, unsigned int cnt)
 
 		vaddr += paging::page_size;
 	}
-	free_vir_page((unsigned int)viraddr, cnt);
 }
 
 void* MemoryManager::malloc(unsigned int cnt_bytes)
 {
 	if (cnt_bytes > 1024) {
-		unsigned int page_cnt = DIV_ROUND_UP(cnt_bytes+4, paging::page_size);
+		unsigned int page_cnt = DIV_ROUND_UP(cnt_bytes, paging::page_size);
 		void *ret = malloc_page(page_cnt);
+
 		memset((char*)ret, 0, page_cnt*paging::page_size);
-		*(unsigned int*)ret = page_cnt;
-		return ret+sizeof(void*);  /* ret + 1 is really ret + 1 ?? */
+		return ret;
 	} else {
 		unsigned int desc_idx = 0;
 		for (unsigned int cnt_start=16; cnt_start<cnt_bytes; cnt_start*=2, desc_idx++) ;
@@ -207,9 +205,8 @@ void* MemoryManager::malloc(unsigned int cnt_bytes)
 void MemoryManager::free(void *buf)
 {
 	unsigned int buf_uint = (unsigned int)buf;
-	if (buf_uint > 0x210000) {
-		unsigned int cnt = *(unsigned int*)(buf_uint - sizeof(void*));
-		free_page(buf, cnt);
+	if (buf_uint >= 0x210000) {
+		free_page(buf);
 	} else if ((buf_uint >= 0x200000) && (buf_uint < 0x207000)) {
 		unsigned int desc_idx = (buf_uint - 0x200000) / 0x1000;
 		struct mem_global_desc *desc = &(this->glo_desc[desc_idx]);
@@ -243,3 +240,4 @@ void MemoryManager::print_mem_info()
 	unsigned int all_used = used_pages*paging::page_size + cnt_bytes + 0x200000;
 	printf("totoal: %dKB   used: %dKB   free:  %dKB\n", all_mem>>10, all_used>>10, (all_mem-all_used)>>10);
 }
+

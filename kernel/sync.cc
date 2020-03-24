@@ -50,7 +50,7 @@ Lock::Lock()
 
 void Lock::acquire()
 {
-    
+
     if (holder != cur_proc) {
         sema.wait();
         holder = cur_proc;
@@ -60,6 +60,6 @@ void Lock::acquire()
 void Lock::release()
 {
     holder = NULL;
-    sema.signal(); 
+    sema.signal();
 }
 
