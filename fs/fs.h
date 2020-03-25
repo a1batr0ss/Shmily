@@ -13,7 +13,7 @@ struct partition {
 	unsigned int start_lba;
 	enum partition_type type;
 	struct disk *disk;
-	struct super_block *sb;
+	struct super_block_data *sb_data;
 
 	struct bitmap block_bmap;
 	struct bitmap inode_bmap;

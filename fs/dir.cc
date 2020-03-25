@@ -202,7 +202,7 @@ void create_dir_entry(struct inode inode, struct dir_entry child)
 		*(struct dir_entry*)buf = child;
 		sync_block(block_no, buf);
 
-		inode.sectors[i] = cur_part->sb->data_start + block_no;
+		inode.sectors[i] = cur_part->sb_data->data_start + block_no;
 		sync_inode(&inode);
 
 		sync_block_bitmap();
@@ -227,7 +227,7 @@ void init_child_dir(unsigned int parent_ino, unsigned int ino)
 
 	/* Write to disk. */
 	unsigned int block_no = allocate_block();
-	inode.sectors[0] = cur_part->sb->data_start + block_no;
+	inode.sectors[0] = cur_part->sb_data->data_start + block_no;
 
 	write_disk(disk_nr, inode.sectors[0], buf, 1);
 	sync_inode(&inode);
@@ -269,7 +269,7 @@ void remove_dir_entry(struct inode inode, char *path_del)
 
 		/* Recycle the parent's block. The sector is empty.*/
 		if (is_found && (empty_cnts == (_fs::sector_size / sizeof(struct dir_entry)))) {
-			unsigned int block_no = inode.sectors[i] - cur_part->sb->data_start;
+			unsigned int block_no = inode.sectors[i] - cur_part->sb_data->data_start;
 			free_block(block_no);
 			sync_block_bitmap();
 
@@ -319,7 +319,7 @@ int dir_is_exists(char *path)
 
 	char cur_path[64] ={0};
 	char *next_path = path;
-	unsigned int parent_inode_no = cur_part->sb->root_inode_no;
+	unsigned int parent_inode_no = cur_part->sb_data->root_inode_no;
 	struct inode inode = ino2inode(parent_inode_no);
 
 	while (NULL != next_path) {

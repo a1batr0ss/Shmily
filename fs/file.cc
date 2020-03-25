@@ -115,7 +115,7 @@ void write_file(unsigned int fd, char *str, unsigned int count, unsigned char mo
 	for (int i=start_sector; i<sector_cnts+1; i++) {
 		if (0 == inode->sectors[i]) {
 			unsigned int block_no = allocate_block();
-			inode->sectors[i] = cur_part->sb->data_start + block_no;
+			inode->sectors[i] = cur_part->sb_data->data_start + block_no;
 		}
 	}
 	sync_inode(inode);
@@ -149,7 +149,7 @@ void write_file(unsigned int fd, char *str, unsigned int count, unsigned char mo
 		if (0 == inode->sectors[i])
 			continue;
 
-		unsigned int block_no = inode->sectors[i] - cur_part->sb->data_start;
+		unsigned int block_no = inode->sectors[i] - cur_part->sb_data->data_start;
 		free_block(block_no);
 		inode->sectors[i] = 0;
 		has_surplus = true;
@@ -236,7 +236,7 @@ void free_inode_sectors(struct inode inode)
 		if (0 == inode.sectors[i])
 			continue;
 
-		unsigned int block_no = inode.sectors[i] - cur_part->sb->data_start;
+		unsigned int block_no = inode.sectors[i] - cur_part->sb_data->data_start;
 		free_block(block_no);
 	}
 	sync_block_bitmap();
@@ -354,7 +354,7 @@ void copy_file(char *src, char *dst)
 			continue;
 
 		unsigned int block_no = allocate_block();
-		dst_inode.sectors[i] = cur_part->sb->data_start + block_no;
+		dst_inode.sectors[i] = cur_part->sb_data->data_start + block_no;
 
 		read_disk(disk_nr, src_inode.sectors[i], buf, 1);
 		write_disk(disk_nr, dst_inode.sectors[i], buf, 1);

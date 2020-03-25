@@ -48,7 +48,7 @@ void sync_inode(struct inode *inode)
 	unsigned int inodes_per_sector = _fs::sector_size / sizeof(struct inode);  /* Not cross two sectors. */
 	unsigned int sector_offset = ino / inodes_per_sector;
 	unsigned int in_sector_offset = ino % inodes_per_sector;
-	unsigned int inode_tbl_lba = cur_part->sb->inode_table_lba;
+	unsigned int inode_tbl_lba = cur_part->sb_data->inode_table_lba;
 	char *buf = (char*)malloc(_fs::sector_size);
 	unsigned int disk_nr = 1;
 
@@ -66,7 +66,7 @@ struct inode ino2inode(unsigned int ino)
 	unsigned int inodes_per_sector = _fs::sector_size / sizeof(struct inode);
 	unsigned int sector_offset = ino / inodes_per_sector;
 	unsigned int in_sector_offset = ino % inodes_per_sector;
-	unsigned int inode_tbl_lba = cur_part->sb->inode_table_lba;
+	unsigned int inode_tbl_lba = cur_part->sb_data->inode_table_lba;
 
 	char *buf = (char*)malloc(_fs::sector_size);
 	unsigned int disk_nr = 1;
@@ -100,7 +100,7 @@ void free_block(unsigned int block_no)
 void sync_block(unsigned int block_no, char *buf)
 {
 	unsigned int disk_nr = 1;
-	unsigned block_lba = cur_part->sb->data_start + block_no;
+	unsigned block_lba = cur_part->sb_data->data_start + block_no;
 	write_disk(disk_nr, block_lba, buf, 1);
 	return;
 }
@@ -108,21 +108,21 @@ void sync_block(unsigned int block_no, char *buf)
 void sync_inode_bitmap()
 {
 	unsigned int disk_nr = 1;
-	write_disk(disk_nr, cur_part->sb->inode_bitmap_lba, (char*)(cur_part->inode_bmap.base), cur_part->sb->inode_bitmap_sectors);
+	write_disk(disk_nr, cur_part->sb_data->inode_bitmap_lba, (char*)(cur_part->inode_bmap.base), cur_part->sb_data->inode_bitmap_sectors);
 	return;
 }
 
 void sync_block_bitmap()
 {
 	unsigned int disk_nr = 1;
-	write_disk(disk_nr, cur_part->sb->block_bitmap_lba, (char*)(cur_part->block_bmap.base), cur_part->sb->block_bitmap_sectors);
+	write_disk(disk_nr, cur_part->sb_data->block_bitmap_lba, (char*)(cur_part->block_bmap.base), cur_part->sb_data->block_bitmap_sectors);
 	return;
 }
 
 void read_block(unsigned int block_no, char *buf)
 {
 	unsigned int disk_nr = 1;
-	unsigned int block_lba = cur_part->sb->data_start + block_no;
+	unsigned int block_lba = cur_part->sb_data->data_start + block_no;
 	read_disk(disk_nr, block_lba, buf, 1);
 	return;
 }

@@ -262,7 +262,7 @@ void Terminal::handle_input()
 {
 	char abs_path[64] = {0};
 	char abs_path2[64] = {0};
-	
+
 	format_input();
 
 	if (strcmp(this->argv[0], "ps"))
@@ -316,7 +316,7 @@ void Terminal::handle_input()
 	else if (strcmp(this->argv[0], "id"))
 		printf("user %s, uid %d\n", this->cur_user.username, this->cur_user.uid);
 	else if (strcmp(this->argv[0], "chmod")) {
-		format_path(argv[1], abs_path);
+		format_path(argv[2], abs_path);
 		chmod(this->argv[1], abs_path);
 	} else if (strcmp(this->argv[0], "chown")) {
 		format_path(argv[1], abs_path);

@@ -29,5 +29,5 @@ $(BUILD_DIR)/protect.cc.o: protect.cc
 	$(GG) $(GG_FLAGS) $< -o $@
 
 clean:
-	rm -rf $(BUILD_DIR)/fs $(BUILD_DIR)/fs.cc.o $(BUILD_DIR)/fs_main.cc.o $(BUILD_DIR)/inode.cc.o $(BUILD_DIR)/file.cc.o $(BUILD_DIR)/protect.cc.o
+	rm -rf $(BUILD_DIR)/fs $(BUILD_DIR)/fs.cc.o $(BUILD_DIR)/fs_main.cc.o $(BUILD_DIR)/inode.cc.o $(BUILD_DIR)/file.cc.o $(BUILD_DIR)/protect.cc.o $(BUILD_DIR)/dir.cc.o
 

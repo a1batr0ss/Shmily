@@ -306,11 +306,44 @@ struct pcb* get_current_proc()
 	return (struct pcb*)(esp & 0xffffff000);
 }
 
+void status2string(enum process_status stat, char *stat_string)
+{
+    switch (stat) {
+    case RUNNING:
+        strcpy(stat_string, "RUN");
+        return;
+    case READY:
+        strcpy(stat_string, "RDY");
+        return;
+    case BLOCKED:
+        strcpy(stat_string, "BLD");
+        return;
+    case WAITING:
+        strcpy(stat_string, "WAT");
+        return;
+    case HANGING:
+        strcpy(stat_string, "DIE");
+        return;
+    case WAITING_MSG:
+        strcpy(stat_string, "WMG");
+        return;
+    case SENDING_MSG:
+        strcpy(stat_string, "SMG");
+        return;
+    default:
+        strcpy(stat_string, "UKN");
+    }
+}
+
 void ps()
 {
+    printf("PID   STAT   PROC\n");
     for (int i=0; i<NR_PROC; i++) {
+        char stat[4] = {0};
         if (NULL == processes[i])
             continue;
-        printf("%d  %d  %s\n", processes[i]->pid, processes[i]->status, processes[i]->name);
+
+        status2string(processes[i]->status, stat);
+        printf("%d     %s    %s\n", processes[i]->pid, stat, processes[i]->name);
     }
 }
