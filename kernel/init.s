@@ -205,7 +205,7 @@ load_elf32_init:
     mov dx, [edi + 42]
     mov ebx, [edi + 28]
 
-    add ebx, edi  ; 不要使用[edi], 要加的是edi的内容，那个地址，而不是这个地址的内容（elf文件开头）
+    add ebx, edi  ; not [edi]
     mov cx, [edi + 44]
 
 .each_segment:

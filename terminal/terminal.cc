@@ -48,7 +48,10 @@ void Terminal::print_login_interface()
 void Terminal::user_login()
 {
 	while (-1 == login()) ;
+}
 
+void Terminal::change_home_dir()
+{
 	if (strcmp(this->cur_user.username, "root"))
 		this->cur_dir[0] = '/';
 	else {
@@ -56,6 +59,8 @@ void Terminal::user_login()
 		strcpy(this->cur_dir, "/home/");
 		strcpy(this->cur_dir + strlen("/home/"), this->cur_user.username);
 	}
+
+	cd(this->cur_dir);
 }
 
 void Terminal::tell_fs()
@@ -71,6 +76,8 @@ void Terminal::tell_fs()
 void Terminal::start()
 {
 	user_login();
+
+	change_home_dir();
 
 	record_to_log();
 
@@ -210,6 +217,7 @@ void Terminal::path_relative2abs(char *realtive_path, char *abs_path)
 		abs_path[strlen(this->cur_dir)] = '/';
 		strcpy(abs_path + strlen(this->cur_dir) + 1, realtive_path);
 	}
+
 	return;
 }
 
@@ -249,6 +257,19 @@ void Terminal::path_double_dot(char *path)
 
 	strcpy(path, buf);
 	path[strlen(buf)] = 0;
+
+	return;
+}
+
+void Terminal::skip_last_slash(char *path)
+{
+	/* Skip last '/', i > 0, not >= 0, so than we can retain then root directory. */
+	for (int i=strlen(path)-1; i>0; i--) {
+		if ('/' == path[i])
+			path[i] = 0;
+		else
+			break;
+	}
 	return;
 }
 
@@ -256,6 +277,7 @@ void Terminal::format_path(char *path, char *new_path)
 {
 	path_relative2abs(path, new_path);
 	path_double_dot(new_path);
+	skip_last_slash(new_path);
 }
 
 void Terminal::handle_input()

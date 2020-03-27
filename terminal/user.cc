@@ -4,6 +4,7 @@
 #include <string.h>
 #include "builtin_cmd.h"
 #include "user.h"
+#include "hahash.h"
 
 static unsigned int allocate_uid();
 bool user_is_exists(char *username);
@@ -34,10 +35,13 @@ int create_user_account(char *username, char *password)
 	if (!strcmp("root", username))
 		uid = allocate_uid();
 
+	char pwd_result[32] = {0};
+	hahash(password, pwd_result);
+
 	char buf[128] = {0};
 	int fd = open("/etc/passwd");
 
-	sprintf(buf, "%d:%s:%s\n", uid, username, password);
+	sprintf(buf, "%d:%s:%s\n", uid, username, pwd_result);
 	write(fd, buf, strlen(buf), file_io::APPEND);
 	close(fd);
 
@@ -122,9 +126,12 @@ int user_check(char *username, char *password)
 {
 	int uid = -1;
 	char buf[64] = {0};
+	char pwd_result[32] = {0};
 	char *real_uname = NULL;
 	char *real_pwd = NULL;
 	int fd = open("/etc/passwd");
+
+	hahash(password, pwd_result);
 
 	while (!eof(fd)) {
 		readline(fd, buf);
@@ -145,7 +152,7 @@ int user_check(char *username, char *password)
 		}
 		uid = string2int(buf);
 
-		if (strcmp(username, real_uname) && strcmp(password, real_pwd)) {
+		if (strcmp(username, real_uname) && strcmp(pwd_result, real_pwd)) {
 			close(fd);
 			return uid;
 		}
