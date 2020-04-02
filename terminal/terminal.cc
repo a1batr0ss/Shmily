@@ -17,6 +17,7 @@ Terminal::Terminal(struct ring_buffer *rb)
 	this->cur_user.uid = -1;
 	memset(this->cur_user.username, 0, 32);
 	memset(this->cur_dir, 0, 64);
+	memset(this->old_dir, 0, 64);
 	memset(this->line, 0, 128);
 	memset((char*)(this->argv), 0, 9);
 
@@ -25,6 +26,7 @@ Terminal::Terminal(struct ring_buffer *rb)
 	this->argc = 0;
 
 	get_cur_dir(this->cur_dir);
+	strcpy(this->old_dir, this->cur_dir);
 
 	return;
 }
@@ -61,6 +63,7 @@ void Terminal::change_home_dir()
 	}
 
 	cd(this->cur_dir);
+	strcpy(this->old_dir, this->cur_dir);
 }
 
 void Terminal::tell_fs()
@@ -165,10 +168,11 @@ void Terminal::print_shell()
 
 void Terminal::format_input()
 {
-	/* Change all space and '-' to 0. */
+	/* Change all space to 0. */
 	for (int i=0; 0!=this->line[i]; i++) {
-		if ((' ' == this->line[i]) || ('-' == this->line[i]))
-				this->line[i] = 0;
+		// if ((' ' == this->line[i]) || ('-' == this->line[i]))
+		if (' ' == this->line[i])
+			this->line[i] = 0;
 	}
 
 	bool is_head = true;
@@ -188,6 +192,7 @@ void Terminal::format_input()
 void Terminal::exit()
 {
 	memset(this->cur_dir, 0, 64);
+	memset(this->old_dir, 0, 64);
 
 	this->cur_user.uid = 0;  /* Must be 0(root) to read /etc/passwd. (Not -1) */
 	memset(this->cur_user.username, 0, 32);
@@ -292,8 +297,14 @@ void Terminal::handle_input()
 	else if (strcmp(this->argv[0], "pwd"))
 		pwd();
 	else if (strcmp(this->argv[0], "cd")) {
-		format_path(this->argv[1], abs_path);
+		if (strcmp("-", this->argv[1]))
+			strcpy(abs_path, this->old_dir);
+		else
+			format_path(this->argv[1], abs_path);
+
 		if (cd(abs_path)) {
+			memset(this->old_dir, 0, 64);
+			strcpy(this->old_dir, this->cur_dir);
 			memset(this->cur_dir, 0, 64);
 			strcpy(this->cur_dir, abs_path);  /* Just for Absolute path. */
 		}
@@ -343,6 +354,9 @@ void Terminal::handle_input()
 	} else if (strcmp(this->argv[0], "chown")) {
 		format_path(argv[1], abs_path);
 		chown(abs_path, this->argv[2]);
+	} else if (strcmp(this->argv[0], "clear")) {
+		init_screen();
+		// print_shell();
 	} else
 		;
 }
@@ -385,3 +399,4 @@ void Terminal::run()
 		}
 	}
 }
+

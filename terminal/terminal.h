@@ -9,6 +9,7 @@ class Terminal {
   private:
 	struct user cur_user;
 	char cur_dir[64];
+	char old_dir[64];
 	char line[128];
 	unsigned char line_idx;
 	struct ring_buffer *keyboard_buf;

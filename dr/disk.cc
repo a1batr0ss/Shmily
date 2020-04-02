@@ -22,8 +22,8 @@ void init_disk()
 	disks[0].is_slave = false;
 	disks[1].is_slave = true;
 
-	register_intr_handler(0x2e, (void*)disk_handler);	
-	register_intr_handler(0x2f, (void*)disk_handler);	
+	register_intr_handler(0x2e, (void*)disk_handler);
+	register_intr_handler(0x2f, (void*)disk_handler);
 
 	/* We just handle the slave disk.(fs_test.img) */
 	traverse_disk_partition(1);
@@ -53,7 +53,7 @@ static void choose_disk(struct disk *disk)
 		reg_con = hd::dev_mbs | hd::dev_lba | hd::dev_dev;
 	else
 		reg_con = hd::dev_mbs | hd::dev_lba;
-	
+
 	outb(hd::dev_reg, reg_con);
 }
 
@@ -132,7 +132,7 @@ void disk_identify(unsigned char disk_nr)
 
 	char buf[64];
 	memset(buf, 0, 64);
-	swap_pairs_bytes(&info_buf[20], buf, 20);	
+	swap_pairs_bytes(&info_buf[20], buf, 20);
 	printf("SN is %s\n", buf);
 }
 
@@ -191,9 +191,9 @@ void get_partition_table(unsigned int disk_nr, unsigned int lba, struct partitio
 	char *buf = (char*)malloc(512);
 
 	read_sector(disk_nr, lba, buf, 1);
-	memcpy((char*)p_tbl, buf+0x1be, 64);	
+	memcpy((char*)p_tbl, buf+0x1be, 64);
 
-	free(buf);	
+	free(buf);
 }
 
 
@@ -203,15 +203,15 @@ void print_disk_partition_info(unsigned int disk_nr)
 
 	for (int i=0; i<4; i++) {
 		struct partition *part = &(disk->primary[i]);
-		
+
 		if (0 != part->sector_cnt)
 			printf("%s, start at %d, size is %dMB.\n", part->name, part->start_lba,(part->sector_cnt * 512) / (1024*1024));
 	}
-	
+
 	printf("logic:\n");
 	for (int i=0; i<4; i++) {
 		struct partition *part = &(disk->logic[i]);
-		
+
 		if (0 != part->sector_cnt)
 			printf("%s, start at %d, size is %dMB.\n", part->name, part->start_lba,(part->sector_cnt * 512) / (1024*1024));
 
@@ -228,7 +228,7 @@ void traverse_disk_partition(unsigned int disk_nr)
 	memset((char*)&mbr_tbl, 0, sizeof(struct partition_table_mbr));
 
 	get_partition_table(disk_nr, 0, &mbr_tbl);
-	
+
 	/* Process primary partition. */
 	for (int i=0; i<4; i++) {
 		if (0 != mbr_tbl.entries[i].sector_nr_in) {  /* The entry is valid. */
@@ -272,7 +272,7 @@ void process_disk_ebr(unsigned int disk_nr, struct partition_table_entry_mbr *en
 			get_partition_table(disk_nr, ebr_offset, &ebr_tbl);
 		else
 			break;
-		
+
 		extend_offset = ebr_offset;
 	}
 }

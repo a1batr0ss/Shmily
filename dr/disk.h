@@ -1,6 +1,8 @@
 #ifndef __DR_DISK_H__
 #define __DR_DISK_H__
 
+#include <bitmap.h>
+
 namespace hd {
     const unsigned int disk_intr_nr = 0x2e;
     const unsigned short channel_port_base = 0x1f0;
@@ -13,7 +15,7 @@ namespace hd {
     const unsigned short dev_reg = 0x1f6;
     const unsigned short status_reg = 0x1f7;
     const unsigned short cmd_reg = 0x1f7;
-	
+
     const unsigned char identify = 0xec;
     const unsigned char read = 0x20;
     const unsigned char write = 0x30;
@@ -36,7 +38,10 @@ struct partition {
 	unsigned int start_lba;
 	enum partition_type type;
 	struct disk *disk;
-	struct super_block *sb;
+	struct super_block *sb;  /* super block data in fs, just a pointer, same size. */
+
+	struct bitmap block_bmap;
+	struct bitmap inode_bmap;
 };
 
 struct disk {
@@ -64,7 +69,7 @@ struct partition_table_entry_mbr {
 	char end_sector;
 	char end_cyliner;
 	unsigned int sector_nr_before;  /* lba */
-	unsigned int sector_nr_in;	
+	unsigned int sector_nr_in;
 } __attribute__((packed));
 
 struct partition_table_mbr {
