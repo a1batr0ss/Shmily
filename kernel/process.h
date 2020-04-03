@@ -65,6 +65,7 @@ struct pcb {
     struct pcb *next_ready;
     Message *message;
     struct pcb *sendings;
+	unsigned int userstack;
     bool is_userproc;
     char padding[3000];  /* tentatively. */
     struct thread_stack self_stack;
@@ -83,7 +84,9 @@ void unblock_proc(struct pcb *proc);
 void traverse_ready_queue();
 void idle_process(void *args);
 struct pcb* get_current_proc();
-void start_userprocess(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc);
+void start_userprocess(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack);
+
+void create_process(proc_target *func);
 
 void ps();
 

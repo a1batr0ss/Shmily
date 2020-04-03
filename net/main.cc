@@ -10,6 +10,9 @@
 
 int main()
 {
+	printf("In net\n");
+	while (1);
+
 	init_net();
 
 	unsigned char req_ip[4] = {192, 168, 11, 99};

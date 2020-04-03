@@ -8,10 +8,13 @@
 #include "dir.h"
 #include "file.h"
 #include "protect.h"
+#include "exec.h"
 
 int main()
 {
 	init_fs();
+
+	exec_file(NULL);
 
 	Message msg;
 

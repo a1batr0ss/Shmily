@@ -142,6 +142,15 @@ unsigned long long get_current_time()
     return time2num(t);
 }
 
+void create_process(unsigned int func)
+{
+    Message msg;
+    struct _context con;
+    con.con_1 = func;
+    msg.reset_message(kr::CREATE_PROC, con);
+    msg.send(all_processes::KR);
+}
+
 /* ************************************* */
 
 void mkdir(char *path)

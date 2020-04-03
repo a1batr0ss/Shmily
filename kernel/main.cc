@@ -21,11 +21,11 @@ int main()
 
     deal_init_process();  /* The init process. */
     start_process("idle", 12, (void (*)(void*))idle_process, NULL, (struct pcb*)0x99000);
-	start_userprocess("mm", 32, (void (*)(void*))0x20000, NULL, all_processes::MM_PCB);
-	start_userprocess("fs", 32, (void (*)(void*))0x30000, NULL, all_processes::FS_PCB);
-	start_userprocess("dr", 32, (void (*)(void*))0x40000, NULL, all_processes::DR_PCB);
-	start_userprocess("net", 32, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB);
-	start_userprocess("terminal", 32, (void (*)(void*))0x60000, NULL, all_processes::TER_PCB);
+	start_userprocess("mm", 32, (void (*)(void*))0x20000, NULL, all_processes::MM_PCB, all_processes::MM - 0x10000 + 0xfff);
+	start_userprocess("fs", 32, (void (*)(void*))0x30000, NULL, all_processes::FS_PCB, all_processes::FS - 0x10000 + 0xfff);
+	start_userprocess("dr", 32, (void (*)(void*))0x40000, NULL, all_processes::DR_PCB, all_processes::DR - 0x10000 + 0xfff);
+	// start_userprocess("net", 32, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB);
+	start_userprocess("terminal", 32, (void (*)(void*))0x60000, NULL, all_processes::TER_PCB, all_processes::TER - 0x10000 + 0xfff);
 	start_process("kernel", 32, (void (*)(void*))kernel_work, NULL, all_processes::KR_PCB);
 
     enable_intr();
@@ -73,6 +73,13 @@ void kernel_work()
 
 			msg.reset_message(1, con_ret);
 			msg.reply();
+
+			break;
+		}
+		case kr::CREATE_PROC:
+		{
+			void* entry_point = (void*)(msg.get_context().con_1);
+			create_process((proc_target*)entry_point);
 
 			break;
 		}

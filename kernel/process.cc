@@ -1,6 +1,7 @@
 #include <global.h>
 #include <string.h>
 #include <stdio.h>
+#include <all_syscall.h>
 #include "page.h"
 #include "process.h"
 #include "interrupt.h"
@@ -181,17 +182,18 @@ void init_userprocess(proc_target func)
     intr_stack->ip = func;
     intr_stack->cs = SELECTOR_U_CODE;
     intr_stack->eflags = EF_MBS | EF_IOPL_ON | EF_IF_ON;
-    intr_stack->esp = (unsigned int)cur_proc - 0x10000 + 0x1000;
+    intr_stack->esp = cur_proc->userstack;
     intr_stack->ss = SELECTOR_U_DATA;
 
     asm volatile ("movl %0, %%esp; jmp intr_exit":: "g" (intr_stack) : "memory");
 }
 
-void start_userprocess(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc)
+void start_userprocess(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack)
 {
     init_process_info(proc, name, priority);
-    create_process(proc, (void (*)(void*))init_userprocess, (void*)func);
     proc->is_userproc = true;
+    proc->userstack = userstack;
+    create_process(proc, (void (*)(void*))init_userprocess, (void*)func);
 
     /* Append to all queue. */
     append_ready_array(proc);
@@ -304,6 +306,14 @@ struct pcb* get_current_proc()
 	asm volatile ("mov %%esp, %0" : "=g"(esp));
 
 	return (struct pcb*)(esp & 0xffffff000);
+}
+
+void create_process(proc_target *func)
+{
+    struct pcb *pcb = (struct pcb*)malloc(sizeof(struct pcb));
+    unsigned int userstack = (unsigned int)malloc(paging::page_size);
+
+    start_userprocess("USER_CREATE", 21, func, NULL, pcb, userstack);
 }
 
 void status2string(enum process_status stat, char *stat_string)

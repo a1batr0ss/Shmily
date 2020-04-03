@@ -69,6 +69,7 @@ namespace kr {
 	const unsigned int REGR_INTR = 1;  /* register a interrupt handler. */
 	const unsigned int SLEEP = 2;
 	const unsigned int GET_TIME = 3;
+	const unsigned int CREATE_PROC = 4;
 
 	const unsigned int CMD_PS = 256;
 	const unsigned int CMD_HALT = 257;
