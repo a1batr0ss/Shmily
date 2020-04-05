@@ -5,6 +5,7 @@
 #include <bitmap.h>
 #include "memory.h"
 #include "doublebit_map.h"
+#include "small_mem_header.h"
 #include "swar.h"
 
 #define DIV_ROUND_UP(x, y) ((x + y - 1) / (y))
@@ -14,12 +15,12 @@ MemoryManager::MemoryManager()
 	/* Initialize the memory pool. */
 	unsigned int mem_capacity = get_mem_capacity();
 
-    unsigned int stationary_mem = 0x210000;  /* more than 2M can't be accessed by other processes */
+    unsigned int stationary_mem = 0x200000;  /* more than 2M can't be accessed by other processes */
     unsigned int free_mem = mem_capacity - stationary_mem;
     unsigned int free_pages = free_mem / paging::page_size;
 
     unsigned int bmap_length = free_pages / 8;
-    unsigned int phy_start = 0x210000;
+    unsigned int phy_start = 0x200000;
 
     this->phypool.phyaddr_start = phy_start;
     this->phypool.pool_size = free_mem;
@@ -29,30 +30,10 @@ MemoryManager::MemoryManager()
     init_bitmap(&(this->phypool.phyaddr_bmap));
 
     /* Initialise the virtaul address bitmap. */
-    this->initproc_vir.vaddr_start = 0x210000;
-    // this->initproc_vir.vaddr_bmap.bytes_len = bmap_length;
-    // this->initproc_vir.vaddr_bmap.base = (unsigned char*)(0x9000 + bmap_length);
+    this->initproc_vir.vaddr_start = 0x200000;
 
     // init_bitmap(&(this->initproc_vir.vaddr_bmap));
 	this->initproc_vir.vaddr_bmap.initialize(bmap_length, (unsigned char*)(0x9000 + bmap_length));
-
-	/* Initialize the global descriptor. */
-	unsigned int desc_start = 0x200000;
-	unsigned int desc_bmap_start = 0x207000;
-	unsigned int size = 16;  /* 16B-->32B-->64B .... */
-	for (int i=0; i<memory::glo_desc_nr; i++, size*=2) {
-		this->glo_desc[i].start = desc_start;
-		this->glo_desc[i].size_bytes = paging::page_size;
-		this->glo_desc[i].desc_nr = paging::page_size / size;
-
-		this->glo_desc[i].bmap.base = (unsigned char*)desc_bmap_start;
-		this->glo_desc[i].bmap.bytes_len = DIV_ROUND_UP(this->glo_desc[i].desc_nr, 8);
-		init_bitmap(&(this->glo_desc[i].bmap));  /* Modify the paging table before doing this. */
-
-		desc_bmap_start += this->glo_desc[i].bmap.bytes_len;
-		desc_start += paging::page_size;
-	}
-
 }
 
 unsigned int MemoryManager::get_mem_capacity()
@@ -181,6 +162,9 @@ void MemoryManager::free_page(void *viraddr)
 
 void* MemoryManager::malloc(unsigned int cnt_bytes)
 {
+	if (0 == cnt_bytes)
+		return NULL;
+
 	if (cnt_bytes > 1024) {
 		unsigned int page_cnt = DIV_ROUND_UP(cnt_bytes, paging::page_size);
 		void *ret = malloc_page(page_cnt);
@@ -189,15 +173,45 @@ void* MemoryManager::malloc(unsigned int cnt_bytes)
 		return ret;
 	} else {
 		unsigned int desc_idx = 0;
+		/* Get the descriptor. */
 		for (unsigned int cnt_start=16; cnt_start<cnt_bytes; cnt_start*=2, desc_idx++) ;
 
-		struct mem_global_desc *desc = &(this->glo_desc[desc_idx]);
+		int l = mem_desc[desc_idx].get_length();
+		void *ret = NULL;
+		for (int i=0; i<l; i++) {
+			struct cyclelist_elem *elem = mem_desc[desc_idx].get_elem(i);
+			struct small_mem_header *page_header = (struct small_mem_header*)elem;
 
-		int bit_idx = bitmap_scan(&(desc->bmap), 1);
-		bitmap_set_bit(&(desc->bmap), bit_idx, 1);
+			if (0 == page_header->free_cnts)
+				continue;
 
-		void *ret = (void*)(desc->start + bit_idx*(desc->size_bytes / desc->desc_nr));
-		memset((char*)ret, 0, 2<<(desc_idx+4));
+			/* If this page has free slot, return it. */
+			ret = page_header->page_in_free_queue.pop();
+			page_header->free_cnts--;
+
+			/* If this page is full, put it to tail. So we need not scan it every time. */
+			if (0 == page_header->free_cnts) {
+				mem_desc[desc_idx].remove(elem);
+				mem_desc[desc_idx].append(elem);
+			}
+
+			memset((char*)ret, 0, page_header->each_block_size);
+
+			return ret;
+		}
+
+		/* All pages we hold are full. Then allocate a page. */
+		void *new_page = malloc_page(1);
+		install_mem_header(new_page, 2<<(desc_idx+3));
+		mem_desc[desc_idx].push((struct cyclelist_elem*)new_page);  /* Append the page to queue. */
+
+		struct small_mem_header *page_header = (struct small_mem_header*)new_page;
+
+		ret = page_header->page_in_free_queue.pop();
+		page_header->free_cnts--;
+
+		memset((char*)ret, 0, page_header->each_block_size);
+
 		return ret;
 	}
 }
@@ -205,15 +219,24 @@ void* MemoryManager::malloc(unsigned int cnt_bytes)
 void MemoryManager::free(void *buf)
 {
 	unsigned int buf_uint = (unsigned int)buf;
-	if (buf_uint >= 0x210000) {
+
+	/* This condition is trustless. If the buf is small memory block, as the page_header, it couldn't exactly divided by page size. */
+	if (0 == buf_uint % paging::page_size) {
 		free_page(buf);
-	} else if ((buf_uint >= 0x200000) && (buf_uint < 0x207000)) {
-		unsigned int desc_idx = (buf_uint - 0x200000) / 0x1000;
-		struct mem_global_desc *desc = &(this->glo_desc[desc_idx]);
-		unsigned int bmap_idx = (buf_uint - desc->start) / (desc->size_bytes / desc->desc_nr);
-		bitmap_set_bit(&(desc->bmap), bmap_idx, 0);
 	} else {
-		printf("Error.\n");
+		struct small_mem_header *page_header = (struct small_mem_header*)((unsigned int)buf & 0xfffff000);
+		page_header->page_in_free_queue.append((struct cyclelist_elem*)buf);
+		(page_header->free_cnts)++;
+
+		/* If the page's free block occupy 1/5, then put it to head, so we can get is when we need malloc. */
+		if ((5 * page_header->free_cnts) >= ((paging::page_size - sizeof(struct small_mem_header) / page_header->each_block_size))) {
+
+			unsigned int desc_idx = 0;
+			for (unsigned int cnt_start=16; cnt_start<page_header->each_block_size; cnt_start*=2, desc_idx++) ;
+
+			mem_desc[desc_idx].remove((struct cyclelist_elem*)page_header);
+			mem_desc[desc_idx].push((struct cyclelist_elem*)page_header);
+		}
 	}
 }
 
@@ -227,17 +250,7 @@ void MemoryManager::print_mem_info()
 	for (unsigned int i=0; i<(this->phypool.phyaddr_bmap.bytes_len / 4); i++)
 		used_pages += swar(start[i]);
 
-	/* Scattered. */
-	unsigned int cnt_bytes = 0;
-	for (int i=0; i<memory::glo_desc_nr; i++) {
-		unsigned int bytes_units = 2 << (i + 4);
-		unsigned int *start_desc = (unsigned int*)(this->glo_desc[i].bmap.base);
-
-		for (int j; j<(this->glo_desc[i].bmap.bytes_len / 4); j++)
-			cnt_bytes += bytes_units * swar(start_desc[j]);
-	}
-
-	unsigned int all_used = used_pages*paging::page_size + cnt_bytes + 0x200000;
+	unsigned int all_used = used_pages*paging::page_size;
 	printf("totoal: %dKB   used: %dKB   free:  %dKB\n", all_mem>>10, all_used>>10, (all_mem-all_used)>>10);
 }
 

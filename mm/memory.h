@@ -2,6 +2,7 @@
 #define __MM_MEMORY_H__
 
 #include <bitmap.h>
+#include <cycle_list.h>
 #include "doublebit_map.h"
 
 namespace memory {
@@ -19,18 +20,11 @@ struct mem_pool {
     unsigned int pool_size;
 };
 
-struct mem_global_desc {
-	unsigned int start;
-	unsigned int size_bytes;
-	unsigned int desc_nr;
-	struct bitmap bmap;
-};
-
 class MemoryManager {
   private:
 	struct viraddr_manage initproc_vir;
 	struct mem_pool phypool;
-	struct mem_global_desc glo_desc[7];  /* 16B, 32B, 64B, 128B, 256B, 512B, 1024B */
+	CycleList mem_desc[7];  /* 16B, 32B, 64B, 128B, 256B, 512B, 1024B */
 
 	unsigned int get_mem_capacity();
 	void* malloc_page(unsigned int cnt);

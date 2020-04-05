@@ -14,8 +14,6 @@ int main()
 {
 	init_fs();
 
-	exec_file(NULL);
-
 	Message msg;
 
 	while (1) {
