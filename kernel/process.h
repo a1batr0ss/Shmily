@@ -1,9 +1,11 @@
 #ifndef __KERNEL_PROCESS_H__
 #define __KERNEL_PROCESS_H__
 
+#include <cycle_list.h>
 #include "ipc.h"
 
 #define NR_PROC 64
+#define PRIORITY_KIND 5
 
 #define SELECTOR_U_DATA ((5 << 3) + (0 << 2) + 3)
 #define SELECTOR_U_CODE ((4 << 3) + (0 << 2) + 3)
@@ -15,8 +17,12 @@
 
 typedef void proc_target(void*);
 
+enum process_priority {
+	PRIORITY_A, PRIORITY_B, PRIORITY_C, PRIORITY_D, PRIORITY_E
+};
+
 enum process_status {
-    RUNNING, READY, BLOCKED, WAITING, HANGING, DIED, WAITING_MSG, SENDING_MSG
+    RUNNING, READY, BLOCKED, WAITING, HANGING, DIED, WAITING_MSG, SENDING_MSG, WAITING_MID
 };
 
 struct intr_stack {
@@ -54,6 +60,7 @@ struct thread_stack {
 } __attribute__((packed));
 
 struct pcb {
+	struct cyclelist_elem ready_elem;
     unsigned int pid;
     char name[16];
     enum process_status status;
@@ -75,8 +82,9 @@ extern struct pcb *processes[NR_PROC];
 extern struct pcb *cur_proc;
 extern char cur_proc_idx;
 
+void init_pm();
 void schedule();
-struct pcb* start_process(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc);
+struct pcb* start_process(char *name, enum process_priority priority, proc_target func, void *args, struct pcb *proc);
 void deal_init_process();
 void self_block(enum process_status stat);
 void proc_yield();
@@ -84,7 +92,7 @@ void unblock_proc(struct pcb *proc);
 void traverse_ready_queue();
 void idle_process(void *args);
 struct pcb* get_current_proc();
-void start_userprocess(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack);
+void start_userprocess(char *name, enum process_priority priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack);
 
 void create_process(proc_target *func);
 

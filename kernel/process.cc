@@ -1,6 +1,7 @@
 #include <global.h>
 #include <string.h>
 #include <stdio.h>
+#include <cycle_list.h>
 #include <all_syscall.h>
 #include "page.h"
 #include "process.h"
@@ -9,20 +10,38 @@
 #include "tss.h"
 
 struct pcb *processes[NR_PROC];
+CycleList ready_processes[PRIORITY_KIND];  /* kind of priority. */
+unsigned int max_rounds[PRIORITY_KIND];  /* Prevent the low priority process starve. */
 struct pcb *cur_proc;
 struct pcb *next_proc;
 struct pcb *prev_proc;
 struct pcb *first_ready_proc;
 struct pcb *last_ready_proc;
 char cur_proc_idx;
+unsigned int max_priority;  /* Recored the max priority ready queue which has process, so that we couldn't scan ready_processes from head. */
 
 unsigned int allocate_pid();
 
-void init_process_info(struct pcb *proc, char *name_, unsigned int priority_)
+void init_pm()
+{
+	for (int i=0; i<PRIORITY_KIND; i++) {
+		ready_processes[i].initialize();
+		max_rounds[i] = 10;
+	}
+
+	max_priority = PRIORITY_KIND + 1;
+}
+
+inline unsigned int priority2ticks(enum process_priority priority)
+{
+	return (PRIORITY_KIND - (unsigned int)priority) * 8;
+}
+
+void init_process_info(struct pcb *proc, char *name_, enum process_priority priority_)
 {
     proc->priority = priority_;
     proc->pid = allocate_pid();
-    proc->ticks = priority_;
+    proc->ticks = priority2ticks(priority_);
     proc->elapsed_ticks = 0;
     proc->pagedir_pos = NULL;
 
@@ -60,7 +79,7 @@ unsigned int allocate_pid()
     return pid;
 }
 
-int append_ready_array(struct pcb *proc)
+int append_all_array(struct pcb *proc)
 {
     /* Get a free slot in processes */
     for (unsigned char idx=0; idx<NR_PROC; idx++) {
@@ -72,25 +91,20 @@ int append_ready_array(struct pcb *proc)
     return -1;  /* ready array is full, append failed. */
 }
 
-struct pcb* start_process(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc)
+struct pcb* start_process(char *name, enum process_priority priority, proc_target func, void *args, struct pcb *proc)
 {
     init_process_info(proc, name, priority);
     create_process(proc, func, args);
+
     /* Append to all queue. */
-    append_ready_array(proc);
+    append_all_array(proc);
 
     /* Append to ready queue. */
-    if (NULL == first_ready_proc)
-    first_ready_proc = proc;
+	unsigned int prio_idx = (unsigned int)priority;
+	ready_processes[prio_idx].append(&(proc->ready_elem));
 
-    if (NULL != last_ready_proc) {
-        last_ready_proc->next_ready = proc;
-        last_ready_proc = proc;
-    } else {
-        last_ready_proc = proc;
-    }
-
-    last_ready_proc->next_ready = first_ready_proc;
+	if (priority < max_priority)
+		max_priority = priority;
 }
 
 void switch_to(struct pcb *next)
@@ -118,49 +132,62 @@ void switch_to(struct pcb *next)
 
 void schedule()
 {
-    if (RUNNING == cur_proc->status) {
-        if (NULL == last_ready_proc) {
-        }
+	next_proc = NULL;
 
-        if ((NULL == first_ready_proc) && (NULL == last_ready_proc)) {
-            first_ready_proc = cur_proc;
-            last_ready_proc = cur_proc;
-            last_ready_proc->next_ready = first_ready_proc;
-        } else {
-             /* Append to ready queue. */
-            last_ready_proc->next_ready = cur_proc;
-            last_ready_proc = cur_proc;
-            last_ready_proc->next_ready = first_ready_proc;
-        }
-    } else {
-    }
+	/* For block() expecially in ipc. The status filed is WAITING/SENDING. */
+	if (RUNNING == cur_proc->status)
+		cur_proc->status = READY;
+	else if (WAITING_MID == cur_proc->status) {  /* Lazy schedule. */
+		cur_proc->status = WAITING_MSG;
+		// printf("MID\n");
+		unsigned int ready_idx = (unsigned int)(cur_proc->priority);
+		ready_processes[ready_idx].remove(&(cur_proc->ready_elem));
+	} else {
+		/* Nothing to do. */
+	}
 
-    if (NULL != first_ready_proc) {
-        next_proc = first_ready_proc;
-        next_proc->status = RUNNING;
+	/* Pick a process. (Priority schedule.) */
+	unsigned int max_prio = max_priority;
+	for (; max_prio<PRIORITY_KIND; max_prio++) {
+		if ((0 == max_rounds[max_prio]) && (max_prio < 3)) {
+			max_rounds[max_prio] = 10;
+			continue;
+		}
 
-        if (first_ready_proc == last_ready_proc) {
-            /* The last process. */
-            first_ready_proc->next_ready = NULL;
-            first_ready_proc = NULL;
-            last_ready_proc = NULL;
-        } else {
-            last_ready_proc->next_ready = first_ready_proc->next_ready;
-            first_ready_proc = first_ready_proc->next_ready;
-        }
+		if (!ready_processes[max_prio].is_empty())
+			break;
+	}
+
+	if ((unsigned int)(cur_proc->priority) == max_prio) {
+		next_proc = (struct pcb*)ready_processes[max_prio].next_elem(&(cur_proc->ready_elem));
+		max_rounds[cur_proc->priority]--;
+	}
+	else if (max_prio < PRIORITY_KIND)
+		next_proc = (struct pcb*)(ready_processes[max_prio].get_elem(0));
+	else {
+		/*
+		 * max_prio > PRIORITY_KIND
+		 * That means no process in ready queue, We shoud revoke the idle process.
+		 * But the init process is in ready queue at anytime. So we the ready queue is always has the init process. In this case, we need not do anything.(Process the idle)
+	     */
+	}
+
+    if (NULL != next_proc) {
+		next_proc->status = RUNNING;
 
         if (next_proc->is_userproc)
             update_tss(next_proc);
+
         /* 2. switch to the ready process which just picked. */
         switch_to(next_proc);
     } else {
-        /* TODO: Revoke the idle. */
+        /* TODO: Revoke the idle. Wouldnt' get there. */
+		printf("NULL");
     }
 }
 
 void init_userprocess(proc_target func)
 {
-    // asm volatile ("xchg %%bx, %%bx"::);
     /* Kernel mode. */
     struct pcb *cur_proc = get_current_proc();
     cur_proc->esp =(unsigned int*)((unsigned int)cur_proc + sizeof(struct pcb));
@@ -182,57 +209,63 @@ void init_userprocess(proc_target func)
     intr_stack->ip = func;
     intr_stack->cs = SELECTOR_U_CODE;
     intr_stack->eflags = EF_MBS | EF_IOPL_ON | EF_IF_ON;
-    intr_stack->esp = cur_proc->userstack;
+	intr_stack->esp = cur_proc->userstack;
     intr_stack->ss = SELECTOR_U_DATA;
 
     asm volatile ("movl %0, %%esp; jmp intr_exit":: "g" (intr_stack) : "memory");
 }
 
-void start_userprocess(char *name, unsigned int priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack)
+void start_userprocess(char *name, enum process_priority priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack)
 {
     init_process_info(proc, name, priority);
     proc->is_userproc = true;
-    proc->userstack = userstack;
+	proc->userstack = userstack;
     create_process(proc, (void (*)(void*))init_userprocess, (void*)func);
 
     /* Append to all queue. */
-    append_ready_array(proc);
+    append_all_array(proc);
 
-    /* Append to ready queue. */
-    if (NULL == first_ready_proc)
-        first_ready_proc = proc;
+	unsigned int prio_idx = (unsigned int)priority;
+	ready_processes[prio_idx].append(&(proc->ready_elem));
 
-    if (NULL != last_ready_proc) {
-        last_ready_proc->next_ready = proc;
-        last_ready_proc = proc;
-    } else {
-        last_ready_proc = proc;
-    }
-
-    last_ready_proc->next_ready = first_ready_proc;
+	if (priority < max_priority)
+		max_priority = priority;
 }
 
 /* The init process's information. */
 void deal_init_process()
 {
     struct pcb *init_proc = (struct pcb*)0x80000;
-    init_process_info(init_proc, "init", 2);
+    init_process_info(init_proc, "init", PRIORITY_E);
     cur_proc = init_proc;
     cur_proc_idx = -1;
     init_proc->status = RUNNING;
 
-	append_ready_array(init_proc);
+	append_all_array(init_proc);
 
-    first_ready_proc = NULL;
-    last_ready_proc = NULL;
+	unsigned int prio_idx = (unsigned int)PRIORITY_E;
+	ready_processes[prio_idx].append(&(init_proc->ready_elem));
+
+	if (PRIORITY_E < max_priority)
+		max_priority = PRIORITY_E;
 }
 
 void self_block(enum process_status stat)
 {
     bool old_status = disable_intr();
 
+	if (WAITING_MSG == stat) {
+		cur_proc->status = WAITING_MID;
+		schedule();
+		set_intr(old_status);
+
+		return;
+	}
+
     cur_proc->status = stat;
 
+	unsigned int ready_idx = (unsigned int)(cur_proc->priority);
+	ready_processes[ready_idx].remove(&(cur_proc->ready_elem));
     schedule();
 
     set_intr(old_status);
@@ -241,10 +274,6 @@ void self_block(enum process_status stat)
 void proc_yield()
 {
     bool old_status = disable_intr();
-
-    last_ready_proc->next_ready = cur_proc;
-    cur_proc->next_ready = first_ready_proc;
-    last_ready_proc = cur_proc;
 
     cur_proc->status = READY;
 
@@ -260,43 +289,26 @@ void unblock_proc(struct pcb *proc)
 
     proc->status = READY;
 
-    if ((NULL == last_ready_proc) && (NULL == first_ready_proc)) {
-        first_ready_proc = proc;
-        last_ready_proc = proc;
-        last_ready_proc->next_ready = proc;
-    } else {
-        last_ready_proc->next_ready = proc;
-        proc->next_ready = first_ready_proc;
-        last_ready_proc = proc;
-    }
+	if (WAITING_MID == proc->status) {
+		set_intr(old_status);
+
+		return;
+	}
+
+	if (proc->priority < max_priority)
+		max_priority = proc->priority;
+
+	unsigned int ready_idx = (unsigned int)(proc->priority);
+	ready_processes[ready_idx].append(&(proc->ready_elem));
 
     set_intr(old_status);
-}
-
-/* Just for debug. */
-void traverse_ready_queue()
-{
-    putstring("In ready ");
-    putstring("ready queue is ");
-    struct pcb *first = first_ready_proc;
-    while (1) {
-        if (first == last_ready_proc) {
-        puthex((unsigned int)first);
-            break;
-        }
-        puthex((unsigned int)first);
-        putstring("-->");
-        first = first->next_ready;
-    }
-    putstring("\n");
 }
 
 void idle_process(void *args)
 {
     while (1) {
-        self_block(BLOCKED);
-        printf("idle wake up.\n");
         asm volatile ("sti; hlt" : :);
+        self_block(BLOCKED);
     }
 }
 
@@ -310,10 +322,10 @@ struct pcb* get_current_proc()
 
 void create_process(proc_target *func)
 {
-    struct pcb *pcb = (struct pcb*)malloc(sizeof(struct pcb));
-    unsigned int userstack = (unsigned int)malloc(paging::page_size);
+	struct pcb *pcb = (struct pcb*)malloc(sizeof(struct pcb));
+	unsigned int userstack = (unsigned int)malloc(paging::page_size);
 
-    start_userprocess("USER_CREATE", 21, func, NULL, pcb, userstack);
+	start_userprocess("USER_CREATE", PRIORITY_D, func, NULL, pcb, userstack);
 }
 
 void status2string(enum process_status stat, char *stat_string)
@@ -357,3 +369,4 @@ void ps()
         printf("%d     %s    %s\n", processes[i]->pid, stat, processes[i]->name);
     }
 }
+

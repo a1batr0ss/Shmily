@@ -76,3 +76,11 @@ struct cyclelist_elem* CycleList::get_elem(int idx)
 	return elem;
 }
 
+struct cyclelist_elem* CycleList::next_elem(struct cyclelist_elem *cur_elem)
+{
+	if (cur_elem->next == &(this->tail))
+		return this->head.next;
+	else
+		return cur_elem->next;
+}
+

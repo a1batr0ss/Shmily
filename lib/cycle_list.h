@@ -22,6 +22,7 @@ class CycleList {
 	bool is_empty();
 	int get_length();
 	struct cyclelist_elem* get_elem(int idx);
+	struct cyclelist_elem* next_elem(struct cyclelist_elem *cur_elem);
 };
 
 #endif
