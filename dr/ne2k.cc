@@ -1,21 +1,30 @@
+#include <global.h>
 #include <stdio.h>
 #include <io.h>
 #include <string.h>
 #include <all_syscall.h>
 #include <syscall.h>
 #include <ipc_glo.h>
+#include <indirect_ring_buffer.h>
 #include "ne2k.h"
 #include "ethernet.h"
 
+IndirectRingBuffer net_buf;
 char mac_addr[6];
 unsigned char next;
-unsigned char data_recv[1600];
 
 void out_mac_addr();
 void ne2k_handler();
 
 void init_ne2k()
 {
+	/* Initialize the net buffer. */
+	char* data_buf[10];
+	for (int i=0; i<10; i++)
+		data_buf[i] = (char*)malloc(1600);  /* Will get a total page in fact. */
+
+	net_buf.initialize(data_buf);
+
 	next = ne2k::PAGE_START_DATA + 1;
 
 	outb(ne2k::IOBASE + ne2k::NE_RESET, inb(ne2k::IOBASE + ne2k::NE_RESET));
@@ -89,7 +98,7 @@ void send_packet(struct packet &p)
 {
 	unsigned int size = p.size;
 	unsigned char *data = p.data;
-	
+
 	outb(ne2k::IOBASE + ne2k::REMOTE_CNT_LOW, size & 0xff);
 	outb(ne2k::IOBASE + ne2k::REMOTE_CNT_HIGH, size >> 8);
 	outb(ne2k::IOBASE + ne2k::REMOTE_ADDR_LOW, 0);
@@ -125,7 +134,7 @@ void receive_packet()
 		outb(ne2k::IOBASE + ne2k::REMOTE_CNT_HIGH, 0x00);
 
 		outb(ne2k::IOBASE + ne2k::CMD, ne2k::READ | ne2k::START);
-		
+
 		recv_stat = inb(ne2k::IOBASE + ne2k::NE_DATA);
 		next_ = inb(ne2k::IOBASE + ne2k::NE_DATA);
 		len = inb(ne2k::IOBASE + ne2k::NE_DATA);
@@ -140,9 +149,15 @@ void receive_packet()
 			outb(ne2k::IOBASE + ne2k::REMOTE_CNT_HIGH, len>>8);
 			outb(ne2k::IOBASE + ne2k::CMD, ne2k::READ | ne2k::START);
 
-			memset((char*)data_recv, 0, 1600);
-			for (int i=0; i<len; i++)
-				data_recv[i] = inb(ne2k::IOBASE + ne2k::NE_DATA);
+			char *buf = net_buf.get_first_free_buffer();
+
+			if (NULL != buf) {
+				memset(buf, 0, 1600);
+				for (int i=0; i<len; i++)
+					buf[i] = (char)inb(ne2k::IOBASE + ne2k::NE_DATA);
+			} else {
+				inb(ne2k::IOBASE + ne2k::NE_DATA);
+			}
 
 			outb(ne2k::IOBASE + ne2k::INTR_STAT, 0x40);
 			if (next_ == ne2k::PAGE_START_DATA)
@@ -162,39 +177,23 @@ void receive_packet()
 	}
 }
 
-void deal_packet()
-{
-	/* Notify the NET. */
-	Message msg(all_processes::INTERRUPT);
-	struct _context con;
-	con.con_1 = (unsigned int)data_recv;
-	msg.reset_message(net::PKT_ARRIVED, con);
-	msg.send(all_processes::NET);
-}
-
 void ne2k_handler()
 {
 	unsigned char val = 0;
-	
+
 	outb(ne2k::IOBASE + ne2k::INTR_STAT, ne2k::NODMA | ne2k::START);
 
 	while (0 != (val=inb(ne2k::IOBASE + ne2k::INTR_STAT))) {
 		outb(ne2k::IOBASE + ne2k::INTR_STAT, val);
 
-		// printf("ne2k's handler occurred. %x\n", val);
-		
-		if (val & ne2k::PKT_RECV) {
-			/* TODO: read packet. */
+		if (val & ne2k::PKT_RECV)
 			receive_packet();
-			deal_packet();
-		}
 
 		if (val & ne2k::PKT_TRANS) {
 			outb(ne2k::IOBASE + ne2k::CMD, 0);
 		}
 
 		if (val & ne2k::DMA_FIN) {
-			// printf("DMA_FIN.\n");
 			outb(ne2k::IOBASE + ne2k::CMD + 0x07, 0x40);
 			outb(ne2k::IOBASE + ne2k::CMD, 0);
 		}

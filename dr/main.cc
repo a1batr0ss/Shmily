@@ -71,6 +71,17 @@ int main()
 
 			break;
 		}
+		case dr::WHERE_NET_BUFFER:
+		{
+			unsigned int net_buffer = (unsigned int)&net_buf;
+			struct _context con_ret;
+			con_ret.con_1 = net_buffer;
+			msg.reset_message(1, con_ret);
+
+			msg.reply();
+
+			break;
+		}
 		case dr::SEND_PKT:
 		{
 			unsigned int pkt_ = con.con_1;

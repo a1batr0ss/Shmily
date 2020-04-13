@@ -228,14 +228,19 @@ void MemoryManager::free(void *buf)
 		page_header->page_in_free_queue.append((struct cyclelist_elem*)buf);
 		(page_header->free_cnts)++;
 
+		unsigned int desc_idx = 0;
+        for (unsigned int cnt_start=16; cnt_start<page_header->each_block_size; cnt_start*=2, desc_idx++) ;
+
+		if (page_header->free_cnts == (paging::page_size - sizeof(struct small_mem_header) / page_header->each_block_size)) {
+			/* All is free, put it to big block pool. */
+			mem_desc[desc_idx].remove((struct cyclelist_elem*)page_header);
+			free(page_header);
+		} else if ((5 * page_header->free_cnts) >= ((paging::page_size - sizeof(struct small_mem_header) / page_header->each_block_size))) {
 		/* If the page's free block occupy 1/5, then put it to head, so we can get is when we need malloc. */
-		if ((5 * page_header->free_cnts) >= ((paging::page_size - sizeof(struct small_mem_header) / page_header->each_block_size))) {
-
-			unsigned int desc_idx = 0;
-			for (unsigned int cnt_start=16; cnt_start<page_header->each_block_size; cnt_start*=2, desc_idx++) ;
-
 			mem_desc[desc_idx].remove((struct cyclelist_elem*)page_header);
 			mem_desc[desc_idx].push((struct cyclelist_elem*)page_header);
+		} else {
+			/* Nothing to do. */
 		}
 	}
 }

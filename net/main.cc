@@ -2,6 +2,7 @@
 #include <ipc_glo.h>
 #include <stdio.h>
 #include <syscall.h>
+#include <indirect_ring_buffer.h>
 #include "arp.h"
 #include "net.h"
 #include "icmp.h"
@@ -10,39 +11,16 @@
 
 int main()
 {
-	printf("In net\n");
-	while (1);
-
 	init_net();
-
-	unsigned char req_ip[4] = {192, 168, 11, 99};
-	unsigned char target_mac_addr[6] = {11, 11, 11, 22, 22, 22};
-	// icmp_reply(req_ip, target_mac_addr);
-	// send_udp(53, 0, target_mac_addr, req_ip);
-	send_dns_packet(target_mac_addr, req_ip, "www.baidu.com");
-
-	Message msg(all_processes::NET);
+	IndirectRingBuffer *net_buf = (IndirectRingBuffer*)get_net_buffer();
 
 	while (1) {
-		msg.receive(all_processes::ANY);
-		struct _context con = msg.get_context();
+		if (net_buf->is_empty())
+			continue;
 
-		switch (msg.get_type()) {
-		case net::PKT_ARRIVED:
-		{
-			unsigned char *data = (unsigned char*)(con.con_1);
-
-			resolve_packet(data);
-
-			break;
-		}
-		default:
-		{
-			printf("net received unknown message.\n");
-		}
-		}
+		char *data = net_buf->get_first_used_buffer();
+		resolve_packet((unsigned char*)data);
 	}
-
 
 	return 0;
 }

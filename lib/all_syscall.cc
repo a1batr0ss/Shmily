@@ -39,6 +39,16 @@ unsigned int get_keyboard_buffer()
 	return msg.get_context().con_1;
 }
 
+unsigned int get_net_buffer()
+{
+    Message msg;
+    struct _context con;
+    msg.reset_message(dr::WHERE_NET_BUFFER, con);
+    msg.send_then_recv(all_processes::DR);
+
+    return msg.get_context().con_1;
+}
+
 void read_disk(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int cnt)
 {
     Message msg;

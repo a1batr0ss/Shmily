@@ -25,9 +25,10 @@ int main()
 	start_userprocess("mm", PRIORITY_B, (void (*)(void*))0x20000, NULL, all_processes::MM_PCB, all_processes::MM - 0x10000 + 0xfff);
 	start_userprocess("fs", PRIORITY_B, (void (*)(void*))0x30000, NULL, all_processes::FS_PCB, all_processes::FS - 0x10000 + 0xfff);
 	start_userprocess("dr", PRIORITY_A, (void (*)(void*))0x40000, NULL, all_processes::DR_PCB, all_processes::DR - 0x10000 + 0xfff);
-	// start_userprocess("net", 32, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB);
-	start_userprocess("terminal", PRIORITY_A, (void (*)(void*))0x60000, NULL, all_processes::TER_PCB, all_processes::TER - 0x10000 + 0xfff);
-	start_process("kernel", PRIORITY_E, (void (*)(void*))kernel_work, NULL, all_processes::KR_PCB);
+	/* Net and Terminal is not blocked tentatively, so put is to lower priority. Prevent starvation of low priority processes. */
+	start_userprocess("net", PRIORITY_C, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB, all_processes::NET - 0x10000 + 0xfff);
+	start_userprocess("terminal", PRIORITY_C, (void (*)(void*))0x60000, NULL, all_processes::TER_PCB, all_processes::TER - 0x10000 + 0xfff);
+	start_process("kernel", PRIORITY_C, (void (*)(void*))kernel_work, NULL, all_processes::KR_PCB);
     enable_intr();
 
     while (1);
@@ -54,7 +55,6 @@ void kernel_work()
 		case kr::SLEEP:
 		{
 			unsigned int seconds = msg.get_context().con_1;
-			printf("will sleep %x seconds.\n", seconds);
 
 			/* Not sure it's the best way as the kernel process will sleep.(Others can still work.) */
 			sleep_seconds(seconds);

@@ -45,7 +45,7 @@ void resolve_packet(unsigned char *data)
 	}
 	case _net::IP:
 	{
-		// printf("A ip packet.\n");
+		printf("A ip packet.\n");
 
 		break;
 	}

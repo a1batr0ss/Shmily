@@ -1,6 +1,8 @@
 #ifndef __DR_NE2K_H__
 #define __DR_NE2K_H__
 
+#include <indirect_ring_buffer.h>
+
 namespace {
 	namespace ne2k {
 		const unsigned int NE2K_IRQ = 0x2a;
@@ -54,6 +56,7 @@ namespace {
 }
 
 extern char mac_addr[6];
+extern IndirectRingBuffer net_buf;
 
 void init_ne2k();
 void send_packet(struct packet &p);

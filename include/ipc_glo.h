@@ -39,6 +39,7 @@ namespace dr {
 	const unsigned int SEND_PKT = 7;
 	const unsigned int GET_MAC = 8;
 	const unsigned int WHERE_KEYBOARD_BUFFER = 9;
+	const unsigned int WHERE_NET_BUFFER = 10;
 };
 
 namespace fs {
