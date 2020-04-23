@@ -46,6 +46,7 @@ gdt_ptr dw GDT_LIMIT
 mem_capacity dd 0
 
 init_start:
+	cli
     ; xchg bx, bx
     call get_mem_capacity
     call enable_A20
@@ -145,11 +146,26 @@ reload_ds:
     ret
 
 read_disk:
+.read_sectors:
+	; Read sectors one by one for qemu.
+	; xchg bx, bx
+	call read_a_sector
+	add eax, 0x1
+	add ebx, 0x200
+	; xchg bx, bx
+	loop .read_sectors
+	ret
+
+read_a_sector:
+	push eax
+	push ebx
+	push ecx
+	push edx
+
     mov esi, eax
-    mov di, cx
 
     mov dx, 0x1f2
-    mov al, cl
+    mov al, 1
     out dx, al
 
     mov eax, esi
@@ -182,10 +198,7 @@ read_disk:
     cmp al, 0x08
     jnz .not_ready
 
-    mov ax, di
-    mov dx, 256
-    mul dx
-    mov cx, ax
+    mov cx, 256
     mov dx, 0x1f0
 
 .go_on_read:
@@ -193,6 +206,11 @@ read_disk:
     mov [ds:ebx], ax
     add ebx, 2
     loop .go_on_read
+
+	pop edx
+	pop ecx
+	pop ebx
+	pop eax
     ret
 
 load_elf32_init:

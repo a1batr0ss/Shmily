@@ -346,6 +346,8 @@ void Terminal::handle_input()
 		halt();
 	else if (strcmp(this->argv[0], "poweroff"))
 		power_off();
+	else if (strcmp(this->argv[0], "reboot"))
+		reboot();
 	else if (strcmp(this->argv[0], "id"))
 		printf("user %s, uid %d\n", this->cur_user.username, this->cur_user.uid);
 	else if (strcmp(this->argv[0], "chmod")) {

@@ -4,7 +4,6 @@
 
 CycleList::CycleList()
 {
-	// printf("initing...\n");
 	initialize();
 }
 

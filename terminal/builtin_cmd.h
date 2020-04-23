@@ -16,6 +16,7 @@ void chown(char *new_mode, char *new_owner);
 void last();
 void halt();
 void power_off();
+void reboot();
 
 #endif
 

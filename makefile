@@ -5,6 +5,9 @@ DEBUGGER=0
 all: check_disk check_build_dir build_all install_boot install_kernel
 	if [ $(DEBUGGER) == 0 ]; then echo "c" | sudo bochs -f ./bochs/config.bcs; else sudo bochs -f ./bochs/config.bcs; fi
 
+qemu:
+	qemu-system-i386 -m 32 -hda bochs/testdisk.img -hdb bochs/fs_test.img -boot d
+
 check_disk:
 	./make_disk.sh
 

@@ -75,6 +75,7 @@ namespace kr {
 	const unsigned int CMD_PS = 256;
 	const unsigned int CMD_HALT = 257;
 	const unsigned int CMD_POWEROFF = 258;
+	const unsigned int CMD_REBOOT = 259;
 };
 
 namespace net {

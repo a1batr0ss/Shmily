@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <print.h>
+#include <io.h>
 #include "interrupt.h"
 
 void sys_halt()
@@ -23,5 +24,10 @@ void sys_power_off()
 
 	load_idt((unsigned int)&wrong_idt_ptr);
 	asm volatile ("int $0x99"::);  /* Occur a error. */
+}
+
+void sys_reboot()
+{
+	outb(0x64, 0xfe);
 }
 

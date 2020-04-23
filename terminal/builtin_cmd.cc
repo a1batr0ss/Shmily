@@ -155,3 +155,11 @@ void power_off()
 	msg.send(all_processes::KR);  /* Not wait. As it can't return here. */
 }
 
+void reboot()
+{
+	Message msg;
+	struct _context con;
+	msg.reset_message(kr::CMD_REBOOT, con);
+	msg.send(all_processes::KR);
+}
+

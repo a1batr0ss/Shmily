@@ -143,14 +143,14 @@ static void _read_sector(struct disk *disk, unsigned int lba, char *buf, unsigne
 	choose_sector(disk, lba, cnt);
 	outb(hd::cmd_reg, hd::read);
 
-	if (!wait_disk()) {
-		printf("Read from sector failed.\n");
-		return;
-	}
-
 	Message msg;
 	for (int i=0; i<cnt; i++) {
 		msg.receive(all_processes::INTERRUPT);
+
+		if (!wait_disk()) {
+			printf("Read from sector failed.\n");
+			return;
+		}
 
 		read_disk(buf + (i*512));
 	}

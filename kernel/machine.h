@@ -3,6 +3,7 @@
 
 void sys_halt();
 void sys_power_off();
+void sys_reboot();
 
 #endif
 
