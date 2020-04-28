@@ -9,7 +9,7 @@ struct arp_packet {
 	unsigned short opcode;
 	unsigned char src_mac_addr[6];
     unsigned char src_ip_addr[4];
-	unsigned char dst_mac_addr[6];	
+	unsigned char dst_mac_addr[6];
 	unsigned char target_ip[4];
 };
 
@@ -17,6 +17,7 @@ struct arp_packet {
 struct mac_map_ip {
 	unsigned char mac_addr[6];
 	unsigned char ip_addr[4];
+	unsigned int ref;  /* Decide to remove the items. */
 };
 
 class ArpCacheTable {
@@ -27,12 +28,15 @@ class ArpCacheTable {
 	int get_free_slot();
 	bool is_free_slot(unsigned int slot);
 	int locate_mac_addr(unsigned char *mac_addr);
+	bool is_exists(unsigned char *mac_addr, unsigned char *ip_addr);
+	int remove_less_use_item();
 
   public:
 	ArpCacheTable();
 	void set_item(unsigned int slot, unsigned char *mac_addr, unsigned char *ip_addr);
 	const unsigned char* get_ip_addr(unsigned char *mac_addr);
 	bool delete_item(unsigned char *mac_addr);
+	void append(unsigned char *mac_addr, unsigned char *ip_addr);
 	void print_all();
 };
 
@@ -53,6 +57,7 @@ extern unsigned char ip_addr[4];
 
 void arp_request(unsigned char *target_ip);
 void arp_response(unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsigned char *req_ip);
+void print_ip_addr(unsigned char *ip_addr);
 
 #endif
 

@@ -12,15 +12,26 @@
 
 ## Environment
 
-`sudo apt-get install -y bochs`  
-`sudo apt-get install -y boch-x`  
-`sudo apt-get install -y g++`  
+`sudo apt-get install -y bochs`
+
+`sudo apt-get install -y boch-x`
+
+`sudo apt-get install -y g++`
+
 `sudo apt-get install -y nasm`
+
+If you want running in virtual box or qemu, install corresponding environment.
 
 -------
 
 ## Run
 ` make DEBUGGER=1` or `make`
+
+There are some bugs running in virtual box.
+
+And the ne2k can't work in qemu.
+
+So recommend the bochs.
 
 ## Recent Plans
 1. Improve the network module.(For fs, we can read/write file. For net, receive and send the ip, tcp, icmp, arp packet)

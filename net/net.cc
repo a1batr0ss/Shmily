@@ -15,7 +15,7 @@ void init_net()
 
 	/* Initialize the arp cache table. */
 	arp_tbl.set_item(0, (unsigned char*)mac_addr, ip_addr);
-	// arp_tbl.print_all();
+	arp_tbl.print_all();
 }
 
 /* Only recognize arp and ip protocol in link layer. */
@@ -39,8 +39,11 @@ void resolve_packet(unsigned char *data)
 				arp_response(pkt_arp->src_mac_addr, (unsigned char*)res_mac_addr, pkt_arp->target_ip);
 		} else {
 			/* An arp response. */
+			printf("An arp response.\n");
+			/* Without any secure verify. */
+			arp_tbl.append(pkt_arp->src_mac_addr, pkt_arp->src_ip_addr);
 		}
-
+		arp_tbl.print_all();
 		break;
 	}
 	case _net::IP:

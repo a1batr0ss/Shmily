@@ -8,11 +8,20 @@
 #include "icmp.h"
 #include "udp.h"
 #include "dns.h"
+#include "route_table.h"
 
 int main()
 {
 	init_net();
 	IndirectRingBuffer *net_buf = (IndirectRingBuffer*)get_net_buffer();
+
+	unsigned char ip_addr[4] = {192, 168, 10, 1};
+	arp_request(ip_addr);
+	arp_request(ip_addr);
+
+	RouteTable route_tbl;
+	route_tbl.set_default_gateway(ip_addr);
+	route_tbl.print_all();
 
 	while (1) {
 		if (net_buf->is_empty())

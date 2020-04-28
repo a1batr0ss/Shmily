@@ -113,8 +113,10 @@ const unsigned char* ArpCacheTable::get_ip_addr(unsigned char *mac_addr)
 {
 	int i = locate_mac_addr(mac_addr);
 
-	if (-1 != i)
-		return this->items[i].mac_addr;
+	if (-1 != i) {
+		this->items[i].ref++;  /* Even just for judge in append. For simply, I also increase it. */
+		return this->items[i].ip_addr;
+	}
 
 	return NULL;
 }
@@ -149,13 +151,56 @@ int ArpCacheTable::get_free_slot()
 bool ArpCacheTable::is_free_slot(unsigned int slot)
 {
 	struct mac_map_ip item = this->items[slot];
-	
+
 	/* Only check the mac address. */
 	for (int i=0; i<6; i++) {
 		if (0 != item.mac_addr[i])
 			return false;
 	}
 	return true;
+}
+
+bool ArpCacheTable::is_exists(unsigned char *mac_addr, unsigned char *ip_addr)
+{
+	const unsigned char *ip_addr_in_tbl = get_ip_addr(mac_addr);
+	if (NULL == ip_addr_in_tbl)
+		return false;
+
+	/* Is matching? */
+	for (int i=0; i<4; i++) {
+		if (ip_addr[i] != ip_addr_in_tbl[i])
+			return false;
+	}
+	return true;
+}
+
+int ArpCacheTable::remove_less_use_item()
+{
+	int idx = 0;
+	int less_use_cnt = this->items[0].ref;
+
+	for (int i=1; i<5; i++) {
+		if (this->items[i].ref < less_use_cnt) {
+			idx = i;
+			less_use_cnt = this->items[i].ref;
+		}
+	}
+
+	return idx;
+}
+
+void ArpCacheTable::append(unsigned char *mac_addr, unsigned char *ip_addr)
+{
+	/* Already exists? */
+	if (is_exists(mac_addr, ip_addr))
+		return;
+
+	int slot = get_free_slot();
+	if (-1 == slot)
+		slot = remove_less_use_item();
+
+	if (-1 != slot)
+		set_item(slot, mac_addr, ip_addr);
 }
 
 void print_mac_addr(unsigned char *mac_addr)
@@ -173,7 +218,7 @@ void print_ip_addr(unsigned char *ip_addr)
 		printf("%d", ip_addr[i]);
 		if (3 != i)
 			printf(".");
-	}	
+	}
 }
 
 void ArpCacheTable::print_all()
@@ -184,6 +229,6 @@ void ArpCacheTable::print_all()
 			printf(" -> ");
 			print_ip_addr(this->items[i].ip_addr);
 			printf("\n");
-		} 
+		}
 	}
 }
