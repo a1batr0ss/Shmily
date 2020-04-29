@@ -4,16 +4,16 @@ GG = g++
 BUILD_DIR = ../build
 
 AS_FLAGS = -f elf
-GG_FLAGS = -c -m32 -fno-stack-protector -I ../lib -I ../include
-LD_FLAGS = -Ttext 0x10000 -e main -m elf_i386
+GG_FLAGS = -c -m32 -fno-use-cxa-atexit -fno-rtti -fno-stack-protector -I ../lib -I ../include
+LD_FLAGS = -m elf_i386
 
 all: $(BUILD_DIR)/init.bin $(BUILD_DIR)/kernel
 
 $(BUILD_DIR)/init.bin: init.s
 	$(AS) $< -o $@
 
-$(BUILD_DIR)/kernel: $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.cc.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/timer.cc.o $(BUILD_DIR)/process.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/ipc.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/syscall.o $(BUILD_DIR)/syscall_init.cc.o $(BUILD_DIR)/cmos.cc.o $(BUILD_DIR)/tss.cc.o $(BUILD_DIR)/time.cc.o $(BUILD_DIR)/machine.cc.o $(BUILD_DIR)/cycle_list.cc.o
-	$(LD) $(LD_FLAGS) $^ -o $@
+$(BUILD_DIR)/kernel: $(BUILD_DIR)/init.cc.o $(BUILD_DIR)/page.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/interrupt.cc.o $(BUILD_DIR)/interrupt.o $(BUILD_DIR)/timer.cc.o $(BUILD_DIR)/process.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/bitmap.cc.o $(BUILD_DIR)/ipc.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/syscall.o $(BUILD_DIR)/syscall_init.cc.o $(BUILD_DIR)/cmos.cc.o $(BUILD_DIR)/tss.cc.o $(BUILD_DIR)/time.cc.o $(BUILD_DIR)/machine.cc.o $(BUILD_DIR)/cycle_list.cc.o  $(BUILD_DIR)/start.o $(BUILD_DIR)/start.cc.o
+	$(LD) -T link.ld $(LD_FLAGS) $^ -o $@
 
 $(BUILD_DIR)/init.cc.o: main.cc
 	$(GG) $(GG_FLAGS) $< -o $@

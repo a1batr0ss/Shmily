@@ -2,13 +2,13 @@ GG = g++
 LD = ld
 BUILD_DIR = ../build
 
-GG_FLAGS = -c -m32 -fno-stack-protector -I ../lib -I ../include
-LD_FLAGS = -e main -m elf_i386 -Ttext 0x50000
+GG_FLAGS = -c -m32 -fno-use-cxa-atexit -fno-rtti -fno-stack-protector -I ../lib -I ../include
+LD_FLAGS = -m elf_i386
 
 all: $(BUILD_DIR)/net
 
-$(BUILD_DIR)/net: $(BUILD_DIR)/net_main.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/byte_order.cc.o $(BUILD_DIR)/arp.cc.o $(BUILD_DIR)/net.cc.o $(BUILD_DIR)/ethernet.cc.o $(BUILD_DIR)/ip.cc.o $(BUILD_DIR)/icmp.cc.o $(BUILD_DIR)/udp.cc.o $(BUILD_DIR)/dns.cc.o $(BUILD_DIR)/time.cc.o $(BUILD_DIR)/indirect_ring_buffer.cc.o $(BUILD_DIR)/route_table.cc.o
-	$(LD) $(LD_FLAGS) $^ -o $@
+$(BUILD_DIR)/net: $(BUILD_DIR)/net_main.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/byte_order.cc.o $(BUILD_DIR)/arp.cc.o $(BUILD_DIR)/net.cc.o $(BUILD_DIR)/ethernet.cc.o $(BUILD_DIR)/ip.cc.o $(BUILD_DIR)/icmp.cc.o $(BUILD_DIR)/udp.cc.o $(BUILD_DIR)/dns.cc.o $(BUILD_DIR)/time.cc.o $(BUILD_DIR)/indirect_ring_buffer.cc.o $(BUILD_DIR)/route_table.cc.o $(BUILD_DIR)/start.o $(BUILD_DIR)/start.cc.o
+	$(LD) -T link.ld $(LD_FLAGS) $^ -o $@
 
 $(BUILD_DIR)/net_main.cc.o: main.cc
 	$(GG) $(GG_FLAGS) $< -o $@

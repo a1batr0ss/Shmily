@@ -96,6 +96,7 @@ ArpCacheTable::ArpCacheTable()
 {
 	/* Initialize the first item. */
 	/* The arp cache table will be a global variable, the mac_addr is initialized in init_net. */
+	printf("arp tbl intializing....\n");
 
 	this->max_capacity = 5;
 }
