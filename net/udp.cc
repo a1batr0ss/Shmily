@@ -22,12 +22,12 @@ void init_udp_header(unsigned char *data, unsigned short dst_port, unsigned shor
 	pkt->checksum = generate_checksum((unsigned short*)data, length);
 }
 
-void send_udp(unsigned short dst_port, unsigned short length, unsigned char *target_mac_addr, unsigned char *target_ip)
+void send_udp(unsigned char *mac_addr, unsigned char *ip_addr, unsigned short dst_port, unsigned short length, unsigned char *target_mac_addr, unsigned char *target_ip)
 {
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct udp_header));
 
-	init_ethernet_packet(data, target_mac_addr, frame::next_is_ip);
-	init_ipv4_header(data + sizeof(struct eth_packet), target_ip, 0, 0x11, sizeof(struct ip_packet) + sizeof(udp_header));
+	EthernetFactory::format_packet(data, mac_addr, target_mac_addr, frame::next_is_ip);
+	IPv4Factory::format_packet(data + sizeof(struct eth_packet), ip_addr, target_ip, 0, 0x11, sizeof(struct ip_packet) + sizeof(udp_header));
 	init_udp_header(data + sizeof(struct eth_packet) + sizeof(struct ip_packet), dst_port, length);
 
 	struct packet p;

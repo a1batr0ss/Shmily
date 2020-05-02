@@ -9,7 +9,7 @@ struct udp_header {
 } __attribute__((packed));
 
 void init_udp_header(unsigned char *data, unsigned short dst_port, unsigned short length);
-void send_udp(unsigned short dst_port, unsigned short length, unsigned char *target_mac_addr, unsigned char *targe_ip);
+void send_udp(unsigned char *mac_addr, unsigned char *ip_addr, unsigned short dst_port, unsigned short length, unsigned char *target_mac_addr, unsigned char *targe_ip);
 
 #endif
 

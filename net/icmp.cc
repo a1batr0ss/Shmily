@@ -1,9 +1,12 @@
 #include <all_syscall.h>
+#include <stdio.h>
 #include "icmp.h"
 #include "ip.h"
 #include "ethernet.h"
 
-void init_icmp_packet(unsigned char *data, unsigned char type)
+bool ICMPFactory::need_output = false;
+
+void ICMPFactory::format_packet(unsigned char *data, unsigned char type)
 {
 	struct icmp_packet *pkt = (struct icmp_packet*)data;
 	pkt->type = type;
@@ -30,13 +33,32 @@ void init_icmp_packet(unsigned char *data, unsigned char type)
 	pkt->checksum = generate_checksum((unsigned short*)data, sizeof(struct icmp_packet));
 }
 
-void icmp_request(unsigned char *target_ip, unsigned char *target_mac_addr)
+void ICMPFactory::resolve_packet(unsigned char *data)
+{
+	struct icmp_packet *icmp_pkt = (struct icmp_packet*)data;
+
+	if (icmp::ICMP_REQUEST == icmp_pkt->type) {
+		/* No test. */
+		printf("An icmp request.\n");
+	} else {
+		printf("An icmp reply.\n");
+		if (need_output)
+			print_reply(icmp_pkt);
+	}
+}
+
+void ICMPFactory::print_reply(struct icmp_packet *pkt)
+{
+	printf("ICMP reply seq=%x\n", pkt->sequence_num);
+}
+
+void ICMPFactory::request(unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *target_ip, unsigned char *target_mac_addr)
 {
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct icmp_packet));
 
-	init_ethernet_packet(data, target_mac_addr, frame::next_is_ip);
-	init_ipv4_header(data + sizeof(struct eth_packet), target_ip, 0, 0x1, sizeof(struct ip_packet) + sizeof(struct icmp_packet));
-	init_icmp_packet(data + sizeof(struct eth_packet) + sizeof(ip_packet), 0x08);
+	EthernetFactory::format_packet(data, mac_addr, target_mac_addr, frame::next_is_ip);
+	IPv4Factory::format_packet(data + sizeof(struct eth_packet), ip_addr, target_ip, 0, 0x1, sizeof(struct ip_packet) + sizeof(struct icmp_packet));
+	format_packet(data + sizeof(struct eth_packet) + sizeof(ip_packet), 0x08);
 
 	struct packet p;
 	p.size = sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct icmp_packet);
@@ -45,15 +67,17 @@ void icmp_request(unsigned char *target_ip, unsigned char *target_mac_addr)
 	send_packet((unsigned int)&p);
 
 	free(data);
+
+	need_output = true;
 }
 
-void icmp_reply(unsigned char *target_ip, unsigned char *target_mac_addr)
+void ICMPFactory::reply(unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *target_ip, unsigned char *target_mac_addr)
 {
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct icmp_packet));
 
-	init_ethernet_packet(data, target_mac_addr, frame::next_is_ip);
-	init_ipv4_header(data + sizeof(struct eth_packet), target_ip, 0, 0x1, sizeof(struct ip_packet) + sizeof(struct icmp_packet));
-	init_icmp_packet(data + sizeof(struct eth_packet) + sizeof(ip_packet), 0x0);
+	EthernetFactory::format_packet(data, mac_addr, target_mac_addr, frame::next_is_ip);
+	IPv4Factory::format_packet(data + sizeof(struct eth_packet), ip_addr, target_ip, 0, 0x1, sizeof(struct ip_packet) + sizeof(struct icmp_packet));
+	format_packet(data + sizeof(struct eth_packet) + sizeof(ip_packet), 0x0);
 
 	struct packet p;
 	p.size = sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct icmp_packet);

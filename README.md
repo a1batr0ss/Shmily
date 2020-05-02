@@ -34,6 +34,7 @@ And the ne2k can't work in qemu.
 So recommend the bochs.
 
 ## Recent Plans
-1. Improve the network module.(For fs, we can read/write file. For net, receive and send the ip, tcp, icmp, arp packet)
+1. Improve the network module.
 2. When we complete the work above, we have a more complete operating system kernel. Then we can add some algorithm for mm,fs..., and improve the code's robustness.
+3. Tidy up codes.
 

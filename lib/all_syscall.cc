@@ -106,7 +106,7 @@ void send_packet(unsigned int pkt)
     return;
 }
 
-void get_mac_addr(char *mac_addr)
+void get_mac_addr(unsigned char *mac_addr)
 {
     Message msg;
     struct _context con;
@@ -114,7 +114,7 @@ void get_mac_addr(char *mac_addr)
     msg.send_then_recv(all_processes::DR);
 
     for (int i=0; i<6; i++)
-        mac_addr[i] = ((char*)(msg.get_context().con_1))[i];
+        mac_addr[i] = ((unsigned char*)(msg.get_context().con_1))[i];
 
     return;
 }

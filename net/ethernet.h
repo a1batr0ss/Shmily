@@ -26,6 +26,11 @@ struct packet {
 	struct packet *next_packet;
 } __attribute__((packet));
 
+class EthernetFactory {
+  public:
+	static void format_packet(unsigned char *data, unsigned char *mac_addr, unsigned char *target_mac_addr, unsigned short next_proto);
+};
+
 namespace {
 	namespace frame {
 		const unsigned int MAX_LEN = 1532;  /* 1526 */
@@ -34,7 +39,7 @@ namespace {
 	};
 };
 
-void init_ethernet_packet(unsigned char *data, unsigned char *target_mac_addr, unsigned short next_proto);
+// void init_ethernet_packet(unsigned char *data, unsigned char *target_mac_addr, unsigned short next_proto);
 
 #endif
 

@@ -5,7 +5,7 @@
 
 unsigned short generate_checksum(unsigned short *pkt, unsigned int len);
 
-void init_ipv4_header(unsigned char *data, unsigned char *target_ip, unsigned short ident, unsigned char next_proto, unsigned short total_len)
+void IPv4Factory::format_packet(unsigned char *data, unsigned char *ip_addr, unsigned char *target_ip, unsigned short ident, unsigned char next_proto, unsigned short total_len)
 {
 	struct ip_packet *pkt = (struct ip_packet*)data;
 

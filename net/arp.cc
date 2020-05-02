@@ -5,10 +5,7 @@
 #include "ethernet.h"
 #include "byte_order.h"
 
-extern char mac_addr[6];
-unsigned char ip_addr[4] = {192, 168, 22, 44};
-
-void init_arp_request(unsigned char *data, unsigned char *target_ip)
+void ArpFactory::format_request_packet(unsigned char *data, unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *target_ip)
 {
 	struct arp_packet *pkt = (struct arp_packet*)data;
 
@@ -18,6 +15,7 @@ void init_arp_request(unsigned char *data, unsigned char *target_ip)
 	pkt->protocol_size = arp::proto_size;
 	pkt->opcode = swap_word(arp::req_opcode);
 
+	/* Or memcpy. */
 	for (int i=0; i<6; i++) {
 		pkt->src_mac_addr[i] = mac_addr[i];
 	    pkt->dst_mac_addr[i] = 0;
@@ -29,12 +27,12 @@ void init_arp_request(unsigned char *data, unsigned char *target_ip)
 	}
 }
 
-void arp_request(unsigned char *target_ip)
+void ArpFactory::request(unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *target_ip)
 {
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct arp_packet));
 
-	init_ethernet_packet(data, arp::mac_broadcast, frame::next_is_arp);
-	init_arp_request(data + sizeof(struct eth_packet), target_ip);
+	EthernetFactory::format_packet(data, mac_addr, arp::mac_broadcast, frame::next_is_arp);
+	format_request_packet(data + sizeof(struct eth_packet), mac_addr, ip_addr, target_ip);
 
 	struct packet p;
 	p.size = sizeof(struct eth_packet) + sizeof(struct arp_packet);
@@ -45,7 +43,7 @@ void arp_request(unsigned char *target_ip)
 	free(data);
 }
 
-void init_arp_response(unsigned char *data, unsigned char *res_mac_addr, unsigned char *req_ip)
+void ArpFactory::format_reply_packet(unsigned char *data, unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *res_mac_addr, unsigned char *req_ip)
 {
 	struct arp_packet *pkt = (struct arp_packet*)data;
 
@@ -67,12 +65,12 @@ void init_arp_response(unsigned char *data, unsigned char *res_mac_addr, unsigne
 }
 
 /* No test! */
-void arp_response(unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsigned char *req_ip)
+void ArpFactory::reply(unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsigned char *req_ip)
 {
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct arp_packet));
 
-	init_ethernet_packet(data, src_mac_addr, frame::next_is_arp);
-	init_arp_response(data + sizeof(struct ethernet), res_mac_addr, req_ip);
+	EthernetFactory::format_packet(data, mac_addr, src_mac_addr, frame::next_is_arp);
+	format_reply_packet(data + sizeof(struct ethernet), mac_addr, ip_addr, res_mac_addr, req_ip);
 
 	struct packet p;
 	p.size = sizeof(struct eth_packet) + sizeof(struct arp_packet);
@@ -96,8 +94,6 @@ ArpCacheTable::ArpCacheTable()
 {
 	/* Initialize the first item. */
 	/* The arp cache table will be a global variable, the mac_addr is initialized in init_net. */
-	printf("arp tbl intializing....\n");
-
 	this->max_capacity = 5;
 }
 
@@ -233,3 +229,4 @@ void ArpCacheTable::print_all()
 		}
 	}
 }
+

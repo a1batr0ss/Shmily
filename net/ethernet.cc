@@ -3,7 +3,7 @@
 #include "net.h"
 #include "byte_order.h"
 
-void init_ethernet_packet(unsigned char *data, unsigned char *target_mac_addr, unsigned short next_proto)
+void EthernetFactory::format_packet(unsigned char *data, unsigned char *mac_addr, unsigned char *target_mac_addr, unsigned short next_proto)
 {
 	struct eth_packet *pkt = (struct eth_packet*)data;
 
@@ -12,6 +12,5 @@ void init_ethernet_packet(unsigned char *data, unsigned char *target_mac_addr, u
 		pkt->dst_mac_addr[i] = target_mac_addr[i];
 		pkt->src_mac_addr[i] = mac_addr[i];
 	}
-
 }
 

@@ -20,6 +20,16 @@ struct mac_map_ip {
 	unsigned int ref;  /* Decide to remove the items. */
 };
 
+class ArpFactory {
+  private:
+	static void format_request_packet(unsigned char *data, unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *target_ip);
+	static void format_reply_packet(unsigned char *data, unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *res_mac_addr, unsigned char *req_ip);
+
+  public:
+	static void request(unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *target_ip);
+	static void reply(unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *target_ip, unsigned char *res_mac_addr, unsigned char *req_ip);
+};
+
 class ArpCacheTable {
   private:
 	struct mac_map_ip items[5];

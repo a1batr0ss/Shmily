@@ -11,7 +11,7 @@ void read_disk(unsigned int disk_nr, unsigned int lba, char *buf, unsigned int c
 void print_partition_info(unsigned int disk_nr);
 unsigned int get_disk(unsigned int disk_nr);
 void send_packet(unsigned int pkt);
-void get_mac_addr(char *mac_addr);
+void get_mac_addr(unsigned char *mac_addr);
 
 void register_intr_handler(unsigned int intr_num, void *handler);
 unsigned long long get_current_time();

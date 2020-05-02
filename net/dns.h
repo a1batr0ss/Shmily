@@ -20,7 +20,7 @@ namespace {
 	};
 };
 
-void send_dns_packet(unsigned char *target_mac_addr, unsigned char *target_ip, const char *url);
+void send_dns_packet(unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *target_mac_addr, unsigned char *target_ip, const char *url);
 
 #endif
 

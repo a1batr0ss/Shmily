@@ -15,6 +15,11 @@ struct ip_packet {
 	unsigned char dst_ip[4];
 } __attribute__((packed));
 
+class IPv4Factory {
+  public:
+	static void format_packet(unsigned char *data, unsigned char *ip_addr, unsigned char *target_ip, unsigned short ident, unsigned char next_proto, unsigned short total_len);
+};
+
 namespace {
 	namespace ip {
 		unsigned short no_fragment = 0x4000;
@@ -22,7 +27,6 @@ namespace {
 	};
 };
 
-void init_ipv4_header(unsigned char *data, unsigned char *target_ip, unsigned short ident, unsigned char next_proto, unsigned short total_len);
 unsigned short generate_checksum(unsigned short *pkt, unsigned int len);
 
 #endif
