@@ -38,6 +38,7 @@ class ArpCacheTable {
 	int get_free_slot();
 	bool is_free_slot(unsigned int slot);
 	int locate_mac_addr(unsigned char *mac_addr);
+	int locate_ip_addr(unsigned char *ip_addr);
 	bool is_exists(unsigned char *mac_addr, unsigned char *ip_addr);
 	int remove_less_use_item();
 
@@ -45,6 +46,7 @@ class ArpCacheTable {
 	ArpCacheTable();
 	void set_item(unsigned int slot, unsigned char *mac_addr, unsigned char *ip_addr);
 	const unsigned char* get_ip_addr(unsigned char *mac_addr);
+	unsigned char* get_mac_addr(unsigned char *ip_addr);
 	bool delete_item(unsigned char *mac_addr);
 	void append(unsigned char *mac_addr, unsigned char *ip_addr);
 	void print_all();

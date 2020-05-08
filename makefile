@@ -4,10 +4,10 @@ DEBUGGER=0
 VBOX_OS_NAME = Shmily
 
 all: check_disk check_build_dir build_all install_boot install_kernel
-	if [ $(DEBUGGER) == 0 ]; then echo "c" | sudo bochs -f ./bochs/config.bcs; else sudo bochs -f ./bochs/config.bcs; fi
+	# if [ $(DEBUGGER) == 0 ]; then echo "c" | sudo bochs -f ./bochs/config.bcs; else sudo bochs -f ./bochs/config.bcs; fi
 
 qemu:
-	qemu-system-i386 -m 32 -hda bochs/testdisk.img -hdb bochs/fs_test.img -boot d
+	sudo qemu-system-i386 -m 32 -hda bochs/testdisk.img -hdb bochs/fs_test.img -boot d -device ne2k_isa,irq=0xa,iobase=0x280,vlan=0 -net tap,ifname=tap0
 
 vbox:
 	qemu-img convert -f raw -O vdi bochs/testdisk.img bochs/testdisk.vdi

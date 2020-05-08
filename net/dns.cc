@@ -49,8 +49,10 @@ void send_dns_packet(unsigned char *mac_addr, unsigned char *ip_addr, unsigned c
 {
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct udp_header) + sizeof(struct dns_header) + strlen(url) + 5);
 
+	// init_ethernet_packet(data, target_mac_addr, frame::next_is_ip);
 	EthernetFactory::format_packet(data, mac_addr, target_mac_addr, frame::next_is_ip);
 	IPv4Factory::format_packet(data + sizeof(struct eth_packet), ip_addr, target_ip, 0, 0x11, sizeof(struct ip_packet) + sizeof(struct udp_header) + sizeof(struct dns_header) + strlen(url) + 5);
+	// init_ipv4_header(data + sizeof(struct eth_packet), target_ip, 0, 0x11, sizeof(struct ip_packet) + sizeof(struct udp_header) + sizeof(struct dns_header) + strlen(url) + 5);
 	init_udp_header(data + sizeof(struct eth_packet) + sizeof(struct ip_packet), dns::DNS_PORT, sizeof(struct udp_header) + sizeof(struct dns_header) + strlen(url) + 5);
 	init_dns_header(data + sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct udp_header), url);
 

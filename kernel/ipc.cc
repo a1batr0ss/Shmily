@@ -109,7 +109,11 @@ void Message::receive(unsigned int want_whose_msg)
             type = prev_sender->message->get_type();
             context = prev_sender->message->get_context();
 
-            src->sendings = src->sendings->next_ready;
+            /* Interrupt circle. */
+            if (src->sendings->next_ready == src->sendings)
+                src->sendings = nullptr;
+            else
+                src->sendings = src->sendings->next_ready;
 
 			destination = (unsigned int)prev_sender;
             if (SENDING_MSG == prev_sender->status)

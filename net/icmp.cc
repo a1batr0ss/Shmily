@@ -58,7 +58,7 @@ void ICMPFactory::request(unsigned char *mac_addr, unsigned char *ip_addr, unsig
 
 	EthernetFactory::format_packet(data, mac_addr, target_mac_addr, frame::next_is_ip);
 	IPv4Factory::format_packet(data + sizeof(struct eth_packet), ip_addr, target_ip, 0, 0x1, sizeof(struct ip_packet) + sizeof(struct icmp_packet));
-	format_packet(data + sizeof(struct eth_packet) + sizeof(ip_packet), 0x08);
+	format_packet(data + sizeof(struct eth_packet) + sizeof(struct ip_packet), 0x08);
 
 	struct packet p;
 	p.size = sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct icmp_packet);

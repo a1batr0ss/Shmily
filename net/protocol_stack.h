@@ -5,6 +5,7 @@
 #include "arp.h"
 #include "ip.h"
 #include "icmp.h"
+#include "tcp.h"
 
 class NetworkInterface;
 
@@ -13,14 +14,22 @@ class ProtocolStack {
 	/*
 	 * Unused, as thesse protocol factory just has static methods.
 	 * Defined here just for showing what protocols we support in protocol stack.
+	 * except tcp.
      */
 	EthernetFactory eth_protocol;
 	ArpFactory arp_protocol;
 	IPv4Factory ipv4_protocol;
 	ICMPFactory icmp_protocol;
+	TcpFactory tcp_protocol;
+
+	NetworkInterface *cur_net_if;
 
   public:
-	static void handle_packet(NetworkInterface *net_iface, unsigned char *data);
+	ProtocolStack(NetworkInterface *net_iface);
+
+	TcpFactory* get_tcp_factory();
+
+	void handle_packet(unsigned char *data);
 };
 
 #endif
