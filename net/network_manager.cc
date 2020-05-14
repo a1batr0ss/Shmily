@@ -23,7 +23,6 @@ void NetworkManager::create_iface(unsigned char *mac_addr, unsigned char *ip_add
 
 NetworkInterface& NetworkManager::get_cur_ifaces()
 {
-	// printf("cur %x\n", this->cur_iface);
 	return this->net_ifaces[this->cur_iface];
 }
 

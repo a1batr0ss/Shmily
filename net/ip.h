@@ -16,6 +16,9 @@ struct ip_packet {
 } __attribute__((packed));
 
 class IPv4Factory {
+  private:
+	static unsigned short identifier;
+
   public:
 	static void format_packet(unsigned char *data, unsigned char *ip_addr, unsigned char *target_ip, unsigned short ident, unsigned char next_proto, unsigned short total_len);
 };

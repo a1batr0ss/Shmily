@@ -29,7 +29,7 @@ class ProtocolStack {
 
 	TcpFactory* get_tcp_factory();
 
-	void handle_packet(unsigned char *data);
+	void handle_packet(unsigned char *data, unsigned short len);
 };
 
 #endif

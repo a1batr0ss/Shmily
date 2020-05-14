@@ -13,5 +13,8 @@ namespace _net {
 
 extern char mac_addr[6];
 
+void init_net();
+void resolve_packet(unsigned char *data);
+
 #endif
 

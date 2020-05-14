@@ -21,6 +21,9 @@ class NetworkInterface {
 
 	ArpCacheTable& get_arp_table();
 	RouteTable& get_route_table();
+
+	unsigned char* get_default_gateway_ip();
+	unsigned char* get_default_gateway_mac();
 };
 
 #endif

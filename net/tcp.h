@@ -42,6 +42,8 @@ struct tcp_pseudo_header {
 	unsigned short total_len;
 } __attribute__((packed));
 
+class TcpFactory;
+
 class TcpSocket {
   public:
 	unsigned short src_port;
@@ -53,6 +55,11 @@ class TcpSocket {
 	unsigned int ack_num;
 
 	enum tcp_socket_state state;
+
+	TcpFactory *tcp_factory;
+
+	void set_tcp_factory(TcpFactory *tcp_factory);
+	void send(unsigned char *data, unsigned int size);
 };
 
 class NetworkInterface;
@@ -71,7 +78,7 @@ class TcpFactory {
 	void format_packet(unsigned char *data, TcpSocket *socket, unsigned char *payload_data, unsigned int payload_data_size, unsigned char flags);
 	void send(TcpSocket *socket, unsigned char *payload_data, unsigned int size, unsigned short flags);
 
-	void resolve_packet(unsigned char *data, unsigned char *remote_ip);
+	void resolve_packet(unsigned char *data, unsigned char *remote_ip, unsigned short payload_len);
 };
 
 #endif

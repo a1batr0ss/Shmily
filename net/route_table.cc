@@ -12,15 +12,16 @@ RouteTable::RouteTable()
 	}
 }
 
-const unsigned char* RouteTable::get_default_gateway()
+unsigned char* RouteTable::get_default_gateway()
 {
 	return this->items[0].gateway;
 }
 
 void RouteTable::set_default_gateway(unsigned char *default_gateway_)
 {
-	for (int i=0; i<4; i++)
+	for (int i=0; i<4; i++) {
 		this->items[0].gateway[i] = default_gateway_[i];
+	}
 }
 
 void RouteTable::print_all()

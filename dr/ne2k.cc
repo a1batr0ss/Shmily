@@ -140,6 +140,8 @@ void receive_packet()
 		len = inb(ne2k::IOBASE + ne2k::NE_DATA);
 		len += (inb(ne2k::IOBASE + ne2k::NE_DATA) << 8);
 
+		len -= 4;
+
 		outb(ne2k::IOBASE + ne2k::INTR_STAT, 0x40);
 
 		if ((1==(recv_stat&31)) && (next >= ne2k::PAGE_START_DATA) && (next <= ne2k::PAGE_STOP_DATA) && (len <= 1532)) {
@@ -151,8 +153,11 @@ void receive_packet()
 
 			char *buf = net_buf.get_first_free_buffer();
 
+			*(unsigned short*)buf = len;
+			buf += 2;
+
 			if (NULL != buf) {
-				memset(buf, 0, 1600);
+				memset(buf, 0, 1600 - 2);
 				for (int i=0; i<len; i++)
 					buf[i] = (char)inb(ne2k::IOBASE + ne2k::NE_DATA);
 			} else {
@@ -201,3 +206,4 @@ void ne2k_handler()
 		outb(ne2k::IOBASE + ne2k::INTR_STAT, ne2k::NODMA | ne2k::START);
 	}
 }
+

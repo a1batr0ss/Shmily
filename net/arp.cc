@@ -65,6 +65,7 @@ void ArpFactory::format_reply_packet(unsigned char *data, unsigned char *mac_add
 	}
 }
 
+/* No test! */
 void ArpFactory::reply(unsigned char *mac_addr, unsigned char *ip_addr, unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsigned char *req_ip)
 {
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct arp_packet));
@@ -133,7 +134,6 @@ const unsigned char* ArpCacheTable::get_ip_addr(unsigned char *mac_addr)
 
 unsigned char* ArpCacheTable::get_mac_addr(unsigned char *ip_addr)
 {
-	print_ip_addr(ip_addr);
 	int i = locate_ip_addr(ip_addr);
 
 	if (-1 != i) {
@@ -147,8 +147,6 @@ unsigned char* ArpCacheTable::get_mac_addr(unsigned char *ip_addr)
 int ArpCacheTable::locate_ip_addr(unsigned char *ip_addr)
 {
 	for (int i=0; i<5; i++) {
-		print_ip_addr(this->items[i].ip_addr);
-		printf("\n");
 		if (is_same_ip_addr(this->items[i].ip_addr, ip_addr))
 			return i;
 	}
@@ -266,4 +264,3 @@ void ArpCacheTable::print_all()
 		}
 	}
 }
-

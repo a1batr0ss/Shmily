@@ -39,9 +39,7 @@ void ICMPFactory::resolve_packet(unsigned char *data)
 
 	if (icmp::ICMP_REQUEST == icmp_pkt->type) {
 		/* No test. */
-		printf("An icmp request.\n");
 	} else {
-		printf("An icmp reply.\n");
 		if (need_output)
 			print_reply(icmp_pkt);
 	}

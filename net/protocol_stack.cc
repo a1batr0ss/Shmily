@@ -3,6 +3,7 @@
 #include "net.h"
 #include "byte_order.h"
 #include "network_interface.h"
+#include "udp.h"
 
 ProtocolStack::ProtocolStack(NetworkInterface *net_iface) : tcp_protocol(net_iface), cur_net_if(net_iface) {}
 
@@ -11,7 +12,7 @@ TcpFactory* ProtocolStack::get_tcp_factory()
 	return &(this->tcp_protocol);
 }
 
-void ProtocolStack::handle_packet(unsigned char *data)
+void ProtocolStack::handle_packet(unsigned char *data, unsigned short len)
 {
 	struct eth_packet *pkt_eth = (struct eth_packet*)(data);
 
@@ -36,21 +37,25 @@ void ProtocolStack::handle_packet(unsigned char *data)
 	}
 	case _net::IP:
 	{
-		struct ip_packet *pkt_ip = (struct ip_packet*)(data + sizeof(eth_packet));
+		struct ip_packet *pkt_ip = (struct ip_packet*)(data + sizeof(struct eth_packet));
 
 		unsigned char *remote_ip = pkt_ip->src_ip;
 		/* IP layer judge the destination is our host? */
 		if (_net::ICMP == pkt_ip->next_protocol) {
 			ICMPFactory::resolve_packet(data + sizeof(struct eth_packet) + sizeof(struct ip_packet));
 		} else if (_net::TCP == pkt_ip->next_protocol) {
-			this->tcp_protocol.resolve_packet(data + sizeof(struct eth_packet) + sizeof(struct ip_packet), remote_ip);
+			unsigned short payload_len = len - sizeof(struct eth_packet) - sizeof(struct ip_packet);
+
+			this->tcp_protocol.resolve_packet(data + sizeof(struct eth_packet) + sizeof(struct ip_packet), remote_ip, payload_len);
+		} else {
+			printf("received data from %x: %x %x\n", pkt_ip->next_protocol, *(data + sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(udp_header)), *(data + sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(udp_header) + 1));
 		}
 
 		break;
 	}
 	default:
 	{
-		printf("unknown protocol, type is %x.\n", swap_word(pkt_eth->next_protocol));
+		// printf("unknown protocol, type is %x.\n", swap_word(pkt_eth->next_protocol));
 	}
 	}
 }

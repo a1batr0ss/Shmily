@@ -14,7 +14,7 @@ class RouteTable {
 
   public:
 	RouteTable();
-	const unsigned char* get_default_gateway();
+	unsigned char* get_default_gateway();
 	void set_default_gateway(unsigned char *default_gateway_);
 
 	void print_all();

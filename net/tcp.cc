@@ -38,6 +38,7 @@ TcpSocket* TcpFactory::listen(unsigned short port)
 TcpSocket* TcpFactory::connect(unsigned char *dst_ip, unsigned short dst_port)
 {
 	TcpSocket *socket = (TcpSocket*)malloc(sizeof(TcpSocket));
+	socket->set_tcp_factory(this);
 
 	if (nullptr == socket)
 		return nullptr;
@@ -63,6 +64,7 @@ TcpSocket* TcpFactory::connect(unsigned char *dst_ip, unsigned short dst_port)
 	return socket;
 }
 
+/* No test! */
 void TcpFactory::disconnect(TcpSocket *socket)
 {
 	socket->state = FIN_WAIT1;
@@ -74,12 +76,11 @@ void TcpFactory::send(TcpSocket *socket, unsigned char *payload_data, unsigned i
 {
 	unsigned char *mac_addr = this->net_if->get_mac_addr();
 	unsigned char *ip_addr = this->net_if->get_ip_addr();
-	/* Temporary. */
-	unsigned char target_mac_addr[6] = {0x02, 0x42, 0x82, 0x84, 0x25, 0x95};  /* Must change every time. */
+	unsigned char *gateway_mac_addr = this->net_if->get_default_gateway_mac();
 
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct tcp_packet) + size);
 
-	EthernetFactory::format_packet(data, mac_addr, target_mac_addr, frame::next_is_ip);
+	EthernetFactory::format_packet(data, mac_addr, gateway_mac_addr, frame::next_is_ip);
 	IPv4Factory::format_packet(data + sizeof(struct eth_packet), ip_addr, socket->dst_ip, 0, 0x6, sizeof(struct ip_packet) + sizeof(struct tcp_packet) + size);
 	format_packet(data + sizeof(struct eth_packet) + sizeof(struct ip_packet), socket, payload_data, size, flags);
 
@@ -101,11 +102,12 @@ void TcpFactory::format_packet(unsigned char *data, TcpSocket *socket, unsigned 
 	tcp_header->dst_port = swap_word(socket->dst_port);
 	tcp_header->seq_num = swap_double_word(socket->seq_num);
 	tcp_header->ack_num = swap_double_word(socket->ack_num);  /* Tentatively. */
+
 	tcp_header->head_size = sizeof(struct tcp_packet) / 4;
 	tcp_header->reserved = 0;
 	tcp_header->flags = flags;
 	tcp_header->window_size = 0xffff;
-	tcp_header->check_sum = 0;   /* Tentatively. */
+	tcp_header->check_sum = 0;
 	tcp_header->urgent_pointer = 0;
 	tcp_header->options = (flags & SYN) ? 0xb4050402 : 0;
 
@@ -118,6 +120,7 @@ void TcpFactory::format_packet(unsigned char *data, TcpSocket *socket, unsigned 
 
 	memcpy((char*)(check_sum_use), (char*)(&pseudo_header), sizeof(struct tcp_pseudo_header));
 	memcpy((char*)(check_sum_use + sizeof(struct tcp_pseudo_header)), (char*)(data), sizeof(struct tcp_packet) + payload_data_size);
+	memcpy((char*)(check_sum_use + sizeof(struct tcp_pseudo_header) + sizeof(struct tcp_packet)), (char*)payload_data, payload_data_size);
 
 	tcp_header->check_sum = generate_checksum((unsigned short*)check_sum_use, sizeof(struct tcp_pseudo_header) + sizeof(struct tcp_packet) + payload_data_size);
 
@@ -138,7 +141,7 @@ short int TcpFactory::get_free_port()
 	return -1;
 }
 
-void TcpFactory::resolve_packet(unsigned char *data, unsigned char *remote_ip)
+void TcpFactory::resolve_packet(unsigned char *data, unsigned char *remote_ip, unsigned short payload_len)
 {
 	struct tcp_packet *tcp_header = (struct tcp_packet*)data;
 
@@ -176,18 +179,87 @@ void TcpFactory::resolve_packet(unsigned char *data, unsigned char *remote_ip)
 
 		socket->state = ESTABLISHED;
 
-		socket->ack_num = swap_double_word(tcp_header->seq_num) + 1;
-
 		socket->seq_num++;
+		socket->ack_num = swap_double_word(tcp_header->seq_num) + 1;
 
 		send(socket, 0, 0, ACK);
 
 		break;
 	}
+	case FIN:
+	case FIN | ACK:
+	{
+		if (ESTABLISHED == socket->state) {
+			socket->state = CLOSE_WAIT;
+			socket->ack_num++;
+			send(socket, 0, 0, ACK);
+			send(socket, 0, 0, FIN | ACK);
+		} else if (CLOSE_WAIT == socket->state) {
+			socket->state = CLOSED;
+		} else if ((FIN_WAIT1 == socket->state) || (FIN_WAIT2 == socket->state)) {
+			socket->state = CLOSED;
+			socket->ack_num++;
+			send(socket, 0, 0, ACK);
+		} else {
+		}
+
+		break;
+	}
+	case ACK:
+	{
+		if (SYN_RECEIVED == socket->state) {
+			socket->state = ESTABLISHED;
+			break;
+		} else if (FIN_WAIT1 == socket->state) {
+			socket->state = FIN_WAIT2;
+			break;
+		} else if (CLOSE_WAIT == socket->state) {
+			socket->state = CLOSED;
+			break;
+		} else if (CLOSED == socket->state) {
+			return;
+		} else {
+			if (ACK != (tcp_header->flags & ACK))
+				break;
+
+			/* Enter the default to process data which in ACK packet. So this case without break statement. */
+		}
+
+	}
 	default:
 	{
-		printf("default %x\n", tcp_header->flags);
+		unsigned char *data_start = data + tcp_header->head_size * 4;
+		unsigned int real_len = 0;
+
+		for (int i=0; i<payload_len-tcp_header->head_size*4; i++) {
+			if (0 != data_start[i])
+				real_len++;
+		}
+
+		if (swap_double_word(tcp_header->seq_num) == socket->ack_num) {
+			printf("Right order. %x\n", real_len);
+
+			/* Call application layer to handler the data. */
+
+			socket->ack_num += real_len;
+			send(socket, 0, 0, ACK);
+		} else {
+			printf("Wrong order. %x %x\n", socket->ack_num, swap_double_word(tcp_header->seq_num));
+		}
 	}
 	}
+}
+
+void TcpSocket::set_tcp_factory(TcpFactory *tcp_factory_)
+{
+	this->tcp_factory = tcp_factory_;
+}
+
+void TcpSocket::send(unsigned char *data, unsigned int size)
+{
+	if (nullptr == this->tcp_factory)
+		return;
+
+	this->tcp_factory->send(this, data, size, ACK);
 }
 
