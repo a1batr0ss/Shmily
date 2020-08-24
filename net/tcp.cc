@@ -1,6 +1,8 @@
 #include <all_syscall.h>
 #include <stdio.h>
 #include <string.h>
+#include <syscall.h>
+#include <indirect_ring_buffer.h>
 #include "tcp.h"
 #include "ethernet.h"
 #include "ip.h"
@@ -27,11 +29,22 @@ TcpSocket* TcpFactory::listen(unsigned short port)
 	if (nullptr == socket)
 		return nullptr;
 
+	/* Initialize the socket. */
 	memcpy((char*)(socket->src_ip), (char*)(this->net_if->get_ip_addr()), 4);
 	socket->src_port = port;
 	socket->state = LISTENING;
 
+	/* The queue of receive data. */
+	char *data_buf[10] = {0};
+	for (int i=0; i<10; i++)
+		data_buf[i] = (char*)malloc(1600);
+
+	socket->recv_buffer.initialize(data_buf);
+
+	socket->bind_proc = 0;	/* Will bind in accept call. */
+
 	this->sockets[port] = socket;
+	return socket;
 }
 
 /* Client */
@@ -64,7 +77,6 @@ TcpSocket* TcpFactory::connect(unsigned char *dst_ip, unsigned short dst_port)
 	return socket;
 }
 
-/* No test! */
 void TcpFactory::disconnect(TcpSocket *socket)
 {
 	socket->state = FIN_WAIT1;
@@ -76,6 +88,7 @@ void TcpFactory::send(TcpSocket *socket, unsigned char *payload_data, unsigned i
 {
 	unsigned char *mac_addr = this->net_if->get_mac_addr();
 	unsigned char *ip_addr = this->net_if->get_ip_addr();
+	/* Temporary. */
 	unsigned char *gateway_mac_addr = this->net_if->get_default_gateway_mac();
 
 	unsigned char *data = (unsigned char*)malloc(sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(struct tcp_packet) + size);
@@ -91,6 +104,7 @@ void TcpFactory::send(TcpSocket *socket, unsigned char *payload_data, unsigned i
 	send_packet((unsigned int)&p);
 
 	free(data);
+	return;
 }
 
 void TcpFactory::format_packet(unsigned char *data, TcpSocket *socket, unsigned char *payload_data, unsigned int payload_data_size, unsigned char flags)
@@ -107,7 +121,7 @@ void TcpFactory::format_packet(unsigned char *data, TcpSocket *socket, unsigned 
 	tcp_header->reserved = 0;
 	tcp_header->flags = flags;
 	tcp_header->window_size = 0xffff;
-	tcp_header->check_sum = 0;
+	tcp_header->check_sum = 0;	 /* Tentatively. */
 	tcp_header->urgent_pointer = 0;
 	tcp_header->options = (flags & SYN) ? 0xb4050402 : 0;
 
@@ -130,6 +144,7 @@ void TcpFactory::format_packet(unsigned char *data, TcpSocket *socket, unsigned 
 	socket->seq_num += payload_data_size;
 
 	free(check_sum_use);
+	return;
 }
 
 short int TcpFactory::get_free_port()
@@ -209,6 +224,15 @@ void TcpFactory::resolve_packet(unsigned char *data, unsigned char *remote_ip, u
 	{
 		if (SYN_RECEIVED == socket->state) {
 			socket->state = ESTABLISHED;
+
+			/* Below code should be packaging. */
+			Message msg;
+			struct _context con;
+			con.con_1 = swap_word(tcp_header->src_port);
+			msg.reset_message(1, con);
+			msg.send(socket->bind_proc);
+
+
 			break;
 		} else if (FIN_WAIT1 == socket->state) {
 			socket->state = FIN_WAIT2;
@@ -216,8 +240,6 @@ void TcpFactory::resolve_packet(unsigned char *data, unsigned char *remote_ip, u
 		} else if (CLOSE_WAIT == socket->state) {
 			socket->state = CLOSED;
 			break;
-		} else if (CLOSED == socket->state) {
-			return;
 		} else {
 			if (ACK != (tcp_header->flags & ACK))
 				break;
@@ -237,14 +259,21 @@ void TcpFactory::resolve_packet(unsigned char *data, unsigned char *remote_ip, u
 		}
 
 		if (swap_double_word(tcp_header->seq_num) == socket->ack_num) {
-			printf("Right order. %x\n", real_len);
-
 			/* Call application layer to handler the data. */
+			/* Put the data received to buffer, prepare for process the fetch it. */
+			char *data_buf = socket->recv_buffer.get_first_free_buffer();
+			*(unsigned int*)data_buf = real_len;  /* The length of content. */
+			data_buf += 4;
+			for (int i=0; i<real_len; i++)
+				data_buf[i] = data_start[i];
 
 			socket->ack_num += real_len;
 			send(socket, 0, 0, ACK);
 		} else {
-			printf("Wrong order. %x %x\n", socket->ack_num, swap_double_word(tcp_header->seq_num));
+			/* Need to handle some unexpected situations. */
+			if (socket->ack_num > swap_double_word(tcp_header->seq_num)) {
+				/* Opposite side ask for retransmission. */
+			}
 		}
 	}
 	}
@@ -261,5 +290,48 @@ void TcpSocket::send(unsigned char *data, unsigned int size)
 		return;
 
 	this->tcp_factory->send(this, data, size, ACK);
+}
+
+bool TcpFactory::socket_accept(unsigned short port, unsigned int bind_proc)
+{
+	if ((nullptr != this->sockets[port]) && (LISTENING == this->sockets[port]->state)) {
+		this->sockets[port]->bind_proc = bind_proc;
+		return true;
+	}
+
+	return false;
+}
+
+void TcpFactory::recv(unsigned short port, char *buf, unsigned int len)
+{
+	/* No check of the belong to the right process. */
+	char *data_buf = this->sockets[port]->recv_buffer.get_first_used_buffer();
+	unsigned int content_len = *(unsigned int*)data_buf;
+	data_buf += 4;
+
+	len = len > content_len ? content_len : len;
+	memcpy(buf, data_buf, len);
+	return;
+}
+
+void TcpFactory::send_socket(unsigned short port, char *data, unsigned int len)
+{
+	TcpSocket *socket = this->sockets[port];
+	if (nullptr == socket)
+		return;
+
+	send(socket, (unsigned char*)data, len, PSH|ACK);
+}
+
+void TcpFactory::close_socket(unsigned short port)
+{
+	/* TODO: Free the space of recv_buffer and send_buffer. */
+
+	disconnect(this->sockets[port]);
+
+	free(this->sockets[port]);
+	this->sockets[port] = nullptr;
+
+	return;
 }
 

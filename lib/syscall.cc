@@ -1,4 +1,5 @@
 #include <stdio.h>
+#include <ipc_glo.h>
 #include "syscall.h"
 
 /* Could use the default construtor, as it doesn't initialize the data member, especialy for local variable . */
@@ -46,18 +47,17 @@ void Message::reset_message(int type_, struct _context context_)
 
 void Message::send(unsigned int dest)
 {
-	// printf("In send: %x\n", dest);
 	asm volatile ("int $0x99" : : "a" (user_ipc::SEND), "b" (this), "c" (dest));
 }
 
 void Message::receive(unsigned int want_whose_msg)
 {
-	// printf("In send: %x\n", want_whose_msg);
 	asm volatile ("int $0x99" : : "a" (user_ipc::RECV), "b" (this), "c" (want_whose_msg));
 }
 
 void Message::reply()
 {
+	this->type = common::REPLY;
 	send(destination);
 }
 

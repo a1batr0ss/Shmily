@@ -60,15 +60,29 @@ void Message::set_dest(unsigned int dst)
     destination = dst;
 }
 
-void Message::send(unsigned int dest)
+void Message::send(unsigned int dest_pid)
 {
-    struct pcb *dst = (struct pcb*)dest;
+	struct pcb *dst = (struct pcb*)dest_pid;
     enum process_status dst_status = dst->status;
 
-	// printf("In sending: %x->%x %x.\n", source, dest, dst_status);
+	// if (((source == 0x95000) || (source == 0x94000) || (source == 0x91000) || (source == 0x98100)))
+	// printf("In sending: %x->%x %x, %x, %x %x.\n", source, dst, dst_status, type, dst->message->get_dest(), ((struct pcb*)source)->status);
+
+	if (source == all_processes::INTERRUPT_NET) {
+		dst->intr_cnt++;
+
+		/* Unblock the target process, otherwise these interrupts will head up if target is blocking. */
+		if ((WAITING_MSG == dst_status) && (all_processes::ANY == dst->message->get_dest())) {
+			dst->message->set_type(intr::INTR);
+			unblock_proc(dst);
+		}
+
+		return;
+	}
 
 	/* That girl is waiting me? */
-    if ((WAITING_MSG == dst_status) && ((all_processes::ANY == dst->message->get_dest()) || (source == dst->message->get_dest()))) {
+	/* Judge the condition of 'SENDING_MSG==dst_status' may not rational. */
+	if ((((WAITING_MSG == dst_status) && ((all_processes::ANY == dst->message->get_dest()) || (source == dst->message->get_dest()))) || ((WAITING_MSG == dst_status) && (common::REPLY == this->type)))) {
         /* Copy the message to dest, not only point to the message. */
         // dst->message->set_source(source); // There would occured a bug.
         dst->message->set_type(type);
@@ -101,19 +115,23 @@ void Message::receive(unsigned int want_whose_msg)
     struct pcb *sender = NULL;
     struct pcb *want_whose = (struct pcb*)want_whose_msg;
 
-	// printf("source is %x.\n", source);
-	// printf("current is %x.\n", (unsigned int)get_current_proc());
+	if ((0 != src->intr_cnt) && (all_processes::ANY == want_whose_msg)) {
+		this->type = intr::INTR;
+
+		src->intr_cnt--;
+		return;
+	}
 
     if (NULL != prev_sender) {
         if ((want_whose == prev_sender) || (0 == want_whose)) {
             type = prev_sender->message->get_type();
             context = prev_sender->message->get_context();
 
-            /* Interrupt circle. */
-            if (src->sendings->next_ready == src->sendings)
-                src->sendings = nullptr;
-            else
-                src->sendings = src->sendings->next_ready;
+			/* Interrupt circle. */
+			if (src->sendings->next_ready == src->sendings)
+				src->sendings = nullptr;
+			else
+		        src->sendings = src->sendings->next_ready;
 
 			destination = (unsigned int)prev_sender;
             if (SENDING_MSG == prev_sender->status)

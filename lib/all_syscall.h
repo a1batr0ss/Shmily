@@ -30,5 +30,11 @@ void lseek(unsigned int fd, unsigned int offset);
 void readline(unsigned int fd, char *buf);
 void get_cur_dir(char *buf);
 
+void listen(void *skt, unsigned short port);
+int accept(void *skt);
+int recv(void *skt, unsigned char *buf, unsigned int len);
+void send_socket(void *skt, char *buf, unsigned int len);
+void close_socket(void *skt);
+
 #endif
 

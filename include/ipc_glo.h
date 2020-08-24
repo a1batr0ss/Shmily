@@ -12,14 +12,24 @@ namespace all_processes {
 	struct pcb *NET_PCB = (struct pcb*)0x95000;
 	struct pcb *TER_PCB = (struct pcb*)0x96000;
 	struct pcb *INTERRUPT_PCB = (struct pcb*)0x98000;
+	struct pcb *INTERRUPT_NET_PCB = (struct pcb*)0x98100;
 	const unsigned int ANY = 0x0;
 	const unsigned int INTERRUPT = 0x98000;
+	const unsigned int INTERRUPT_NET = 0x98100;
 	const unsigned int MM = 0x91000;
 	const unsigned int FS = 0x92000;
 	const unsigned int KR = 0x93000;
 	const unsigned int DR = 0x94000;
 	const unsigned int NET = 0x95000;
- 	const unsigned int TER = 0x96000;
+	const unsigned int TER = 0x96000;
+};
+
+namespace common {
+	const unsigned int REPLY = 0xfffffe;
+};
+
+namespace intr {
+	const unsigned int INTR = 0xffffff;
 };
 
 namespace mm {
@@ -80,6 +90,15 @@ namespace kr {
 
 namespace net {
 	const unsigned int PKT_ARRIVED = 1;
+	const unsigned int SHOW_ARPTBL = 2;
+	const unsigned int PING = 3;
+	const unsigned int SHOW_IFACES = 4;
+	const unsigned int CONF_NET = 5;
+	const unsigned int LISTEN = 6;
+	const unsigned int SEND = 7;
+	const unsigned int ACCEPT = 8;
+	const unsigned int RECV = 9;
+	const unsigned int CLOSE = 10;
 };
 };
 

@@ -19,7 +19,6 @@ void IPv4Factory::format_packet(unsigned char *data, unsigned char *ip_addr, uns
 	identifier++;
 
 	pkt->flags = swap_word(ip::no_fragment);
-	// pkt->ttl = ip::default_ttl;
 	pkt->ttl = 64;
 	pkt->next_protocol = next_proto;
 	pkt->header_checksum = 0;

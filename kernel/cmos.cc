@@ -14,7 +14,7 @@ struct time get_current_time();
 void init_systime()
 {
 	systime_start = get_cmos_time();
-	
+
 	printf("Now is %d-%d-%d %d:%d:%d \n", systime_start.year, systime_start.month, systime_start.day, systime_start.hour, systime_start.minute, systime_start.second);
 }
 

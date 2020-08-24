@@ -48,6 +48,7 @@ class ArpCacheTable {
 	const unsigned char* get_ip_addr(unsigned char *mac_addr);
 	unsigned char* get_mac_addr(unsigned char *ip_addr);
 	bool delete_item(unsigned char *mac_addr);
+	void modify_item_ip(unsigned char *old_ip, unsigned char *new_ip);
 	void append(unsigned char *mac_addr, unsigned char *ip_addr);
 	void print_all();
 };
@@ -70,6 +71,7 @@ extern unsigned char ip_addr[4];
 void arp_request(unsigned char *target_ip);
 void arp_response(unsigned char *src_mac_addr, unsigned char *res_mac_addr, unsigned char *req_ip);
 void print_ip_addr(unsigned char *ip_addr);
+void print_mac_addr(unsigned char *mac_addr);
 
 #endif
 

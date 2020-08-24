@@ -70,8 +70,12 @@ struct pcb {
     unsigned int *pagedir_pos;
     unsigned int *esp;
     struct pcb *next_ready;
+
     Message *message;
     struct pcb *sendings;
+	unsigned char intr_cnt;
+	unsigned char reply_cnt;
+
 	unsigned int userstack;
     bool is_userproc;
     char padding[3000];  /* tentatively. */
@@ -84,15 +88,16 @@ extern char cur_proc_idx;
 
 void init_pm();
 void schedule();
-struct pcb* start_process(char *name, enum process_priority priority, proc_target func, void *args, struct pcb *proc);
-void deal_init_process();
+struct pcb* start_process(char *name, int pid, enum process_priority priority, proc_target func, void *args, struct pcb *proc);
+void deal_init_process(int pid);
 void self_block(enum process_status stat);
 void proc_yield();
 void unblock_proc(struct pcb *proc);
 void traverse_ready_queue();
 void idle_process(void *args);
 struct pcb* get_current_proc();
-void start_userprocess(char *name, enum process_priority priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack);
+struct pcb* pid2pcb(unsigned int pid);
+void start_userprocess(char *name, int pid, enum process_priority priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack);
 
 void create_process(proc_target *func);
 

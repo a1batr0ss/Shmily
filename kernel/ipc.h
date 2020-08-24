@@ -13,7 +13,6 @@ class Message {
     unsigned int source;  /* Who send the message. (PCB's first address) */
     unsigned int destination;
     int type;
-    // int context;  [> message content, just for test now. <]
 	struct _context context;
 
   public:

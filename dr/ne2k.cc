@@ -114,6 +114,8 @@ void send_packet(struct packet &p)
 	outb(ne2k::IOBASE + ne2k::TRANS_CNT_LOW, size & 0xff);
 	outb(ne2k::IOBASE + ne2k::TRANS_CNT_HIGH, size >> 8);
 	outb(ne2k::IOBASE + ne2k::CMD, ne2k::NODMA | ne2k::TRANS | ne2k::START);
+
+	return;
 }
 
 void receive_packet()
@@ -139,7 +141,6 @@ void receive_packet()
 		next_ = inb(ne2k::IOBASE + ne2k::NE_DATA);
 		len = inb(ne2k::IOBASE + ne2k::NE_DATA);
 		len += (inb(ne2k::IOBASE + ne2k::NE_DATA) << 8);
-
 		len -= 4;
 
 		outb(ne2k::IOBASE + ne2k::INTR_STAT, 0x40);
@@ -158,8 +159,9 @@ void receive_packet()
 
 			if (NULL != buf) {
 				memset(buf, 0, 1600 - 2);
-				for (int i=0; i<len; i++)
+				for (int i=0; i<len; i++) {
 					buf[i] = (char)inb(ne2k::IOBASE + ne2k::NE_DATA);
+				}
 			} else {
 				inb(ne2k::IOBASE + ne2k::NE_DATA);
 			}
@@ -191,8 +193,15 @@ void ne2k_handler()
 	while (0 != (val=inb(ne2k::IOBASE + ne2k::INTR_STAT))) {
 		outb(ne2k::IOBASE + ne2k::INTR_STAT, val);
 
-		if (val & ne2k::PKT_RECV)
+		if (val & ne2k::PKT_RECV) {
 			receive_packet();
+
+			Message msg(all_processes::INTERRUPT_NET);
+			struct _context con;
+			msg.reset_message(net::PKT_ARRIVED, con);
+
+			msg.send(all_processes::NET);
+		}
 
 		if (val & ne2k::PKT_TRANS) {
 			outb(ne2k::IOBASE + ne2k::CMD, 0);

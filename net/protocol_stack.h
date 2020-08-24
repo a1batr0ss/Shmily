@@ -12,7 +12,7 @@ class NetworkInterface;
 class ProtocolStack {
   private:
 	/*
-	 * Unused, as thesse protocol factory just has static methods.
+	 * Unused, as these protocol factory just has static methods.
 	 * Defined here just for showing what protocols we support in protocol stack.
 	 * except tcp.
      */

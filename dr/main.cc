@@ -112,7 +112,7 @@ int main()
 		}
 		default:
 		{
-			printf("dr received default. %d\n", msg.get_type());
+			// printf("dr received default. %d\n", msg.get_type());
 		}
 		}
 	}

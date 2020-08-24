@@ -37,10 +37,10 @@ inline unsigned int priority2ticks(enum process_priority priority)
 	return (PRIORITY_KIND - (unsigned int)priority) * 8;
 }
 
-void init_process_info(struct pcb *proc, char *name_, enum process_priority priority_)
+void init_process_info(struct pcb *proc, char *name_, int pid, enum process_priority priority_)
 {
     proc->priority = priority_;
-    proc->pid = allocate_pid();
+    proc->pid = pid;
     proc->ticks = priority2ticks(priority_);
     proc->elapsed_ticks = 0;
     proc->pagedir_pos = NULL;
@@ -79,8 +79,13 @@ unsigned int allocate_pid()
     return pid;
 }
 
-int append_all_array(struct pcb *proc)
+int append_all_array(struct pcb *proc, int pid)
 {
+	if (pid >= 0) {
+		processes[pid] = proc;
+		return pid;
+	}
+
     /* Get a free slot in processes */
     for (unsigned char idx=0; idx<NR_PROC; idx++) {
         if (0 == processes[idx]) {
@@ -91,13 +96,15 @@ int append_all_array(struct pcb *proc)
     return -1;  /* ready array is full, append failed. */
 }
 
-struct pcb* start_process(char *name, enum process_priority priority, proc_target func, void *args, struct pcb *proc)
+struct pcb* start_process(char *name, int pid, enum process_priority priority, proc_target func, void *args, struct pcb *proc)
 {
-    init_process_info(proc, name, priority);
+	int pid_ = append_all_array(proc, pid);
+
+    init_process_info(proc, name, pid_, priority);
     create_process(proc, func, args);
 
     /* Append to all queue. */
-    append_all_array(proc);
+    // append_all_array(proc, pid);
 
     /* Append to ready queue. */
 	unsigned int prio_idx = (unsigned int)priority;
@@ -139,7 +146,6 @@ void schedule()
 		cur_proc->status = READY;
 	else if (WAITING_MID == cur_proc->status) {  /* Lazy schedule. */
 		cur_proc->status = WAITING_MSG;
-		// printf("MID\n");
 		unsigned int ready_idx = (unsigned int)(cur_proc->priority);
 		ready_processes[ready_idx].remove(&(cur_proc->ready_elem));
 	} else {
@@ -215,15 +221,17 @@ void init_userprocess(proc_target func)
     asm volatile ("movl %0, %%esp; jmp intr_exit":: "g" (intr_stack) : "memory");
 }
 
-void start_userprocess(char *name, enum process_priority priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack)
+void start_userprocess(char *name, int pid, enum process_priority priority, proc_target func, void *args, struct pcb *proc, unsigned int userstack)
 {
-    init_process_info(proc, name, priority);
+	int pid_ = append_all_array(proc, pid);
+
+    init_process_info(proc, name, pid_, priority);
     proc->is_userproc = true;
 	proc->userstack = userstack;
     create_process(proc, (void (*)(void*))init_userprocess, (void*)func);
 
     /* Append to all queue. */
-    append_all_array(proc);
+    // append_all_array(proc, pid);
 
 	unsigned int prio_idx = (unsigned int)priority;
 	ready_processes[prio_idx].append(&(proc->ready_elem));
@@ -233,15 +241,17 @@ void start_userprocess(char *name, enum process_priority priority, proc_target f
 }
 
 /* The init process's information. */
-void deal_init_process()
+void deal_init_process(int pid)
 {
     struct pcb *init_proc = (struct pcb*)0x80000;
-    init_process_info(init_proc, "init", PRIORITY_E);
+	int pid_ = append_all_array(init_proc, pid);
+
+    init_process_info(init_proc, "init", pid_, PRIORITY_E);
     cur_proc = init_proc;
     cur_proc_idx = -1;
     init_proc->status = RUNNING;
 
-	append_all_array(init_proc);
+	append_all_array(init_proc, pid);
 
 	unsigned int prio_idx = (unsigned int)PRIORITY_E;
 	ready_processes[prio_idx].append(&(init_proc->ready_elem));
@@ -320,12 +330,17 @@ struct pcb* get_current_proc()
 	return (struct pcb*)(esp & 0xffffff000);
 }
 
+struct pcb* pid2pcb(unsigned int pid)
+{
+	return processes[pid];
+}
+
 void create_process(proc_target *func)
 {
 	struct pcb *pcb = (struct pcb*)malloc(sizeof(struct pcb));
 	unsigned int userstack = (unsigned int)malloc(paging::page_size);
 
-	start_userprocess("USER_CREATE", PRIORITY_D, func, NULL, pcb, userstack);
+	start_userprocess("USER_CREATE", -1, PRIORITY_D, func, NULL, pcb, userstack);
 }
 
 void status2string(enum process_status stat, char *stat_string)

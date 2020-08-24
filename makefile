@@ -5,9 +5,11 @@ VBOX_OS_NAME = Shmily
 
 all: check_disk check_build_dir build_all install_boot install_kernel
 	# if [ $(DEBUGGER) == 0 ]; then echo "c" | sudo bochs -f ./bochs/config.bcs; else sudo bochs -f ./bochs/config.bcs; fi
+	sudo qemu-system-i386 -m 32 -hda bochs/testdisk.img -hdb bochs/fs_test.img -boot d -device ne2k_isa,irq=0xa,iobase=0x300,vlan=0 -net tap,ifname=tap0
+
 
 qemu:
-	sudo qemu-system-i386 -m 32 -hda bochs/testdisk.img -hdb bochs/fs_test.img -boot d -device ne2k_isa,irq=0xa,iobase=0x280,vlan=0 -net tap,ifname=tap0
+	sudo qemu-system-i386 -m 32 -hda bochs/testdisk.img -hdb bochs/fs_test.img -boot d -device ne2k_isa,irq=0xa,iobase=0x300,vlan=0 -net tap,ifname=tap0
 
 vbox:
 	qemu-img convert -f raw -O vdi bochs/testdisk.img bochs/testdisk.vdi
@@ -35,7 +37,7 @@ install_boot: $(BUILD_DIR)/boot.bin
 
 install_kernel: $(BUILD_DIR)/init.bin $(BUILD_DIR)/image
 	dd if=./build/init.bin of=./bochs/testdisk.img bs=512 count=1 seek=1 conv=notrunc
-	dd if=./build/image of=./bochs/testdisk.img bs=512 count=450 seek=5 conv=notrunc
+	dd if=./build/image of=./bochs/testdisk.img bs=512 count=490 seek=5 conv=notrunc
 
 clean_vbox:
 	rm -rf bochs/testdisk.vdi bochs/fs_test.vdi

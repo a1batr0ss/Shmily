@@ -7,7 +7,7 @@ namespace {
 	namespace ne2k {
 		const unsigned int NE2K_IRQ = 0x2a;
 
-		const unsigned short IOBASE = 0x280;
+		const unsigned short IOBASE = 0x300;
 		const unsigned short CMD = 0x0;
 		const unsigned short PAGE_START = 0x1;
 		const unsigned short PAGE_STOP = 0x2;

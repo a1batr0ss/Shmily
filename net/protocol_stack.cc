@@ -21,6 +21,7 @@ void ProtocolStack::handle_packet(unsigned char *data, unsigned short len)
 	{
 		struct arp_packet *pkt_arp = (struct arp_packet*)(data + sizeof(struct eth_packet));
 
+		/* No test! */
 		/* An arp request */
 		if (arp::req_opcode == swap_word(pkt_arp->opcode)) {
 			const unsigned char *res_mac_addr = this->cur_net_if->get_arp_table().get_mac_addr(pkt_arp->target_ip);
@@ -32,7 +33,6 @@ void ProtocolStack::handle_packet(unsigned char *data, unsigned short len)
 			/* Without any secure verify. */
 			this->cur_net_if->get_arp_table().append(pkt_arp->src_mac_addr, pkt_arp->src_ip_addr);
 		}
-		// this->cur_net_if->get_arp_table().print_all();
 		break;
 	}
 	case _net::IP:
@@ -48,7 +48,6 @@ void ProtocolStack::handle_packet(unsigned char *data, unsigned short len)
 
 			this->tcp_protocol.resolve_packet(data + sizeof(struct eth_packet) + sizeof(struct ip_packet), remote_ip, payload_len);
 		} else {
-			printf("received data from %x: %x %x\n", pkt_ip->next_protocol, *(data + sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(udp_header)), *(data + sizeof(struct eth_packet) + sizeof(struct ip_packet) + sizeof(udp_header) + 1));
 		}
 
 		break;

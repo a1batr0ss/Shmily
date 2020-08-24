@@ -4,6 +4,7 @@
 #include <string.h>
 #include <time.h>
 #include <cmos.h>
+#include <net.h>
 #include "all_syscall.h"
 
 void* malloc(unsigned int cnt)
@@ -24,6 +25,7 @@ void free(void *addr)
 	con.con_1 = (unsigned int)addr;
 	msg.reset_message(mm::FREE, con);
 	msg.send_then_recv(all_processes::MM);
+	// msg.send(all_processes::MM);
 	return;
 }
 
@@ -102,7 +104,9 @@ void send_packet(unsigned int pkt)
     struct _context con;
     con.con_1 = pkt;
     msg.reset_message(dr::SEND_PKT, con);
-    msg.send_then_recv(all_processes::DR);
+	// printf("packet sended...\n");
+	msg.send_then_recv(all_processes::DR);
+	// msg.send(all_processes::DR);
     return;
 }
 
@@ -302,3 +306,68 @@ void get_cur_dir(char *buf)
 
 	return;
 }
+
+void listen(void *skt, unsigned short port)
+{
+	Message msg;
+	struct _context con;
+
+	con.con_1 = port;
+	msg.reset_message(net::LISTEN, con);
+	msg.send_then_recv(all_processes::NET);
+
+	return;
+}
+
+int accept(void *skt)
+{
+	Message msg;
+	struct _context con;
+
+	con.con_1 = ((TcpSocket*)skt)->src_port;  /* Act as identifier. */
+	msg.reset_message(net::ACCEPT, con);
+	msg.send_then_recv(all_processes::NET);
+
+	return msg.get_context().con_1;
+}
+
+int recv(void *skt, unsigned char *buf, unsigned int len)
+{
+	Message msg;
+	struct _context con;
+
+	con.con_1 = ((TcpSocket*)skt)->src_port;
+	con.con_2 = (unsigned int)buf;
+	con.con_3 = len;
+	msg.reset_message(net::RECV, con);
+	msg.send_then_recv(all_processes::NET);
+
+	return msg.get_context().con_1;
+}
+
+void send_socket(void *skt, char *buf, unsigned int len)
+{
+	Message msg;
+	struct _context con;
+
+	con.con_1 = ((TcpSocket*)skt)->src_port;
+	con.con_2 = (unsigned int)buf;
+	con.con_3 = len;
+	msg.reset_message(net::SEND, con);
+	msg.send_then_recv(all_processes::NET);
+
+	return;
+}
+
+void close_socket(void *skt)
+{
+	Message msg;
+	struct _context con;
+
+	con.con_1 = ((TcpSocket*)skt)->src_port;
+	msg.reset_message(net::CLOSE, con);
+	msg.send_then_recv(all_processes::NET);
+
+	return;
+}
+

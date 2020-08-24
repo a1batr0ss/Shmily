@@ -32,6 +32,6 @@ void sleep_seconds(unsigned int seconds)
 	unsigned int start_time = timer_ticks;
 	unsigned int slp_ticks = seconds * 500;  /* Multiply 500, almost sleep n seonds. */
 
-	while ((timer_ticks-start_time) < slp_ticks) 
+	while ((timer_ticks-start_time) < slp_ticks)
 		proc_yield();
 }
