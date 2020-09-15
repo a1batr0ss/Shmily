@@ -7,7 +7,7 @@ LD_FLAGS = -m elf_i386
 
 all: $(BUILD_DIR)/terminal
 
-$(BUILD_DIR)/terminal: $(BUILD_DIR)/terminal_main.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/ring_buffer.cc.o $(BUILD_DIR)/terminal.cc.o $(BUILD_DIR)/builtin_cmd.cc.o $(BUILD_DIR)/time.cc.o $(BUILD_DIR)/user.cc.o $(BUILD_DIR)/hahash.cc.o  $(BUILD_DIR)/start.o $(BUILD_DIR)/start.cc.o
+$(BUILD_DIR)/terminal: $(BUILD_DIR)/terminal_main.cc.o $(BUILD_DIR)/stdio.cc.o $(BUILD_DIR)/string.cc.o $(BUILD_DIR)/syscall.cc.o $(BUILD_DIR)/all_syscall.cc.o $(BUILD_DIR)/print.o $(BUILD_DIR)/ring_buffer.cc.o $(BUILD_DIR)/terminal.cc.o $(BUILD_DIR)/builtin_cmd.cc.o $(BUILD_DIR)/time.cc.o $(BUILD_DIR)/user.cc.o $(BUILD_DIR)/hahash.cc.o  $(BUILD_DIR)/start.o $(BUILD_DIR)/start.cc.o $(BUILD_DIR)/net_utilies.cc.o
 	$(LD) -T link.ld $(LD_FLAGS) $^ -o $@
 
 $(BUILD_DIR)/terminal_main.cc.o: main.cc

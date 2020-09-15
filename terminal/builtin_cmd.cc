@@ -4,6 +4,7 @@
 #include <all_syscall.h>
 #include <stdio.h>
 #include <string.h>
+#include <net_utilies.h>
 #include "user.h"
 
 void ps()
@@ -137,6 +138,7 @@ void last()
 	}
 
 	close(fd);
+	return;
 }
 
 void halt()
@@ -145,6 +147,7 @@ void halt()
 	struct _context con;
 	msg.reset_message(kr::CMD_HALT, con);
 	msg.send(all_processes::KR);  /* Not wait. As it can't return here. */
+	return;
 }
 
 void power_off()
@@ -153,6 +156,7 @@ void power_off()
 	struct _context con;
 	msg.reset_message(kr::CMD_POWEROFF, con);
 	msg.send(all_processes::KR);  /* Not wait. As it can't return here. */
+	return;
 }
 
 void reboot()
@@ -161,5 +165,47 @@ void reboot()
 	struct _context con;
 	msg.reset_message(kr::CMD_REBOOT, con);
 	msg.send(all_processes::KR);
+	return;
+}
+
+void show_arp_table()
+{
+	Message msg;
+	struct _context con;
+	msg.reset_message(net::SHOW_ARPTBL, con);
+	msg.send_then_recv(all_processes::NET);
+	return;
+}
+
+void ping(char *dst_ip_str)
+{
+	Message msg;
+	struct _context con;
+	con.con_1 = ipstring2ipuint(dst_ip_str);
+
+	msg.reset_message(net::PING, con);
+	msg.send_then_recv(all_processes::NET);
+	return;
+}
+
+void ifconfig()
+{
+	Message msg;
+	struct _context con;
+	msg.reset_message(net::SHOW_IFACES, con);
+	msg.send_then_recv(all_processes::NET);
+	return;
+}
+
+void confignet(char *ip_addrstr, char *gatewayip_str)
+{
+	Message msg;
+	struct _context con;
+	con.con_1 = ipstring2ipuint(ip_addrstr);
+	con.con_2 = ipstring2ipuint(gatewayip_str);
+
+	msg.reset_message(net::CONF_NET, con);
+	msg.send_then_recv(all_processes::NET);
+	return;
 }
 

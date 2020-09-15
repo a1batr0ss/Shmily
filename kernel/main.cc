@@ -23,7 +23,7 @@ int main()
     deal_init_process(0);  /* The init process. */
     start_process("idle", 1, PRIORITY_E, (void (*)(void*))idle_process, NULL, (struct pcb*)0x99000);
 	start_userprocess("mm", 2, PRIORITY_B, (void (*)(void*))0x20000, NULL, all_processes::MM_PCB, all_processes::MM - 0x10000 + 0xfff);
-	// start_userprocess("fs", 3, PRIORITY_B, (void (*)(void*))0x30000, NULL, all_processes::FS_PCB, all_processes::FS - 0x10000 + 0xfff);
+	start_userprocess("fs", 3, PRIORITY_B, (void (*)(void*))0x30000, NULL, all_processes::FS_PCB, all_processes::FS - 0x10000 + 0xfff);
 	start_userprocess("dr", 4, PRIORITY_A, (void (*)(void*))0x40000, NULL, all_processes::DR_PCB, all_processes::DR - 0x10000 + 0xfff);
 	/* Net and Terminal is not blocked tentatively, so put is to lower priority. Prevent starvation of low priority processes. */
 	start_userprocess("net", 5, PRIORITY_C, (void (*)(void*))0x50000, NULL, all_processes::NET_PCB, all_processes::NET - 0x10000 + 0xfff);

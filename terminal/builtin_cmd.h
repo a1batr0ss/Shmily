@@ -17,6 +17,10 @@ void last();
 void halt();
 void power_off();
 void reboot();
+void show_arp_table();
+void ping(char *dst_ip_str);
+void ifconfig();
+void confignet(char *ipaddr_str, char *gatewayip_str);
 
 #endif
 

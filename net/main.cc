@@ -32,9 +32,6 @@ int main()
 
 	TcpFactory *tcp_factory = pro_stk.get_tcp_factory();
 
-	unsigned char g_mac[6] = {0xbe, 0xe4, 0x38, 0x2e, 0x5c, 0x51};
-	unsigned char g_ip[4] = {172, 17, 0, 1};
-
 	while (1) {
 		msg.receive(all_processes::ANY);
 		struct _context con = msg.get_context();
@@ -65,8 +62,7 @@ int main()
 			ip_addr[2] = (con.con_1 & 0x0000ff00) >> 8;
 			ip_addr[3] = con.con_1 & 0x000000ff;
 
-			// ICMPFactory::request(net_iface.get_mac_addr(), net_iface.get_ip_addr(), ip_addr, g_mac);
-			// ICMPFactory::request(net_iface.get_mac_addr(), net_iface.get_ip_addr(), ip_addr, g_mac);
+			ICMPFactory::request(net_iface.get_mac_addr(), net_iface.get_ip_addr(), ip_addr, net_iface.get_default_gateway_mac());
 			msg.reply();
 			break;
 		}
@@ -159,23 +155,9 @@ int main()
 		char *data = net_buf->get_first_used_buffer();  /* I think there is a bug, it should wait the next line process end, then increase itself. */
 
 		unsigned short packet_len = *(unsigned short*)data;
-		// resolve_packet((unsigned char*)data);
-		// printf("packet len is %d\n", packet_len);
 		pro_stk.handle_packet((unsigned char*)(data+2), packet_len);
 	}
 
 	return 0;
 }
-
-// void user_proc()
-// {
-	// printf("In user's process.\n");
-	// Message msg;
-	// struct _context con;
-	// msg.reset_message(net::TCP_RECV, con);
-	// msg.send_then_recv(all_processes::NET);
-	// printf("user process wake up.\n");
-
-	// while (1);
-// }
 

@@ -8,6 +8,7 @@
 #include <all_syscall.h>
 #include <cmos.h>
 #include <time.h>
+// #include <net_utilies.h>
 #include "builtin_cmd.h"
 #include "terminal.h"
 #include "user.h"
@@ -359,8 +360,19 @@ void Terminal::handle_input()
 	} else if (strcmp(this->argv[0], "clear")) {
 		init_screen();
 		// print_shell();
-	} else
-		;
+	} else if (strcmp(this->argv[0], "ping")) {
+		// printf("string is %s\n", this->argv[1]);
+		// printf("%x\n", ipstring2ipuint(this->argv[1]));
+		ping(this->argv[1]);
+	} else if (strcmp(this->argv[0], "showarptbl")) {
+		show_arp_table();
+	} else if (strcmp(this->argv[0], "ifconfig")) {
+		ifconfig();  /* Show all interfaces' infomation. */
+	} else if (strcmp(this->argv[0], "network")) {
+		confignet(this->argv[1], this->argv[2]);  /* Ip address and the ip address of gateway. */
+	} else {
+		printf("Unrecognized command.\n");
+	}
 }
 
 void Terminal::reset_terminal()
